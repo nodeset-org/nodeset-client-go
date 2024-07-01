@@ -1,4 +1,4 @@
-package api_v2
+package apiv2
 
 import (
 	"context"
