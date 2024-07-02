@@ -17,6 +17,12 @@ const (
 
 	// The node address is not authorized
 	addressNotAuthorizedKey string = "address_not_authorized"
+
+	// The node address cannot create more minipools
+	minipoolLimitReachedKey string = "minipool_limit_reached"
+
+	// The node address is missing the exit message
+	missingExitMessageKey string = "missing_exit_message"
 )
 
 var (
@@ -34,4 +40,10 @@ var (
 
 	// The node address is not authorize to whitelist for Constellation
 	ErrNotAuthorized error = errors.New("node has already been registered with the NodeSet server")
+
+	// The node address cannot create more minipools
+	ErrMinipoolLimitReached error = errors.New("node address cannot create more minipools")
+
+	// The node address is missing the exit message
+	ErrMissingExitMessage error = errors.New("node address is missing the exit message")
 )
