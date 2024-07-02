@@ -1,4 +1,4 @@
-package apiv2
+package apiv1
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ type ExtendedDepositData struct {
 
 const (
 	// Route for getting the latest deposit data set from the NodeSet server
-	depositDataPath string = "modules/stakewise/deposit-data"
+	depositDataPath string = "deposit-data"
 
 	// Subroute for getting the version of the latest deposit data
 	metaPath string = "meta"

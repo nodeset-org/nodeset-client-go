@@ -1,4 +1,4 @@
-package apiv2
+package apiv1
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ const (
 	LoginMessageFormat string = `{"nonce":"%s","address":"%s"}`
 
 	// Route for logging into the NodeSet server
-	loginPath string = "core/login"
+	loginPath string = "login"
 
 	// The provided nonce didn't match an expected one
 	invalidNonceKey string = "invalid_nonce"

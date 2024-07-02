@@ -1,4 +1,4 @@
-package apiv2
+package apiv1
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ const (
 	NodeAddressMessageFormat string = `{"email":"%s","node_address":"%s"}`
 
 	// Route for registering a node address with the NodeSet server
-	nodeAddressPath string = "core/node-address"
+	nodeAddressPath string = "node-address"
 
 	// The node address has already been confirmed on a NodeSet account
 	addressAlreadyAuthorizedKey string = "address_already_authorized"

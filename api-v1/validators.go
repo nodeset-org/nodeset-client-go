@@ -1,4 +1,4 @@
-package apiv2
+package apiv1
 
 import (
 	"bytes"
@@ -37,7 +37,7 @@ type ValidatorStatus struct {
 
 const (
 	// Route for interacting with the list of validators
-	validatorsPath string = "modules/stakewise/validators"
+	validatorsPath string = "validators"
 
 	// The requester doesn't own the provided validator
 	invalidValidatorOwnerKey string = "invalid_validator_owner"

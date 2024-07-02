@@ -1,4 +1,4 @@
-package apiv2
+package apiv1
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 const (
 	// Route for getting a nonce from the NodeSet server
-	noncePath = "core/nonce"
+	noncePath = "nonce"
 )
 
 // Data used returned from nonce requests

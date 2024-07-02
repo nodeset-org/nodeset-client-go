@@ -1,4 +1,4 @@
-package apiv2
+package apiv1
 
 import (
 	"context"
@@ -16,9 +16,6 @@ const (
 )
 
 const (
-	// API version to use
-	apiVersion string = "v2"
-
 	// Header to include when sending messages that have been logged in
 	authHeader string = "Authorization"
 
@@ -37,7 +34,7 @@ type NodeSetClient struct {
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
 func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
 	return &NodeSetClient{
-		baseUrl: fmt.Sprintf("%s/%s", baseUrl, apiVersion), // becomes [https://nodeset.io/api/v2]
+		baseUrl: baseUrl, // v1 doesn't have a version in the subroute so just use the base URL
 		client: &http.Client{
 			Timeout: timeout,
 		},
