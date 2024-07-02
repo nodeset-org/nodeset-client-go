@@ -29,7 +29,7 @@ func (c *NodeSetClient) MinipoolAvailable(ctx context.Context) (MinipoolAvailabl
 		// Successfully retrieved minipool available count
 		return response.Data, nil
 
-	case http.StatusBadRequest:
+	case http.StatusForbidden:
 		switch response.Error {
 		case invalidSessionKey:
 			// Invalid session

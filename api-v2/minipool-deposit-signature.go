@@ -21,6 +21,7 @@ type MinipoolDepositSignatureRequest struct {
 	// the EIP55-compliant hex string representing the address of the
 	// minipool that will be created (the address to generate the signature for)
 	Address string `json:"address"`
+
 	// a hex string (lower-case, no 0x prefix) representing the 32-byte salt used
 	// to create minipoolAddress during CREATE2 calculation
 	Salt string `json:"salt"`
@@ -41,6 +42,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error marshalling minipool deposit signature request: %w", err)
 	}
+
 	code, response, err := SubmitRequest[MinipoolDepositSignatureData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, minipoolDepositSignaturePath)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
@@ -66,7 +68,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case userNotAuthorizedKey:
-			// Address not authorized to whitelist for Constellation
+			// Address not authorized to get minipool deposit signature
 			return MinipoolDepositSignatureData{}, ErrNotAuthorized
 		case invalidSessionKey:
 			// Invalid session

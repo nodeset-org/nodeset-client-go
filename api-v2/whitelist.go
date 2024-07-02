@@ -40,5 +40,5 @@ func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
 		}
 	}
 
-	return WhitelistData{}, fmt.Errorf("nodeset server responded to login request with code %d: [%s]", code, response.Message)
+	return WhitelistData{}, fmt.Errorf("nodeset server responded to whitelist request with code %d: [%s]", code, response.Message)
 }

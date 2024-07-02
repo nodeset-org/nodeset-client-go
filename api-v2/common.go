@@ -38,8 +38,8 @@ var (
 	// The provided network was invalid
 	ErrInvalidNetwork error = errors.New("the provided network was invalid")
 
-	// The node address is not authorize to whitelist for Constellation
-	ErrNotAuthorized error = errors.New("node has already been registered with the NodeSet server")
+	// The user is not authorize to whitelist for Constellation
+	ErrNotAuthorized error = errors.New(" user account owning the requesting node is not on the internal NodeSet service whitelist for Constellation")
 
 	// The node address cannot create more minipools
 	ErrMinipoolLimitReached error = errors.New("node address cannot create more minipools")
