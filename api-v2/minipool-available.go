@@ -6,27 +6,27 @@ import (
 	"net/http"
 )
 
-// Response to a minipool available count request
-type MinipoolAvailableData struct {
-	// The signature for Whitelist.addOperator()
-	Count int `json:"count"`
-}
-
 const (
 	// Route for requesting minipool available count
 	minipoolAvailablePath string = "modules/constellation/minipool/available"
 )
 
+// Response to a minipool available count request
+type MinipoolAvailableData struct {
+	// The number of new Constellation minipools the node is allowed to create
+	Count int `json:"count"`
+}
+
 func (c *NodeSetClient) MinipoolAvailable(ctx context.Context) (MinipoolAvailableData, error) {
 	code, response, err := SubmitRequest[MinipoolAvailableData](c, ctx, true, http.MethodGet, nil, nil, minipoolAvailablePath)
 	if err != nil {
-		return MinipoolAvailableData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
+		return MinipoolAvailableData{}, fmt.Errorf("error requesting minipool available count: %w", err)
 	}
 
 	// Handle response based on return code
 	switch code {
 	case http.StatusOK:
-		// Node successfully registered
+		// Successfully retrieved minipool available count
 		return response.Data, nil
 
 	case http.StatusBadRequest:

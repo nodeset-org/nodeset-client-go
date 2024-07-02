@@ -44,6 +44,6 @@ var (
 	// The node address cannot create more minipools
 	ErrMinipoolLimitReached error = errors.New("node address cannot create more minipools")
 
-	// The node address is missing the exit message
-	ErrMissingExitMessage error = errors.New("node address is missing the exit message")
+	// The node address is missing the exit message for latest minipool
+	ErrMissingExitMessage error = errors.New("node address is missing the exit message for latest minipool")
 )

@@ -6,16 +6,16 @@ import (
 	"net/http"
 )
 
+const (
+	// Route for requesting whitelist signature
+	whitelistPath string = "modules/constellation/whitelist"
+)
+
 // Response to a whitelist request
 type WhitelistData struct {
 	// The signature for Whitelist.addOperator()
 	Signature string `json:"signature"`
 }
-
-const (
-	// Route for requesting whitelist signature
-	whitelistPath string = "modules/constellation/whitelist"
-)
 
 func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
 	code, response, err := SubmitRequest[WhitelistData](c, ctx, true, http.MethodGet, nil, nil, whitelistPath)
@@ -29,7 +29,7 @@ func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
 		// Node successfully registered
 		return response.Data, nil
 
-	case http.StatusBadRequest:
+	case http.StatusUnauthorized:
 		switch response.Error {
 		case addressNotAuthorizedKey:
 			// Address not authorized to whitelist for Constellation
