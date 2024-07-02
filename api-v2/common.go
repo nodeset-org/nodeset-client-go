@@ -14,6 +14,15 @@ const (
 
 	// The provided network was invalid
 	invalidNetworkKey string = "invalid_network"
+
+	// The user is not authorized
+	userNotAuthorizedKey string = "user_not_authorized"
+
+	// The node address cannot create more minipools
+	minipoolLimitReachedKey string = "minipool_limit_reached"
+
+	// The node address is missing the exit message
+	missingExitMessageKey string = "missing_exit_message"
 )
 
 var (
@@ -28,4 +37,13 @@ var (
 
 	// The provided network was invalid
 	ErrInvalidNetwork error = errors.New("the provided network was invalid")
+
+	// The user is not authorize to whitelist for Constellation
+	ErrNotAuthorized error = errors.New("user account owning the requesting node is not on the internal NodeSet service whitelist for Constellation")
+
+	// The node address cannot create more minipools
+	ErrMinipoolLimitReached error = errors.New("node address cannot create more minipools")
+
+	// The node address is missing the exit message for latest minipool
+	ErrMissingExitMessage error = errors.New("node address is missing the exit message for latest minipool")
 )
