@@ -34,6 +34,7 @@ func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
 		case userNotAuthorizedKey:
 			// User not authorized to whitelist for Constellation
 			return WhitelistData{}, ErrNotAuthorized
+
 		case invalidSessionKey:
 			// Invalid session
 			return WhitelistData{}, ErrInvalidSession

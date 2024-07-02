@@ -59,6 +59,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 		case minipoolLimitReachedKey:
 			// Address has been given access to Constellation, but cannot create any more minipools.
 			return MinipoolDepositSignatureData{}, ErrMinipoolLimitReached
+
 		case missingExitMessageKey:
 			// Address has been given access to Constellation, but the NodeSet service does not have
 			// a signed exit message stored for the minipool that user account previously created.
@@ -70,6 +71,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 		case userNotAuthorizedKey:
 			// Address not authorized to get minipool deposit signature
 			return MinipoolDepositSignatureData{}, ErrNotAuthorized
+
 		case invalidSessionKey:
 			// Invalid session
 			return MinipoolDepositSignatureData{}, ErrInvalidSession
