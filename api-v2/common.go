@@ -15,8 +15,8 @@ const (
 	// The provided network was invalid
 	invalidNetworkKey string = "invalid_network"
 
-	// The node address is not authorized
-	addressNotAuthorizedKey string = "address_not_authorized"
+	// The user is not authorized
+	userNotAuthorizedKey string = "user_not_authorized"
 
 	// The node address cannot create more minipools
 	minipoolLimitReachedKey string = "minipool_limit_reached"

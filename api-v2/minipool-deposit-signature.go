@@ -65,7 +65,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case addressNotAuthorizedKey:
+		case userNotAuthorizedKey:
 			// Address not authorized to whitelist for Constellation
 			return MinipoolDepositSignatureData{}, ErrNotAuthorized
 		case invalidSessionKey:
