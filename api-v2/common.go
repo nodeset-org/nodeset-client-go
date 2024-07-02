@@ -14,6 +14,9 @@ const (
 
 	// The provided network was invalid
 	invalidNetworkKey string = "invalid_network"
+
+	// The node address is not authorized
+	addressNotAuthorizedKey string = "address_not_authorized"
 )
 
 var (
@@ -28,4 +31,7 @@ var (
 
 	// The provided network was invalid
 	ErrInvalidNetwork error = errors.New("the provided network was invalid")
+
+	// The node address is not authorize to whitelist for Constellation
+	ErrNotAuthorized error = errors.New("node has already been registered with the NodeSet server")
 )
