@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
 )
 
 func (s *NodeSetMockServer) getValidators(w http.ResponseWriter, r *http.Request) {

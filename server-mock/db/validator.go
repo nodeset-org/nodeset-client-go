@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 

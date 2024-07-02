@@ -8,9 +8,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
-	"github.com/nodeset-org/nodeset-client-go/testing/db"
-	"github.com/nodeset-org/nodeset-client-go/testing/internal/test"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/beacon"
 	"github.com/rocket-pool/node-manager-core/node/validator"
 	"github.com/stretchr/testify/require"
