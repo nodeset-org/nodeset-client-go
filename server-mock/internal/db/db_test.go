@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/nodeset-org/nodeset-client-go/testing/db"
-	"github.com/nodeset-org/nodeset-client-go/testing/internal/test"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/beacon"
 	"github.com/stretchr/testify/assert"
 )

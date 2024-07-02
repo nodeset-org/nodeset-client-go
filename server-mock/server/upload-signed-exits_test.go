@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
-	"github.com/nodeset-org/nodeset-client-go/testing/auth"
-	"github.com/nodeset-org/nodeset-client-go/testing/db"
-	idb "github.com/nodeset-org/nodeset-client-go/testing/internal/db"
-	"github.com/nodeset-org/nodeset-client-go/testing/internal/test"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/beacon"
 	"github.com/stretchr/testify/require"
 )

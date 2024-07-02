@@ -13,10 +13,10 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
-	"github.com/nodeset-org/nodeset-client-go/testing/auth"
-	"github.com/nodeset-org/nodeset-client-go/testing/db"
-	"github.com/nodeset-org/nodeset-client-go/testing/manager"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/manager"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
 )
 
 func (s *NodeSetMockServer) depositDataMeta(w http.ResponseWriter, r *http.Request) {

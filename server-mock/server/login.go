@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/testing/api"
-	"github.com/nodeset-org/nodeset-client-go/testing/db"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
