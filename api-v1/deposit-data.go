@@ -14,11 +14,6 @@ import (
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
-type ExtendedDepositData struct {
-	beacon.ExtendedDepositData
-	HyperdriveVersion string `json:"hyperdrive_version,omitempty"`
-}
-
 const (
 	// Route for getting the latest deposit data set from the NodeSet server
 	depositDataPath string = "deposit-data"
@@ -43,8 +38,8 @@ var (
 
 // Response to a deposit data request
 type DepositDataData struct {
-	Version     int                   `json:"version"`
-	DepositData []ExtendedDepositData `json:"depositData"`
+	Version     int                          `json:"version"`
+	DepositData []beacon.ExtendedDepositData `json:"depositData"`
 }
 
 // Response to a deposit data meta request
@@ -127,7 +122,7 @@ func (c *NodeSetClient) DepositDataMeta(ctx context.Context, vault common.Addres
 }
 
 // Uploads deposit data to Nodeset
-func (c *NodeSetClient) DepositData_Post(ctx context.Context, depositData []*ExtendedDepositData) error {
+func (c *NodeSetClient) DepositData_Post(ctx context.Context, depositData []beacon.ExtendedDepositData) error {
 	// Create the request body
 	serializedData, err := json.Marshal(depositData)
 	if err != nil {
