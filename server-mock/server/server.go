@@ -111,8 +111,11 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 			handleInvalidMethod(w, s.logger)
 		}
 	}
+	// v1
 	apiRouter.HandleFunc("/"+api.DepositDataMetaPath, depositDataMeta)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.DepositDataMetaPath, depositDataMeta)
+	// v2
+	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.DepositDataMetaPath, depositDataMeta)
 
 	// deposit-data
 	depositData := func(w http.ResponseWriter, r *http.Request) {
@@ -125,8 +128,11 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 			handleInvalidMethod(w, s.logger)
 		}
 	}
+	// v1
 	apiRouter.HandleFunc("/"+api.DepositDataPath, depositData)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.DepositDataPath, depositData)
+	// v2
+	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.DepositDataPath, depositData)
 
 	// validators
 	validators := func(w http.ResponseWriter, r *http.Request) {
@@ -139,20 +145,40 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 			handleInvalidMethod(w, s.logger)
 		}
 	}
+	// v1
 	apiRouter.HandleFunc("/"+api.ValidatorsPath, validators)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.ValidatorsPath, validators)
+	// v2
+	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.ValidatorsPath, validators)
 
 	// node-address
+	// v1
 	apiRouter.HandleFunc("/"+api.RegisterPath, s.registerNode)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.RegisterPath, s.registerNode)
+	// v2
+	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.RegisterPath, s.registerNode)
 
 	// nonce
+	// v1
 	apiRouter.HandleFunc("/"+api.NoncePath, s.getNonce)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.NoncePath, s.getNonce)
+	// v2
+	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.NoncePath, s.getNonce)
 
 	// login
+	// v1
 	apiRouter.HandleFunc("/"+api.LoginPath, s.login)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.LoginPath, s.login)
+	// v2
+	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.LoginPath, s.login)
+
+	// constellation
+	// v1 - constellation introduced in later version
+	// v2
+	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.WhitelistPath, s.getWhitelist)
+	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.MinipoolPath+"/"+api.AvailablePath, s.getMinipoolAvailable)
+	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.MinipoolPath+"/"+api.DepositSignaturePath, s.minipoolDepositSignature)
+
 }
 
 // Admin routes
