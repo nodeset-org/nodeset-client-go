@@ -170,6 +170,14 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.LoginPath, s.login)
 	// v2
 	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.LoginPath, s.login)
+
+	// constellation
+	// v1 - constellation introduced in later version
+	// v2
+	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.WhitelistPath, s.getWhitelist)
+	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.MinipoolPath+"/"+api.AvailablePath, s.getMinipoolAvailable)
+	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.MinipoolPath+"/"+api.DepositSignaturePath, s.minipoolDepositSignature)
+
 }
 
 // Admin routes
