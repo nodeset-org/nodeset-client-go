@@ -115,7 +115,7 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 	apiRouter.HandleFunc("/"+api.DepositDataMetaPath, depositDataMeta)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.DepositDataMetaPath, depositDataMeta)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/deposit-data/meta", depositDataMeta)
+	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.DepositDataMetaPath, depositDataMeta)
 
 	// deposit-data
 	depositData := func(w http.ResponseWriter, r *http.Request) {
@@ -128,10 +128,11 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 			handleInvalidMethod(w, s.logger)
 		}
 	}
+	// v1
 	apiRouter.HandleFunc("/"+api.DepositDataPath, depositData)
 	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.DepositDataPath, depositData)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/deposit-data", depositData)
+	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.DepositDataPath, depositData)
 
 	// validators
 	validators := func(w http.ResponseWriter, r *http.Request) {
