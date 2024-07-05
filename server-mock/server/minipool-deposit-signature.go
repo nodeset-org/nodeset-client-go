@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -11,6 +12,21 @@ import (
 )
 
 func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		MinipoolAddress string `json:"minipoolAddress"`
+		Salt            string `json:"salt"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		handleInvalidMethod(w, s.logger)
+		return
+	}
+
 	data := apiv2.MinipoolDepositSignatureData{}
 
 	db := db.NewDatabase(s.logger)
@@ -19,7 +35,10 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 		fmt.Printf("error converting private key: %w", err)
 		return
 	}
-	message := []byte("TODO: minipoolDepositSignature messages")
+
+	adminAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+	message := []byte(request.MinipoolAddress + request.Salt + adminAddress)
+
 	signature, err := createSignature(message, privateKey)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
