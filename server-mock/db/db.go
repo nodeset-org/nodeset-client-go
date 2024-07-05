@@ -22,6 +22,9 @@ type Database struct {
 
 	// Internal fields
 	logger *slog.Logger
+
+	// Private ETH Wallet Key for ConstellationAdmin contract
+	ConstellationAdminPrivateKey []byte
 }
 
 // Creates a new database
@@ -426,4 +429,30 @@ func (d *Database) MarkValidatorsRegistered(vaultAddress common.Address, network
 	}
 
 	return nil
+}
+
+// Call this to set the private key for the ConstellationAdmin contract
+func (d *Database) SetConstellationAdminPrivateKey(privateKey []byte) {
+	d.ConstellationAdminPrivateKey = privateKey
+}
+
+// Call this to set the AvailableConstellationMinipoolCount for a user
+func (d *Database) SetAvailableConstellationMinipoolCount(email string, count int) error {
+	for _, user := range d.Users {
+		if user.Email == email {
+			user.AvailableConstellationMinipoolCount = count
+			return nil
+		}
+	}
+	return fmt.Errorf("user with email [%s] not found", email)
+}
+
+// Call this to get the minipool availability count for a user
+func (d *Database) GetAvailableConstellationMinipoolCount(email string) (int, error) {
+	for _, user := range d.Users {
+		if user.Email == email {
+			return user.AvailableConstellationMinipoolCount, nil
+		}
+	}
+	return 0, fmt.Errorf("user with email [%s] not found", email)
 }

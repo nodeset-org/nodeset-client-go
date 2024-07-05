@@ -11,6 +11,7 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/rocket-pool/node-manager-core/beacon"
+	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 // Mock manager for the nodeset.io service
@@ -214,4 +215,19 @@ func (m *NodeSetMockManager) MarkDepositDataSetUploaded(vaultAddress common.Addr
 // Call this once a deposit data set has been "registered" to StakeWise
 func (m *NodeSetMockManager) MarkValidatorsRegistered(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
 	return m.database.MarkValidatorsRegistered(vaultAddress, network, data)
+}
+
+// Call this to set the private key for the ConstellationAdmin contract
+func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey string) {
+	privateKeyBytes, err := utils.DecodeHex(privateKey)
+	if err != nil {
+		m.logger.Error("Failed to decode private key", "error", err)
+		return
+	}
+	m.database.SetConstellationAdminPrivateKey(privateKeyBytes)
+}
+
+// Call this to set the AvailableConstellationMinipoolCount for a user
+func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(email string, count int) {
+	m.database.SetAvailableConstellationMinipoolCount(email, count)
 }

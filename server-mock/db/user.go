@@ -12,9 +12,10 @@ var (
 )
 
 type User struct {
-	Email            string
-	WhitelistedNodes []*Node
-	RegisteredNodes  []*Node
+	Email                               string
+	WhitelistedNodes                    []*Node
+	RegisteredNodes                     []*Node
+	AvailableConstellationMinipoolCount int
 }
 
 func newUser(email string) *User {
