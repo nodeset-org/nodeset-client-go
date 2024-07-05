@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/beacon"
@@ -170,7 +170,7 @@ func GenerateDepositData(t *testing.T, index uint, withdrawalAddress common.Addr
 }
 
 // Generate a signed exit for the given validator index
-func GenerateSignedExit(t *testing.T, index uint) api.ExitData {
+func GenerateSignedExit(t *testing.T, index uint) apiv1.ExitData {
 	// Create the exit domain
 	domain, err := types.ComputeDomain(types.DomainVoluntaryExit, test.CapellaForkVersion, test.GenesisValidatorsRoot)
 	if err != nil {
@@ -202,10 +202,10 @@ func GenerateSignedExit(t *testing.T, index uint) api.ExitData {
 
 	// Return the exit data
 	pubkey := beacon.ValidatorPubkey(validatorKey.PublicKey().Marshal())
-	return api.ExitData{
+	return apiv1.ExitData{
 		Pubkey: pubkey.HexWithPrefix(),
-		ExitMessage: api.ExitMessage{
-			Message: api.ExitMessageDetails{
+		ExitMessage: apiv1.ExitMessage{
+			Message: apiv1.ExitMessageDetails{
 				Epoch:          strconv.FormatUint(test.ExitEpoch, 10),
 				ValidatorIndex: validatorIndex,
 			},

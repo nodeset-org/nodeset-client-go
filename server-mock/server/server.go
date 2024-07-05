@@ -13,6 +13,8 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -112,10 +114,10 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 		}
 	}
 	// v1
-	apiRouter.HandleFunc("/"+api.DepositDataMetaPath, depositDataMeta)
-	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.DepositDataMetaPath, depositDataMeta)
+	apiRouter.HandleFunc("/"+apiv1.DepositDataMetaPath, depositDataMeta)
+	apiRouter.HandleFunc("/"+api.DevPath+apiv1.DepositDataMetaPath, depositDataMeta)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.DepositDataMetaPath, depositDataMeta)
+	apiRouter.HandleFunc("/"+apiv2.StakeWisePath+apiv1.DepositDataMetaPath, depositDataMeta)
 
 	// deposit-data
 	depositData := func(w http.ResponseWriter, r *http.Request) {
@@ -129,10 +131,10 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 		}
 	}
 	// v1
-	apiRouter.HandleFunc("/"+api.DepositDataPath, depositData)
-	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.DepositDataPath, depositData)
+	apiRouter.HandleFunc("/"+apiv1.DepositDataPath, depositData)
+	apiRouter.HandleFunc("/"+api.DevPath+apiv1.DepositDataPath, depositData)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.DepositDataPath, depositData)
+	apiRouter.HandleFunc("/"+apiv2.StakeWisePath+apiv1.DepositDataPath, depositData)
 
 	// validators
 	validators := func(w http.ResponseWriter, r *http.Request) {
@@ -146,38 +148,38 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 		}
 	}
 	// v1
-	apiRouter.HandleFunc("/"+api.ValidatorsPath, validators)
-	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.ValidatorsPath, validators)
+	apiRouter.HandleFunc("/"+apiv1.ValidatorsPath, validators)
+	apiRouter.HandleFunc("/"+api.DevPath+apiv1.ValidatorsPath, validators)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2StakewiseModulePath+"/"+api.ValidatorsPath, validators)
+	apiRouter.HandleFunc("/"+apiv2.StakeWisePath+apiv1.ValidatorsPath, validators)
 
 	// node-address
 	// v1
-	apiRouter.HandleFunc("/"+api.RegisterPath, s.registerNode)
-	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.RegisterPath, s.registerNode)
+	apiRouter.HandleFunc("/"+apiv1.NodeAddressPath, s.registerNode)
+	apiRouter.HandleFunc("/"+api.DevPath+apiv1.NodeAddressPath, s.registerNode)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.RegisterPath, s.registerNode)
+	apiRouter.HandleFunc("/"+apiv2.CorePath+apiv1.NodeAddressPath, s.registerNode)
 
 	// nonce
 	// v1
-	apiRouter.HandleFunc("/"+api.NoncePath, s.getNonce)
-	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.NoncePath, s.getNonce)
+	apiRouter.HandleFunc("/"+apiv1.NoncePath, s.getNonce)
+	apiRouter.HandleFunc("/"+api.DevPath+apiv1.NoncePath, s.getNonce)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.NoncePath, s.getNonce)
+	apiRouter.HandleFunc("/"+apiv2.CorePath+apiv1.NoncePath, s.getNonce)
 
 	// login
 	// v1
-	apiRouter.HandleFunc("/"+api.LoginPath, s.login)
-	apiRouter.HandleFunc("/"+api.DevPath+"/"+api.LoginPath, s.login)
+	apiRouter.HandleFunc("/"+apiv1.LoginPath, s.login)
+	apiRouter.HandleFunc("/"+api.DevPath+apiv1.LoginPath, s.login)
 	// v2
-	apiRouter.HandleFunc("/"+api.V2CorePath+"/"+api.LoginPath, s.login)
+	apiRouter.HandleFunc("/"+apiv2.CorePath+apiv1.LoginPath, s.login)
 
 	// constellation
 	// v1 - constellation introduced in later version
 	// v2
-	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.WhitelistPath, s.getWhitelist)
-	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.MinipoolPath+"/"+api.AvailablePath, s.getMinipoolAvailable)
-	apiRouter.HandleFunc("/"+api.V2ConstellationModulePath+"/"+api.MinipoolPath+"/"+api.DepositSignaturePath, s.minipoolDepositSignature)
+	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.WhitelistPath, s.getWhitelist)
+	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.MinipoolAvailablePath, s.getMinipoolAvailable)
+	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.MinipoolDepositSignaturePath, s.minipoolDepositSignature)
 
 }
 

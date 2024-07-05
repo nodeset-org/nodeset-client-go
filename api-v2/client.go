@@ -11,9 +11,9 @@ const (
 	// API version to use
 	ApiVersion string = "v2"
 
-	corePath          string = "core/"
-	stakewisePath     string = "modules/stakewise/"
-	constellationPath string = "modules/constellation/"
+	CorePath          string = "core/"
+	StakeWisePath     string = "modules/stakewise/"
+	ConstellationPath string = "modules/constellation/"
 )
 
 // List of routes for v2 API functions
@@ -36,18 +36,18 @@ func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
 	client := &NodeSetClient{
 		NodeSetClient: apiv1.NewNodeSetClient(expandedUrl, timeout),
 		routes: V2Routes{
-			MinipoolAvailable:        constellationPath + MinipoolAvailablePath,
-			MinipoolDepositSignature: constellationPath + MinipoolDepositSignaturePath,
-			Whitelist:                constellationPath + WhitelistPath,
+			MinipoolAvailable:        ConstellationPath + MinipoolAvailablePath,
+			MinipoolDepositSignature: ConstellationPath + MinipoolDepositSignaturePath,
+			Whitelist:                ConstellationPath + WhitelistPath,
 		},
 	}
 	client.SetRoutes(apiv1.V1Routes{
-		Login:           corePath + apiv1.LoginPath,
-		Nonce:           corePath + apiv1.NoncePath,
-		NodeAddress:     corePath + apiv1.NodeAddressPath,
-		DepositData:     stakewisePath + apiv1.DepositDataPath,
-		DepositDataMeta: stakewisePath + apiv1.DepositDataMetaPath,
-		Validators:      stakewisePath + apiv1.ValidatorsPath,
+		Login:           CorePath + apiv1.LoginPath,
+		Nonce:           CorePath + apiv1.NoncePath,
+		NodeAddress:     CorePath + apiv1.NodeAddressPath,
+		DepositData:     StakeWisePath + apiv1.DepositDataPath,
+		DepositDataMeta: StakeWisePath + apiv1.DepositDataMetaPath,
+		Validators:      StakeWisePath + apiv1.ValidatorsPath,
 	})
 	return client
 }

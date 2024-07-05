@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -50,20 +50,20 @@ func TestUploadDepositData(t *testing.T) {
 
 	// Run a get deposit data request to make sure it's uploaded
 	validatorsResponse := runGetValidatorsRequest(t, db.Sessions[0])
-	expectedData := []api.ValidatorStatus{
+	expectedData := []apiv1.ValidatorStatus{
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),
-			Status:              string(api.StakeWiseStatus_Pending),
+			Status:              apiv1.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[1].PublicKey),
-			Status:              string(api.StakeWiseStatus_Pending),
+			Status:              apiv1.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[2].PublicKey),
-			Status:              string(api.StakeWiseStatus_Pending),
+			Status:              apiv1.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}
@@ -79,7 +79,7 @@ func runUploadDepositDataRequest(t *testing.T, session *db.Session, depositData 
 	}
 
 	// Create the request
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, api.DepositDataPath), strings.NewReader(string(body)))
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.DepositDataPath), strings.NewReader(string(body)))
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}

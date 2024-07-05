@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 )
 
 func (s *NodeSetMockServer) getValidators(w http.ResponseWriter, r *http.Request) {
@@ -20,22 +20,22 @@ func (s *NodeSetMockServer) getValidators(w http.ResponseWriter, r *http.Request
 
 	// Get the registered validators
 	network := args.Get("network")
-	validatorStatuses := []api.ValidatorStatus{}
+	validatorStatuses := []apiv1.ValidatorStatus{}
 	validatorsForNetwork := node.Validators[network]
 
 	// Iterate the validators
 	for _, validator := range validatorsForNetwork {
 		pubkey := validator.Pubkey
 		status := s.manager.GetValidatorStatus(network, pubkey)
-		validatorStatuses = append(validatorStatuses, api.ValidatorStatus{
+		validatorStatuses = append(validatorStatuses, apiv1.ValidatorStatus{
 			Pubkey:              pubkey,
-			Status:              string(status),
+			Status:              status,
 			ExitMessageUploaded: validator.ExitMessageUploaded,
 		})
 	}
 
 	// Write the response
-	data := api.ValidatorsData{
+	data := apiv1.ValidatorsData{
 		Validators: validatorStatuses,
 	}
 	handleSuccess(w, s.logger, data)

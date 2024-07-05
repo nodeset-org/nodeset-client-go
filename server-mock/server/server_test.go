@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/utils"
@@ -117,7 +117,7 @@ func TestMissingHeader(t *testing.T) {
 	}()
 
 	// Send a message without an auth header
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, api.DepositDataMetaPath), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.DepositDataMetaPath), nil)
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
@@ -157,14 +157,14 @@ func TestUnregisteredNode(t *testing.T) {
 
 	// Create a login request
 	sig := utils.EncodeHexWithPrefix(loginSig)
-	loginReq := api.LoginRequest{
+	loginReq := apiv1.LoginRequest{
 		Nonce:     session.Nonce,
 		Address:   node0Pubkey.Hex(),
 		Signature: sig,
 	}
 	body, err := json.Marshal(loginReq)
 	require.NoError(t, err)
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, api.LoginPath), bytes.NewReader(body))
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.LoginPath), bytes.NewReader(body))
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
@@ -193,7 +193,7 @@ func TestUnregisteredNode(t *testing.T) {
 	t.Log("Received unauthorized status code")
 
 	// Unmarshal into a response to make sure it returns the correct error key
-	var nodesetResponse api.NodeSetResponse[api.LoginData]
+	var nodesetResponse apiv1.NodeSetResponse[apiv1.LoginData]
 	bodyBytes, err := io.ReadAll(response.Body)
 	t.Logf("Read response body: %s", string(bodyBytes))
 

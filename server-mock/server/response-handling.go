@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/goccy/go-json"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
@@ -88,7 +88,7 @@ func handleServerError(w http.ResponseWriter, logger *slog.Logger, err error) {
 
 // The request completed successfully
 func handleSuccess[DataType any](w http.ResponseWriter, logger *slog.Logger, data DataType) {
-	response := api.NodeSetResponse[DataType]{
+	response := apiv1.NodeSetResponse[DataType]{
 		OK:      true,
 		Message: "Success",
 		Error:   "",
@@ -135,7 +135,7 @@ func writeResponse(w http.ResponseWriter, logger *slog.Logger, statusCode int, m
 
 // JSONifies an error for responding to requests
 func formatError(message string, errorKey string) []byte {
-	msg := api.NodeSetResponse[struct{}]{
+	msg := apiv1.NodeSetResponse[struct{}]{
 		OK:      false,
 		Message: message,
 		Error:   errorKey,

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
@@ -16,7 +16,7 @@ func (s *NodeSetMockServer) registerNode(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Get the requesting node
-	var request api.RegisterNodeRequest
+	var request apiv1.NodeAddressRequest
 	_ = s.processApiRequest(w, r, &request)
 
 	// Get the node
