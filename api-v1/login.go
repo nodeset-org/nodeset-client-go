@@ -17,13 +17,13 @@ const (
 	LoginMessageFormat string = `{"nonce":"%s","address":"%s"}`
 
 	// Route for logging into the NodeSet server
-	loginPath string = "login"
+	LoginPath string = "login"
 
 	// The provided nonce didn't match an expected one
-	invalidNonceKey string = "invalid_nonce"
+	InvalidNonceKey string = "invalid_nonce"
 
 	// Value of the auth response header if the node hasn't registered yet
-	unregisteredAddressKey string = "unregistered_address"
+	UnregisteredAddressKey string = "unregistered_address"
 )
 
 var (
@@ -68,7 +68,7 @@ func (c *NodeSetClient) Login(ctx context.Context, nonce string, address common.
 	}
 
 	// Submit the request
-	code, response, err := SubmitRequest[LoginData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, loginPath)
+	code, response, err := SubmitRequest[LoginData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.Login)
 	if err != nil {
 		return LoginData{}, fmt.Errorf("error submitting login request: %w", err)
 	}
@@ -81,26 +81,26 @@ func (c *NodeSetClient) Login(ctx context.Context, nonce string, address common.
 
 	case http.StatusBadRequest:
 		switch response.Error {
-		case invalidSignatureKey:
+		case InvalidSignatureKey:
 			// Invalid signature
 			return LoginData{}, ErrInvalidSignature
 
-		case malformedInputKey:
+		case MalformedInputKey:
 			// Malformed input
 			return LoginData{}, ErrMalformedInput
 
-		case invalidNonceKey:
+		case InvalidNonceKey:
 			// Invalid nonce
 			return LoginData{}, ErrInvalidNonce
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case unregisteredAddressKey:
+		case UnregisteredAddressKey:
 			// Node hasn't been registered yet
 			return LoginData{}, ErrUnregisteredNode
 
-		case invalidSessionKey:
+		case InvalidSessionKey:
 			// The nonce wasn't expected?
 			return LoginData{}, ErrInvalidSession
 		}

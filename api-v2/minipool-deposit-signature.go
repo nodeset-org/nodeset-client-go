@@ -8,12 +8,13 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 const (
 	// Route for requesting the signature to create a minipool
-	minipoolDepositSignaturePath string = "modules/constellation/minipool/deposit-signature"
+	MinipoolDepositSignaturePath string = "minipool/deposit-signature"
 )
 
 // Request to generate signature for SuperNodeAccount.createMinipool()
@@ -43,7 +44,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error marshalling minipool deposit signature request: %w", err)
 	}
 
-	code, response, err := SubmitRequest[MinipoolDepositSignatureData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, minipoolDepositSignaturePath)
+	code, response, err := apiv1.SubmitRequest[MinipoolDepositSignatureData](c.NodeSetClient, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, MinipoolDepositSignaturePath)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
 	}
@@ -56,11 +57,11 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 
 	case http.StatusForbidden:
 		switch response.Error {
-		case minipoolLimitReachedKey:
+		case MinipoolLimitReachedKey:
 			// Address has been given access to Constellation, but cannot create any more minipools.
 			return MinipoolDepositSignatureData{}, ErrMinipoolLimitReached
 
-		case missingExitMessageKey:
+		case MissingExitMessageKey:
 			// Address has been given access to Constellation, but the NodeSet service does not have
 			// a signed exit message stored for the minipool that user account previously created.
 			return MinipoolDepositSignatureData{}, ErrMissingExitMessage
@@ -68,13 +69,13 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case userNotAuthorizedKey:
+		case UserNotAuthorizedKey:
 			// Address not authorized to get minipool deposit signature
 			return MinipoolDepositSignatureData{}, ErrNotAuthorized
 
-		case invalidSessionKey:
+		case apiv1.InvalidSessionKey:
 			// Invalid session
-			return MinipoolDepositSignatureData{}, ErrInvalidSession
+			return MinipoolDepositSignatureData{}, apiv1.ErrInvalidSession
 		}
 	}
 

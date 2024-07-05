@@ -16,16 +16,16 @@ import (
 
 const (
 	// Route for getting the latest deposit data set from the NodeSet server
-	depositDataPath string = "deposit-data"
+	DepositDataPath string = "deposit-data"
 
 	// Subroute for getting the version of the latest deposit data
-	metaPath string = "meta"
+	DepositDataMetaPath string = DepositDataPath + "/meta"
 
 	// Deposit data has withdrawal creds that don't match a StakeWise vault
-	vaultNotFoundKey string = "vault_not_found"
+	VaultNotFoundKey string = "vault_not_found"
 
 	// Deposit data can't be uploaded to Mainnet because the user isn't allowed to use Mainnet yet
-	invalidPermissionsKey string = "invalid_permissions"
+	InvalidPermissionsKey string = "invalid_permissions"
 )
 
 var (
@@ -57,7 +57,7 @@ func (c *NodeSetClient) DepositData_Get(ctx context.Context, vault common.Addres
 	}
 
 	// Send it
-	code, response, err := SubmitRequest[DepositDataData](c, ctx, true, http.MethodGet, nil, params, depositDataPath)
+	code, response, err := SubmitRequest[DepositDataData](c, ctx, true, http.MethodGet, nil, params, c.routes.DepositData)
 	if err != nil {
 		return DepositDataData{}, fmt.Errorf("error getting deposit data: %w", err)
 	}
@@ -69,14 +69,14 @@ func (c *NodeSetClient) DepositData_Get(ctx context.Context, vault common.Addres
 
 	case http.StatusBadRequest:
 		switch response.Error {
-		case invalidNetworkKey:
+		case InvalidNetworkKey:
 			// Network not known
 			return DepositDataData{}, ErrInvalidNetwork
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case invalidSessionKey:
+		case InvalidSessionKey:
 			// Invalid or expird session
 			return DepositDataData{}, ErrInvalidSession
 		}
@@ -94,7 +94,7 @@ func (c *NodeSetClient) DepositDataMeta(ctx context.Context, vault common.Addres
 	}
 
 	// Send it
-	code, response, err := SubmitRequest[DepositDataMetaData](c, ctx, true, http.MethodGet, nil, params, depositDataPath, metaPath)
+	code, response, err := SubmitRequest[DepositDataMetaData](c, ctx, true, http.MethodGet, nil, params, c.routes.DepositDataMeta)
 	if err != nil {
 		return DepositDataMetaData{}, fmt.Errorf("error getting deposit data version: %w", err)
 	}
@@ -106,14 +106,14 @@ func (c *NodeSetClient) DepositDataMeta(ctx context.Context, vault common.Addres
 
 	case http.StatusBadRequest:
 		switch response.Error {
-		case invalidNetworkKey:
+		case InvalidNetworkKey:
 			// Network not known
 			return DepositDataMetaData{}, ErrInvalidNetwork
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case invalidSessionKey:
+		case InvalidSessionKey:
 			// Invalid or expird session
 			return DepositDataMetaData{}, ErrInvalidSession
 		}
@@ -130,7 +130,7 @@ func (c *NodeSetClient) DepositData_Post(ctx context.Context, depositData []beac
 	}
 
 	// Send it
-	code, response, err := SubmitRequest[struct{}](c, ctx, true, http.MethodPost, bytes.NewBuffer(serializedData), nil, depositDataPath)
+	code, response, err := SubmitRequest[struct{}](c, ctx, true, http.MethodPost, bytes.NewBuffer(serializedData), nil, c.routes.DepositData)
 	if err != nil {
 		return fmt.Errorf("error uploading deposit data: %w", err)
 	}
@@ -142,21 +142,21 @@ func (c *NodeSetClient) DepositData_Post(ctx context.Context, depositData []beac
 
 	case http.StatusBadRequest:
 		switch response.Error {
-		case vaultNotFoundKey:
+		case VaultNotFoundKey:
 			// The requested StakeWise vault didn't exist
 			return ErrVaultNotFound
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case invalidSessionKey:
+		case InvalidSessionKey:
 			// Invalid or expird session
 			return ErrInvalidSession
 		}
 
 	case http.StatusForbidden:
 		switch response.Error {
-		case invalidPermissionsKey:
+		case InvalidPermissionsKey:
 			// The user isn't allowed to use Mainnet yet
 			return ErrInvalidPermissions
 		}

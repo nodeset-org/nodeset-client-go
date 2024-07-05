@@ -17,13 +17,13 @@ const (
 	NodeAddressMessageFormat string = `{"email":"%s","node_address":"%s"}`
 
 	// Route for registering a node address with the NodeSet server
-	nodeAddressPath string = "node-address"
+	NodeAddressPath string = "node-address"
 
 	// The node address has already been confirmed on a NodeSet account
-	addressAlreadyAuthorizedKey string = "address_already_authorized"
+	AddressAlreadyAuthorizedKey string = "address_already_authorized"
 
 	// The node address hasn't been whitelisted on the provided NodeSet account
-	addressMissingWhitelistKey string = "address_missing_whitelist"
+	AddressMissingWhitelistKey string = "address_missing_whitelist"
 )
 
 var (
@@ -62,7 +62,7 @@ func (c *NodeSetClient) NodeAddress(ctx context.Context, email string, nodeWalle
 	}
 
 	// Submit the request
-	code, response, err := SubmitRequest[struct{}](c, ctx, false, http.MethodPost, bytes.NewBuffer(jsonData), nil, nodeAddressPath)
+	code, response, err := SubmitRequest[struct{}](c, ctx, false, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.NodeAddress)
 	if err != nil {
 		return fmt.Errorf("error registering node: %w", err)
 	}
@@ -75,19 +75,19 @@ func (c *NodeSetClient) NodeAddress(ctx context.Context, email string, nodeWalle
 
 	case http.StatusBadRequest:
 		switch response.Error {
-		case addressAlreadyAuthorizedKey:
+		case AddressAlreadyAuthorizedKey:
 			// Already registered
 			return ErrAlreadyRegistered
 
-		case addressMissingWhitelistKey:
+		case AddressMissingWhitelistKey:
 			// Not whitelisted in the user account
 			return ErrNotWhitelisted
 
-		case invalidSignatureKey:
+		case InvalidSignatureKey:
 			// Invalid signature
 			return ErrInvalidSignature
 
-		case malformedInputKey:
+		case MalformedInputKey:
 			// Malformed input
 			return ErrMalformedInput
 		}

@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 )
 
 const (
 	// Route for requesting whitelist signature
-	whitelistPath string = "modules/constellation/whitelist"
+	WhitelistPath string = "whitelist"
 )
 
 // Response to a whitelist request
@@ -18,7 +20,7 @@ type WhitelistData struct {
 }
 
 func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
-	code, response, err := SubmitRequest[WhitelistData](c, ctx, true, http.MethodGet, nil, nil, whitelistPath)
+	code, response, err := apiv1.SubmitRequest[WhitelistData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, WhitelistPath)
 	if err != nil {
 		return WhitelistData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}
@@ -31,13 +33,13 @@ func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case userNotAuthorizedKey:
+		case UserNotAuthorizedKey:
 			// User not authorized to whitelist for Constellation
 			return WhitelistData{}, ErrNotAuthorized
 
-		case invalidSessionKey:
+		case apiv1.InvalidSessionKey:
 			// Invalid session
-			return WhitelistData{}, ErrInvalidSession
+			return WhitelistData{}, apiv1.ErrInvalidSession
 		}
 	}
 

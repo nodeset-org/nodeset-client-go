@@ -8,7 +8,7 @@ import (
 
 const (
 	// Route for getting a nonce from the NodeSet server
-	noncePath = "nonce"
+	NoncePath = "nonce"
 )
 
 // Data used returned from nonce requests
@@ -23,7 +23,7 @@ type NonceData struct {
 // Get a nonce from the NodeSet server for a new session
 func (c *NodeSetClient) Nonce(ctx context.Context) (NonceData, error) {
 	// Get the nonce
-	code, nonceResponse, err := SubmitRequest[NonceData](c, ctx, false, http.MethodGet, nil, nil, noncePath)
+	code, nonceResponse, err := SubmitRequest[NonceData](c, ctx, false, http.MethodGet, nil, nil, c.routes.Nonce)
 	if err != nil {
 		return NonceData{}, fmt.Errorf("error getting nonce: %w", err)
 	}
