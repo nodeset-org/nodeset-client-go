@@ -228,6 +228,6 @@ func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey string) 
 }
 
 // Call this to set the AvailableConstellationMinipoolCount for a user
-func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(email string, count int) {
-	m.database.SetAvailableConstellationMinipoolCount(email, count)
+func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
+	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
 }

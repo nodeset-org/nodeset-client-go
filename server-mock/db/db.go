@@ -437,22 +437,37 @@ func (d *Database) SetConstellationAdminPrivateKey(privateKey []byte) {
 }
 
 // Call this to set the AvailableConstellationMinipoolCount for a user
-func (d *Database) SetAvailableConstellationMinipoolCount(email string, count int) error {
+func (d *Database) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) error {
 	for _, user := range d.Users {
-		if user.Email == email {
-			user.AvailableConstellationMinipoolCount = count
-			return nil
+		for _, candidate := range user.RegisteredNodes {
+			if candidate.Address == nodeAddress {
+				user.AvailableConstellationMinipoolCount = count
+				return nil
+			}
+		}
+		for _, candidate := range user.WhitelistedNodes {
+			if candidate.Address == nodeAddress {
+				user.AvailableConstellationMinipoolCount = count
+				return nil
+			}
 		}
 	}
-	return fmt.Errorf("user with email [%s] not found", email)
+	return fmt.Errorf("no node address [%s] not found", nodeAddress)
 }
 
 // Call this to get the minipool availability count for a user
-func (d *Database) GetAvailableConstellationMinipoolCount(email string) (int, error) {
+func (d *Database) GetAvailableConstellationMinipoolCount(nodeAddress common.Address) (int, error) {
 	for _, user := range d.Users {
-		if user.Email == email {
-			return user.AvailableConstellationMinipoolCount, nil
+		for _, candidate := range user.RegisteredNodes {
+			if candidate.Address == nodeAddress {
+				return user.AvailableConstellationMinipoolCount, nil
+			}
+		}
+		for _, candidate := range user.WhitelistedNodes {
+			if candidate.Address == nodeAddress {
+				return user.AvailableConstellationMinipoolCount, nil
+			}
 		}
 	}
-	return 0, fmt.Errorf("user with email [%s] not found", email)
+	return 0, fmt.Errorf("no node address [%s] not found", nodeAddress)
 }
