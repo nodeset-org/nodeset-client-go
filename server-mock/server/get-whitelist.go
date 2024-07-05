@@ -14,13 +14,25 @@ import (
 func (s *NodeSetMockServer) getWhitelist(w http.ResponseWriter, r *http.Request) {
 	data := apiv2.WhitelistData{}
 
+	// Get the requesting node
+	session := s.processAuthHeader(w, r)
+	if session == nil {
+		return
+	}
+	node := s.getNodeForSession(w, session)
+	if node == nil {
+		return
+	}
+
 	db := db.NewDatabase(s.logger)
 	privateKey, err := crypto.ToECDSA(db.ConstellationAdminPrivateKey)
 	if err != nil {
 		fmt.Printf("error converting private key: %w", err)
 		return
 	}
-	message := []byte("TODO: whitelist messages")
+
+	adminAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+	message := []byte(node.Address.Hex() + adminAddress)
 	signature, err := createSignature(message, privateKey)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
