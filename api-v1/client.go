@@ -13,21 +13,30 @@ import (
 const (
 	MessageKey string = "message"
 	NonceKey   string = "nonce"
-)
 
-const (
 	// Header to include when sending messages that have been logged in
-	authHeader string = "Authorization"
+	AuthHeader string = "Authorization"
 
 	// Format for the authorization header
-	authHeaderFormat string = "Bearer %s"
+	AuthHeaderFormat string = "Bearer %s"
 )
+
+// List of routes for v1 API functions
+type V1Routes struct {
+	Login           string
+	Nonce           string
+	NodeAddress     string
+	DepositData     string
+	DepositDataMeta string
+	Validators      string
+}
 
 // Client for interacting with the NodeSet server
 type NodeSetClient struct {
 	baseUrl      string
 	sessionToken string
 	client       *http.Client
+	routes       V1Routes
 }
 
 // Creates a new NodeSet client
@@ -38,12 +47,25 @@ func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
 		client: &http.Client{
 			Timeout: timeout,
 		},
+		routes: V1Routes{
+			Login:           LoginPath,
+			Nonce:           NoncePath,
+			NodeAddress:     NodeAddressPath,
+			DepositData:     DepositDataPath,
+			DepositDataMeta: DepositDataMetaPath,
+			Validators:      ValidatorsPath,
+		},
 	}
 }
 
 // Set the session token for the client after logging in
 func (c *NodeSetClient) SetSessionToken(sessionToken string) {
 	c.sessionToken = sessionToken
+}
+
+// Set custom routes for the v1 API functions
+func (c *NodeSetClient) SetRoutes(routes V1Routes) {
+	c.routes = routes
 }
 
 // Send a request to the server and read the response
@@ -70,7 +92,7 @@ func SubmitRequest[DataType any](c *NodeSetClient, ctx context.Context, requireA
 		if c.sessionToken == "" {
 			return 0, defaultVal, ErrInvalidSession
 		}
-		request.Header.Set(authHeader, fmt.Sprintf(authHeaderFormat, c.sessionToken))
+		request.Header.Set(AuthHeader, fmt.Sprintf(AuthHeaderFormat, c.sessionToken))
 	}
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 

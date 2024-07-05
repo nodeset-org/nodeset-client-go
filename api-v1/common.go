@@ -4,16 +4,16 @@ import "errors"
 
 const (
 	// Value of the auth response header if the login token has expired
-	invalidSessionKey string = "invalid_session"
+	InvalidSessionKey string = "invalid_session"
 
 	// The signature provided can't be verified
-	invalidSignatureKey string = "invalid_signature"
+	InvalidSignatureKey string = "invalid_signature"
 
 	// The request didn't have the correct fields or the fields were malformed
-	malformedInputKey string = "malformed_input"
+	MalformedInputKey string = "malformed_input"
 
 	// The provided network was invalid
-	invalidNetworkKey string = "invalid_network"
+	InvalidNetworkKey string = "invalid_network"
 )
 
 var (

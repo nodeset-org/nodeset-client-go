@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/rocket-pool/node-manager-core/beacon"
@@ -141,10 +141,10 @@ func (m *NodeSetMockManager) GetNode(address common.Address) (*db.Node, bool) {
 }
 
 // Get the StakeWise status of a validator
-func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.ValidatorPubkey) api.StakeWiseStatus {
+func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.ValidatorPubkey) apiv1.StakeWiseStatus {
 	vaults, exists := m.database.StakeWiseVaults[network]
 	if !exists {
-		return api.StakeWiseStatus_Pending
+		return apiv1.StakeWiseStatus_Pending
 	}
 
 	// Get the validator for this pubkey
@@ -167,23 +167,23 @@ func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.Va
 		}
 	}
 	if validator == nil {
-		return api.StakeWiseStatus_Pending
+		return apiv1.StakeWiseStatus_Pending
 	}
 
 	// Check if the StakeWise vault has already seen it
 	for _, vault := range vaults {
 		if vault.Address == validator.VaultAddress && vault.UploadedData[validator.Pubkey] {
 			if validator.MarkedActive {
-				return api.StakeWiseStatus_Registered
+				return apiv1.StakeWiseStatus_Registered
 			}
 		}
 	}
 
 	// Check to see if the deposit data has been used
 	if validator.DepositDataUsed {
-		return api.StakeWiseStatus_Uploaded
+		return apiv1.StakeWiseStatus_Uploaded
 	}
-	return api.StakeWiseStatus_Pending
+	return apiv1.StakeWiseStatus_Pending
 }
 
 // Handle a new collection of deposit data uploads from a node
@@ -192,7 +192,7 @@ func (m *NodeSetMockManager) HandleDepositDataUpload(nodeAddress common.Address,
 }
 
 // Handle a new collection of signed exits from a node
-func (m *NodeSetMockManager) HandleSignedExitUpload(nodeAddress common.Address, network string, data []api.ExitData) error {
+func (m *NodeSetMockManager) HandleSignedExitUpload(nodeAddress common.Address, network string, data []apiv1.ExitData) error {
 	return m.database.HandleSignedExitUpload(nodeAddress, network, data)
 }
 

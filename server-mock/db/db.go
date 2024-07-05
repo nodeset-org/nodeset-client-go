@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
@@ -246,7 +246,7 @@ func (d *Database) HandleDepositDataUpload(nodeAddress common.Address, data []be
 }
 
 // Handle a new collection of signed exits from a node
-func (d *Database) HandleSignedExitUpload(nodeAddress common.Address, network string, data []api.ExitData) error {
+func (d *Database) HandleSignedExitUpload(nodeAddress common.Address, network string, data []apiv1.ExitData) error {
 	// Get the node
 	var node *Node
 	for _, user := range d.Users {

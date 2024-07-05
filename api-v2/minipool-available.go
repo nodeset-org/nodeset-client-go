@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 )
 
 const (
 	// Route for requesting minipool available count
-	minipoolAvailablePath string = "modules/constellation/minipool/available"
+	MinipoolAvailablePath string = "minipool/available"
 )
 
 // Response to a minipool available count request
@@ -18,7 +20,7 @@ type MinipoolAvailableData struct {
 }
 
 func (c *NodeSetClient) MinipoolAvailable(ctx context.Context) (MinipoolAvailableData, error) {
-	code, response, err := SubmitRequest[MinipoolAvailableData](c, ctx, true, http.MethodGet, nil, nil, minipoolAvailablePath)
+	code, response, err := apiv1.SubmitRequest[MinipoolAvailableData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, MinipoolAvailablePath)
 	if err != nil {
 		return MinipoolAvailableData{}, fmt.Errorf("error requesting minipool available count: %w", err)
 	}
@@ -31,9 +33,9 @@ func (c *NodeSetClient) MinipoolAvailable(ctx context.Context) (MinipoolAvailabl
 
 	case http.StatusForbidden:
 		switch response.Error {
-		case invalidSessionKey:
+		case apiv1.InvalidSessionKey:
 			// Invalid session
-			return MinipoolAvailableData{}, ErrInvalidSession
+			return MinipoolAvailableData{}, apiv1.ErrInvalidSession
 		}
 	}
 

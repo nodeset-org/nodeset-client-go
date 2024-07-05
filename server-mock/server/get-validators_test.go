@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
+	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
@@ -67,9 +67,9 @@ func TestGetValidators(t *testing.T) {
 	require.Empty(t, parsedResponse.Data.Validators)
 }
 
-func runGetValidatorsRequest(t *testing.T, session *db.Session) api.NodeSetResponse[api.ValidatorsData] {
+func runGetValidatorsRequest(t *testing.T, session *db.Session) apiv1.NodeSetResponse[apiv1.ValidatorsData] {
 	// Create the request
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, api.ValidatorsPath), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.ValidatorsPath), nil)
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
@@ -99,7 +99,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) api.NodeSetRespo
 	if err != nil {
 		t.Fatalf("error reading the response body: %v", err)
 	}
-	var parsedResponse api.NodeSetResponse[api.ValidatorsData]
+	var parsedResponse apiv1.NodeSetResponse[apiv1.ValidatorsData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	if err != nil {
 		t.Fatalf("error deserializing response: %v", err)
