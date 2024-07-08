@@ -25,6 +25,7 @@ func (s *NodeSetMockServer) getMinipoolAvailable(w http.ResponseWriter, r *http.
 	availabilityCount, err := db.GetAvailableConstellationMinipoolCount(node.Address)
 	if err != nil {
 		s.logger.Error("Error getting available minipool count", "error", err)
+		return
 	}
 
 	data.Count = availabilityCount
