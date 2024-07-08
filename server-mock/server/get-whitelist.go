@@ -32,11 +32,13 @@ func (s *NodeSetMockServer) getWhitelist(w http.ResponseWriter, r *http.Request)
 	nodeAddressBytes, err := hex.DecodeString(node.Address.Hex())
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	adminAddressBytes, err := hex.DecodeString(adminAddress)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	message := append(nodeAddressBytes, adminAddressBytes...)

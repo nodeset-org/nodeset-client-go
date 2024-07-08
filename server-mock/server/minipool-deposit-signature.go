@@ -39,16 +39,19 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 	minipoolAddressBytes, err := hex.DecodeString(request.MinipoolAddress)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	saltBytes, err := hex.DecodeString(request.Salt)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	adminAddressBytes, err := hex.DecodeString(adminAddress)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	message := append(minipoolAddressBytes, saltBytes...)
