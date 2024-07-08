@@ -34,7 +34,7 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 
 	db := db.NewDatabase(s.logger)
 
-	adminAddress := crypto.PubkeyToAddress(db.ConstellationAdminPrivateKey.PublicKey).Hex()
+	adminAddress := crypto.PubkeyToAddress(db.ConstellationAdminPrivateKey.PublicKey)
 
 	minipoolAddressBytes, err := hex.DecodeString(request.MinipoolAddress)
 	if err != nil {
@@ -48,14 +48,8 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 		return
 	}
 
-	adminAddressBytes, err := hex.DecodeString(adminAddress)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
 	message := append(minipoolAddressBytes, saltBytes...)
-	message = append(message, adminAddressBytes...)
+	message = append(message, adminAddress[:]...)
 
 	signature, err := nsutil.CreateSignature(message, db.ConstellationAdminPrivateKey)
 	if err != nil {

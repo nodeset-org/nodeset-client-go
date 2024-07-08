@@ -63,6 +63,7 @@ func (u *User) Clone() *User {
 	clone := newUser(u.Email)
 	clone.WhitelistedNodes = make([]*Node, len(u.WhitelistedNodes))
 	clone.RegisteredNodes = make([]*Node, len(u.RegisteredNodes))
+	clone.AvailableConstellationMinipoolCount = u.AvailableConstellationMinipoolCount
 	for i, node := range u.WhitelistedNodes {
 		clone.WhitelistedNodes[i] = node.Clone()
 	}
