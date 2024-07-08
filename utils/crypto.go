@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// https://github.com/nodeset-org/nodeset-svc-mock/blob/4f7aeb08967ec1234ba510db24ec26977851a6ee/auth/auth.go#L117
 func CreateSignature(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	messageHash := accounts.TextHash(message)
 	signature, err := crypto.Sign(messageHash, privateKey)

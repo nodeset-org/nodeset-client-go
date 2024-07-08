@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -35,13 +37,13 @@ var (
 // Creates a signature for node registration
 func GetSignatureForRegistration(email string, nodeAddress common.Address, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	message := fmt.Sprintf(nodeRegistrationMessageFormat, email, nodeAddress.Hex())
-	return createSignature([]byte(message), privateKey)
+	return nsutil.CreateSignature([]byte(message), privateKey)
 }
 
 // Creates a signature for node registration
 func GetSignatureForLogin(nonce string, nodeAddress common.Address, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	message := fmt.Sprintf(loginMessageFormat, nonce, nodeAddress.Hex())
-	return createSignature([]byte(message), privateKey)
+	return nsutil.CreateSignature([]byte(message), privateKey)
 }
 
 // Verifies a signature for node registration
@@ -111,17 +113,4 @@ func getAddressFromSignature(message []byte, signature []byte) (common.Address, 
 	}
 
 	return crypto.PubkeyToAddress(*pubkeyBytes), nil
-}
-
-// Creates a signature for a message
-func createSignature(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	messageHash := accounts.TextHash(message)
-	signature, err := crypto.Sign(messageHash, privateKey)
-	if err != nil {
-		return nil, fmt.Errorf("error signing message: %w", err)
-	}
-
-	// Fix the ECDSA 'v' (see https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7#:~:text=The%20version%20number,2%E2%80%9D%20was%20introduced)
-	signature[crypto.RecoveryIDOffset] += 27
-	return signature, nil
 }
