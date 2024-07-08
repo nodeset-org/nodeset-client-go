@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
@@ -39,7 +40,7 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 	adminAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
 	message := []byte(request.MinipoolAddress + request.Salt + adminAddress)
 
-	signature, err := createSignature(message, privateKey)
+	signature, err := nsutil.CreateSignature(message, privateKey)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
 		return

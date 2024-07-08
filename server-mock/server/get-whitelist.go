@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rocket-pool/node-manager-core/utils"
-
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
+	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 func (s *NodeSetMockServer) getWhitelist(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (s *NodeSetMockServer) getWhitelist(w http.ResponseWriter, r *http.Request)
 
 	adminAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
 	message := []byte(node.Address.Hex() + adminAddress)
-	signature, err := createSignature(message, privateKey)
+	signature, err := nsutil.CreateSignature(message, privateKey)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
 		return

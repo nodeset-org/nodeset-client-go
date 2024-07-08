@@ -1,4 +1,4 @@
-package server
+package utils
 
 import (
 	"crypto/ecdsa"
@@ -9,7 +9,7 @@ import (
 )
 
 // https://github.com/nodeset-org/nodeset-svc-mock/blob/4f7aeb08967ec1234ba510db24ec26977851a6ee/auth/auth.go#L117
-func createSignature(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+func CreateSignature(message []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	messageHash := accounts.TextHash(message)
 	signature, err := crypto.Sign(messageHash, privateKey)
 	if err != nil {
