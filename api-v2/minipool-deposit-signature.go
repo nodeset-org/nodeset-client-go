@@ -44,7 +44,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error marshalling minipool deposit signature request: %w", err)
 	}
 
-	code, response, err := apiv1.SubmitRequest[MinipoolDepositSignatureData](c.NodeSetClient, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, MinipoolDepositSignaturePath)
+	code, response, err := apiv1.SubmitRequest[MinipoolDepositSignatureData](c.NodeSetClient, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.MinipoolDepositSignature)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
 	}

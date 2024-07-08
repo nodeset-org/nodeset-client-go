@@ -20,7 +20,7 @@ type WhitelistData struct {
 }
 
 func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
-	code, response, err := apiv1.SubmitRequest[WhitelistData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, WhitelistPath)
+	code, response, err := apiv1.SubmitRequest[WhitelistData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, c.routes.Whitelist)
 	if err != nil {
 		return WhitelistData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}

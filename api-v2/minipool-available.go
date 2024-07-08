@@ -20,7 +20,7 @@ type MinipoolAvailableData struct {
 }
 
 func (c *NodeSetClient) MinipoolAvailable(ctx context.Context) (MinipoolAvailableData, error) {
-	code, response, err := apiv1.SubmitRequest[MinipoolAvailableData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, MinipoolAvailablePath)
+	code, response, err := apiv1.SubmitRequest[MinipoolAvailableData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, c.routes.MinipoolAvailable)
 	if err != nil {
 		return MinipoolAvailableData{}, fmt.Errorf("error requesting minipool available count: %w", err)
 	}
