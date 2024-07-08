@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -214,4 +215,24 @@ func (m *NodeSetMockManager) MarkDepositDataSetUploaded(vaultAddress common.Addr
 // Call this once a deposit data set has been "registered" to StakeWise
 func (m *NodeSetMockManager) MarkValidatorsRegistered(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
 	return m.database.MarkValidatorsRegistered(vaultAddress, network, data)
+}
+
+// Call this to set the private key for the ConstellationAdmin contract
+func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey *ecdsa.PrivateKey) {
+	m.database.SetConstellationAdminPrivateKey(privateKey)
+}
+
+// Call this to set the AvailableConstellationMinipoolCount for a user
+func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
+	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
+}
+
+// Call this to get the AvailableConstellationMinipoolCount for a user
+func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress common.Address) (int, error) {
+	count, err := m.database.GetAvailableConstellationMinipoolCount(nodeAddress)
+	if err != nil {
+		m.logger.Error("Error getting available minipool count", "error", err)
+		return 0, err
+	}
+	return count, nil
 }

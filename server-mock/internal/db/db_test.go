@@ -14,7 +14,7 @@ func TestDatabaseClone(t *testing.T) {
 	// Set up a database
 	logger := slog.Default()
 	db := ProvisionFullDatabase(t, logger, true)
-
+	InitAvailableConstellationMinipoolCount(t, db)
 	// Clone the database
 	clone := db.Clone()
 	t.Log("Cloned database")

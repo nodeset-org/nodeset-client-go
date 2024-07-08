@@ -96,7 +96,16 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 		t.Fatalf("Error marking deposit data set uploaded: %v", err)
 	}
 	t.Log("Marked deposit data set uploaded")
+
 	return db
+}
+
+func InitAvailableConstellationMinipoolCount(t *testing.T, db *db.Database) {
+	// Set the available minipool count for the nodes
+	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[0].PublicKey), 10)
+	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[1].PublicKey), 10)
+	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[2].PublicKey), 10)
+	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[3].PublicKey), 10)
 }
 
 // ==========================

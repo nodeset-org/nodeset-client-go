@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"testing"
 
+	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
@@ -32,7 +34,7 @@ func TestRecoverPubkey(t *testing.T) {
 
 	// Sign a message
 	message := []byte("hello world")
-	signature, err := createSignature(message, privateKey)
+	signature, err := nsutil.CreateSignature(message, privateKey)
 	require.NoError(t, err)
 	t.Logf("Signed message, signature = %x", signature)
 
