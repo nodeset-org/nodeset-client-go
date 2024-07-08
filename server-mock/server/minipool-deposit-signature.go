@@ -1,8 +1,10 @@
 package server
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -31,16 +33,28 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 	data := apiv2.MinipoolDepositSignatureData{}
 
 	db := db.NewDatabase(s.logger)
-	privateKey, err := crypto.ToECDSA(db.ConstellationAdminPrivateKey)
+
+	adminAddress := crypto.PubkeyToAddress(db.ConstellationAdminPrivateKey.PublicKey).Hex()
+
+	minipoolAddressBytes, err := hex.DecodeString(request.MinipoolAddress)
 	if err != nil {
-		fmt.Printf("error converting private key: %w", err)
-		return
+		log.Fatal(err)
 	}
 
-	adminAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
-	message := []byte(request.MinipoolAddress + request.Salt + adminAddress)
+	saltBytes, err := hex.DecodeString(request.Salt)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	signature, err := nsutil.CreateSignature(message, privateKey)
+	adminAddressBytes, err := hex.DecodeString(adminAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	message := append(minipoolAddressBytes, saltBytes...)
+	message = append(message, adminAddressBytes...)
+
+	signature, err := nsutil.CreateSignature(message, db.ConstellationAdminPrivateKey)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
 		return

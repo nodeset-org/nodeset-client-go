@@ -1,6 +1,7 @@
 package db
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 	"log/slog"
 
@@ -24,7 +25,7 @@ type Database struct {
 	logger *slog.Logger
 
 	// Private ETH Wallet Key for ConstellationAdmin contract
-	ConstellationAdminPrivateKey []byte
+	ConstellationAdminPrivateKey *ecdsa.PrivateKey
 }
 
 // Creates a new database
@@ -432,7 +433,7 @@ func (d *Database) MarkValidatorsRegistered(vaultAddress common.Address, network
 }
 
 // Call this to set the private key for the ConstellationAdmin contract
-func (d *Database) SetConstellationAdminPrivateKey(privateKey []byte) {
+func (d *Database) SetConstellationAdminPrivateKey(privateKey *ecdsa.PrivateKey) {
 	d.ConstellationAdminPrivateKey = privateKey
 }
 
@@ -445,14 +446,8 @@ func (d *Database) SetAvailableConstellationMinipoolCount(nodeAddress common.Add
 				return nil
 			}
 		}
-		for _, candidate := range user.WhitelistedNodes {
-			if candidate.Address == nodeAddress {
-				user.AvailableConstellationMinipoolCount = count
-				return nil
-			}
-		}
 	}
-	return fmt.Errorf("no node address [%s] not found", nodeAddress)
+	return fmt.Errorf("no registered node address [%s] found", nodeAddress)
 }
 
 // Call this to get the minipool availability count for a user
@@ -463,11 +458,6 @@ func (d *Database) GetAvailableConstellationMinipoolCount(nodeAddress common.Add
 				return user.AvailableConstellationMinipoolCount, nil
 			}
 		}
-		for _, candidate := range user.WhitelistedNodes {
-			if candidate.Address == nodeAddress {
-				return user.AvailableConstellationMinipoolCount, nil
-			}
-		}
 	}
-	return 0, fmt.Errorf("no node address [%s] not found", nodeAddress)
+	return 0, fmt.Errorf("no registered node address [%s] found", nodeAddress)
 }

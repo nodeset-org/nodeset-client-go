@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -11,7 +12,6 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/rocket-pool/node-manager-core/beacon"
-	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 // Mock manager for the nodeset.io service
@@ -218,16 +218,21 @@ func (m *NodeSetMockManager) MarkValidatorsRegistered(vaultAddress common.Addres
 }
 
 // Call this to set the private key for the ConstellationAdmin contract
-func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey string) {
-	privateKeyBytes, err := utils.DecodeHex(privateKey)
-	if err != nil {
-		m.logger.Error("Failed to decode private key", "error", err)
-		return
-	}
-	m.database.SetConstellationAdminPrivateKey(privateKeyBytes)
+func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey *ecdsa.PrivateKey) {
+	m.database.SetConstellationAdminPrivateKey(privateKey)
 }
 
 // Call this to set the AvailableConstellationMinipoolCount for a user
 func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
 	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
+}
+
+// Call this to get the AvailableConstellationMinipoolCount for a user
+func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress common.Address) (int, error) {
+	count, err := m.database.GetAvailableConstellationMinipoolCount(nodeAddress)
+	if err != nil {
+		m.logger.Error("Error getting available minipool count", "error", err)
+		return 0, err
+	}
+	return count, nil
 }

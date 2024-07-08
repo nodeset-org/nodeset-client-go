@@ -1,7 +1,9 @@
 package server
 
 import (
+	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -25,15 +27,21 @@ func (s *NodeSetMockServer) getWhitelist(w http.ResponseWriter, r *http.Request)
 	}
 
 	db := db.NewDatabase(s.logger)
-	privateKey, err := crypto.ToECDSA(db.ConstellationAdminPrivateKey)
+
+	adminAddress := crypto.PubkeyToAddress(db.ConstellationAdminPrivateKey.PublicKey).Hex()
+	nodeAddressBytes, err := hex.DecodeString(node.Address.Hex())
 	if err != nil {
-		fmt.Printf("error converting private key: %w", err)
-		return
+		log.Fatal(err)
 	}
 
-	adminAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
-	message := []byte(node.Address.Hex() + adminAddress)
-	signature, err := nsutil.CreateSignature(message, privateKey)
+	adminAddressBytes, err := hex.DecodeString(adminAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	message := append(nodeAddressBytes, adminAddressBytes...)
+
+	signature, err := nsutil.CreateSignature(message, db.ConstellationAdminPrivateKey)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
 		return
