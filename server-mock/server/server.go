@@ -177,7 +177,7 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 	// constellation
 	// v1 - constellation introduced in later version
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.WhitelistPath, s.getWhitelist)
+	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.WhitelistPath, s.getWhitelistSignature)
 	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.MinipoolAvailablePath, s.getMinipoolAvailable)
 	apiRouter.HandleFunc("/"+apiv2.ConstellationPath+apiv2.MinipoolDepositSignaturePath, s.minipoolDepositSignature)
 

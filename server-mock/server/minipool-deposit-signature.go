@@ -4,17 +4,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/common"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
-	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *http.Request) {
+	data := apiv2.MinipoolDepositSignatureData{}
 	var request struct {
 		MinipoolAddress string `json:"minipoolAddress"`
 		Salt            string `json:"salt"`
@@ -30,35 +28,21 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 		return
 	}
 
-	data := apiv2.MinipoolDepositSignatureData{}
-
-	db := db.NewDatabase(s.logger)
-
-	adminAddress := crypto.PubkeyToAddress(db.ConstellationAdminPrivateKey.PublicKey)
-
-	minipoolAddressBytes, err := hex.DecodeString(request.MinipoolAddress)
+	// Prep the args
+	minipoolAddress := common.HexToAddress(request.MinipoolAddress)
+	salt, err := hex.DecodeString(request.Salt)
 	if err != nil {
-		log.Fatal(err)
+		handleInputError(w, s.logger, fmt.Errorf("error decoding salt: %w", err))
 		return
 	}
 
-	saltBytes, err := hex.DecodeString(request.Salt)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	message := append(minipoolAddressBytes, saltBytes...)
-	message = append(message, adminAddress[:]...)
-
-	signature, err := nsutil.CreateSignature(message, db.ConstellationAdminPrivateKey)
+	// Get the signature
+	signature, err := s.manager.GetConstellationDepositSignature(minipoolAddress, salt)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
 		return
 	}
 	data.Signature = utils.EncodeHexWithPrefix(signature)
-
-	handleSuccess(w, s.logger, data)
-
 	s.logger.Info("Fetched minipool deposit signature")
+	handleSuccess(w, s.logger, data)
 }

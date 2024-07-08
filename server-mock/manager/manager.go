@@ -8,9 +8,11 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
+	"github.com/nodeset-org/nodeset-client-go/utils"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
@@ -235,4 +237,38 @@ func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress 
 		return 0, err
 	}
 	return count, nil
+}
+
+// Call this to get a signature for adding the node to the Constellation whitelist
+func (m *NodeSetMockManager) GetConstellationWhitelistSignature(nodeAddress common.Address) ([]byte, error) {
+	if m.database.ConstellationAdminPrivateKey == nil {
+		return nil, fmt.Errorf("constellation admin private key not set")
+	}
+
+	adminAddress := crypto.PubkeyToAddress(m.database.ConstellationAdminPrivateKey.PublicKey)
+	message := append(nodeAddress[:], adminAddress[:]...)
+	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("error creating signature: %w", err)
+	}
+	return signature, nil
+}
+
+// Call this to get a signature for depositing a new minipool with Constellation
+func (m *NodeSetMockManager) GetConstellationDepositSignature(minipoolAddress common.Address, salt []byte) ([]byte, error) {
+	if m.database.ConstellationAdminPrivateKey == nil {
+		return nil, fmt.Errorf("constellation admin private key not set")
+	}
+
+	// Make the message
+	adminAddress := crypto.PubkeyToAddress(m.database.ConstellationAdminPrivateKey.PublicKey)
+	message := append(minipoolAddress[:], salt...)
+	message = append(message, adminAddress[:]...)
+
+	// Sign the message
+	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("error creating signature: %w", err)
+	}
+	return signature, nil
 }
