@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
@@ -21,11 +22,14 @@ type Database struct {
 	// Collection of sessions
 	Sessions []*Session
 
-	// Internal fields
-	logger *slog.Logger
-
 	// Private ETH Wallet Key for ConstellationAdmin contract
 	ConstellationAdminPrivateKey *ecdsa.PrivateKey
+
+	// Address of the Constellation Whitelist contract
+	ConstellationWhitelistAddress common.Address
+
+	// Internal fields
+	logger *slog.Logger
 }
 
 // Creates a new database
@@ -169,6 +173,13 @@ func (d *Database) Clone() *Database {
 	for _, session := range d.Sessions {
 		clone.Sessions = append(clone.Sessions, session.Clone())
 	}
+
+	// Copy ConstellationAdmin private key
+	keyBytes := crypto.FromECDSA(d.ConstellationAdminPrivateKey)
+	clone.ConstellationAdminPrivateKey, _ = crypto.ToECDSA(keyBytes)
+
+	// Copy ConstellationWhitelistAddress
+	clone.ConstellationWhitelistAddress = d.ConstellationWhitelistAddress
 	return clone
 }
 

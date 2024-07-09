@@ -224,6 +224,11 @@ func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey *ecdsa.P
 	m.database.SetConstellationAdminPrivateKey(privateKey)
 }
 
+// Set the address of Constellation's Whitelist contract
+func (m *NodeSetMockManager) SetConstellationWhitelistAddress(address common.Address) {
+	m.database.ConstellationWhitelistAddress = address
+}
+
 // Call this to set the AvailableConstellationMinipoolCount for a user
 func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
 	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
@@ -244,9 +249,12 @@ func (m *NodeSetMockManager) GetConstellationWhitelistSignature(nodeAddress comm
 	if m.database.ConstellationAdminPrivateKey == nil {
 		return nil, fmt.Errorf("constellation admin private key not set")
 	}
+	var emptyAddress common.Address
+	if m.database.ConstellationWhitelistAddress == emptyAddress {
+		return nil, fmt.Errorf("constellation whitelist address not set")
+	}
 
-	adminAddress := crypto.PubkeyToAddress(m.database.ConstellationAdminPrivateKey.PublicKey)
-	message := append(nodeAddress[:], adminAddress[:]...)
+	message := crypto.Keccak256(nodeAddress[:], m.database.ConstellationWhitelistAddress[:]) // Hash of the concatenated addresses
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("error creating signature: %w", err)
