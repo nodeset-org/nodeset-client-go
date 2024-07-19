@@ -28,6 +28,9 @@ type Database struct {
 	// Address of the Constellation Whitelist contract
 	ConstellationWhitelistAddress common.Address
 
+	// Address of the Constellation Supernode contract
+	ConstellationSupernodeAddress common.Address
+
 	// Internal fields
 	logger *slog.Logger
 }
@@ -180,6 +183,9 @@ func (d *Database) Clone() *Database {
 
 	// Copy ConstellationWhitelistAddress
 	clone.ConstellationWhitelistAddress = d.ConstellationWhitelistAddress
+
+	// Copy ConstellationSupernodeAddress
+	clone.ConstellationSupernodeAddress = d.ConstellationSupernodeAddress
 	return clone
 }
 

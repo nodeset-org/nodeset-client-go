@@ -231,6 +231,11 @@ func (m *NodeSetMockManager) SetConstellationWhitelistAddress(address common.Add
 	m.database.ConstellationWhitelistAddress = address
 }
 
+// Set the address of Constellation's Supernode contract
+func (m *NodeSetMockManager) SetConstellationSupernodeAddress(address common.Address) {
+	m.database.ConstellationSupernodeAddress = address
+}
+
 // Call this to set the AvailableConstellationMinipoolCount for a user
 func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
 	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
@@ -295,7 +300,7 @@ func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAdd
 		minipoolAddress[:],
 		salt[:],
 		timestampBytes[:],
-		m.database.ConstellationWhitelistAddress[:],
+		m.database.ConstellationSupernodeAddress[:],
 		chainIdBytes[:],
 	)
 
