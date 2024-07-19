@@ -17,6 +17,7 @@ const (
 type WhitelistData struct {
 	// The signature for Whitelist.addOperator()
 	Signature string `json:"signature"`
+	Time      int64  `json:"time"`
 }
 
 func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {

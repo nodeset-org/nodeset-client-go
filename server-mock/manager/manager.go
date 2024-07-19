@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math/big"
 	"net/http"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -245,21 +247,34 @@ func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress 
 }
 
 // Call this to get a signature for adding the node to the Constellation whitelist
-func (m *NodeSetMockManager) GetConstellationWhitelistSignature(nodeAddress common.Address) ([]byte, error) {
+func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
-		return nil, fmt.Errorf("constellation admin private key not set")
+		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
 	var emptyAddress common.Address
 	if m.database.ConstellationWhitelistAddress == emptyAddress {
-		return nil, fmt.Errorf("constellation whitelist address not set")
+		return time.Time{}, nil, fmt.Errorf("constellation whitelist address not set")
 	}
+	currentTime := time.Now().UTC()
+	currentTimeBig := big.NewInt(currentTime.Unix())
+	timestampBytes := [32]byte{}
+	currentTimeBig.FillBytes(timestampBytes[:])
 
-	message := crypto.Keccak256(nodeAddress[:], m.database.ConstellationWhitelistAddress[:]) // Hash of the concatenated addresses
+	chainIdBytes := [32]byte{}
+	chainId.FillBytes(chainIdBytes[:])
+
+	message := crypto.Keccak256(
+		nodeAddress[:],
+		timestampBytes[:],
+		m.database.ConstellationWhitelistAddress[:],
+		chainIdBytes[:],
+	)
+	// Hash of the concatenated addresses
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("error creating signature: %w", err)
+		return time.Time{}, nil, fmt.Errorf("error creating signature: %w", err)
 	}
-	return signature, nil
+	return currentTime, signature, nil
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
