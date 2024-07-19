@@ -278,20 +278,31 @@ func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddre
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (m *NodeSetMockManager) GetConstellationDepositSignature(minipoolAddress common.Address, salt []byte) ([]byte, error) {
+func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAddress common.Address, salt []byte, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
-		return nil, fmt.Errorf("constellation admin private key not set")
+		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
 
-	// Make the message
-	adminAddress := crypto.PubkeyToAddress(m.database.ConstellationAdminPrivateKey.PublicKey)
-	message := append(minipoolAddress[:], salt...)
-	message = append(message, adminAddress[:]...)
+	currentTime := time.Now().UTC()
+	currentTimeBig := big.NewInt(currentTime.Unix())
+	timestampBytes := [32]byte{}
+	currentTimeBig.FillBytes(timestampBytes[:])
+
+	chainIdBytes := [32]byte{}
+	chainId.FillBytes(chainIdBytes[:])
+
+	message := crypto.Keccak256(
+		minipoolAddress[:],
+		salt[:],
+		timestampBytes[:],
+		m.database.ConstellationWhitelistAddress[:],
+		chainIdBytes[:],
+	)
 
 	// Sign the message
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("error creating signature: %w", err)
+		return time.Time{}, nil, fmt.Errorf("error creating signature: %w", err)
 	}
-	return signature, nil
+	return currentTime, signature, nil
 }

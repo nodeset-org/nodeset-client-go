@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -35,14 +36,22 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 		handleInputError(w, s.logger, fmt.Errorf("error decoding salt: %w", err))
 		return
 	}
+	query := r.URL.Query()
+	chainId := query.Get("chainId")
+	chainIdBig, success := new(big.Int).SetString(chainId, 10)
+	if !success {
+		handleInputError(w, s.logger, fmt.Errorf("invalid chainId"))
+		return
+	}
 
 	// Get the signature
-	signature, err := s.manager.GetConstellationDepositSignature(minipoolAddress, salt)
+	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(minipoolAddress, salt, chainIdBig)
 	if err != nil {
 		fmt.Printf("error creating signature: %w", err)
 		return
 	}
 	data.Signature = utils.EncodeHexWithPrefix(signature)
+	data.Time = time.Unix()
 	s.logger.Info("Fetched minipool deposit signature")
 	handleSuccess(w, s.logger, data)
 }

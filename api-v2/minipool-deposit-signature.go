@@ -32,6 +32,7 @@ type MinipoolDepositSignatureRequest struct {
 type MinipoolDepositSignatureData struct {
 	// The signature for SuperNodeAccount.createMinipool()
 	Signature string `json:"signature"`
+	Time      int64  `json:"time"`
 }
 
 func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt []byte) (MinipoolDepositSignatureData, error) {
