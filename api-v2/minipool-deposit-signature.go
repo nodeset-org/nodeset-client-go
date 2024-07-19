@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -26,6 +27,9 @@ type MinipoolDepositSignatureRequest struct {
 	// a hex string (lower-case, no 0x prefix) representing the 32-byte salt used
 	// to create minipoolAddress during CREATE2 calculation
 	Salt string `json:"salt"`
+
+	// the chain ID of the network the minipool will be created on
+	ChainId *big.Int `json:"chainId"`
 }
 
 // Response to a create minipool signature request
@@ -35,10 +39,11 @@ type MinipoolDepositSignatureData struct {
 	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt []byte) (MinipoolDepositSignatureData, error) {
+func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt []byte, chainId *big.Int) (MinipoolDepositSignatureData, error) {
 	request := MinipoolDepositSignatureRequest{
 		Address: address.Hex(),
 		Salt:    utils.EncodeHexWithPrefix(salt),
+		ChainId: chainId,
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
