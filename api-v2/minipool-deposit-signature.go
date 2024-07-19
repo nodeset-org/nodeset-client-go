@@ -21,7 +21,7 @@ const (
 type MinipoolDepositSignatureRequest struct {
 	// the EIP55-compliant hex string representing the address of the
 	// minipool that will be created (the address to generate the signature for)
-	Address string `json:"address"`
+	MinipoolAddress common.Address `json:"minipoolAddress"`
 
 	// a hex string (lower-case, no 0x prefix) representing the 32-byte salt used
 	// to create minipoolAddress during CREATE2 calculation
@@ -38,11 +38,11 @@ type MinipoolDepositSignatureData struct {
 	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt *big.Int, chainId *big.Int) (MinipoolDepositSignatureData, error) {
+func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, minipoolAddress common.Address, salt *big.Int, chainId *big.Int) (MinipoolDepositSignatureData, error) {
 	request := MinipoolDepositSignatureRequest{
-		Address: address.Hex(),
-		Salt:    salt.String(),
-		ChainId: chainId.String(),
+		MinipoolAddress: minipoolAddress,
+		Salt:            salt.String(),
+		ChainId:         chainId.String(),
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
