@@ -10,7 +10,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
-	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 const (
@@ -39,10 +38,10 @@ type MinipoolDepositSignatureData struct {
 	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt []byte, chainId *big.Int) (MinipoolDepositSignatureData, error) {
+func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt *big.Int, chainId *big.Int) (MinipoolDepositSignatureData, error) {
 	request := MinipoolDepositSignatureRequest{
 		Address: address.Hex(),
-		Salt:    utils.EncodeHexWithPrefix(salt),
+		Salt:    salt.String(),
 		ChainId: chainId.String(),
 	}
 	jsonData, err := json.Marshal(request)
