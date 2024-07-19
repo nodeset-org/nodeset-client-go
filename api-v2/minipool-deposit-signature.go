@@ -29,7 +29,7 @@ type MinipoolDepositSignatureRequest struct {
 	Salt string `json:"salt"`
 
 	// the chain ID of the network the minipool will be created on
-	ChainId *big.Int `json:"chainId"`
+	ChainId string `json:"chainId"`
 }
 
 // Response to a create minipool signature request
@@ -43,7 +43,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address co
 	request := MinipoolDepositSignatureRequest{
 		Address: address.Hex(),
 		Salt:    utils.EncodeHexWithPrefix(salt),
-		ChainId: chainId,
+		ChainId: chainId.String(),
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
