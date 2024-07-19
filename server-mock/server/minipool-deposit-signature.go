@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -31,9 +30,9 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 
 	// Prep the args
 	minipoolAddress := common.HexToAddress(request.MinipoolAddress)
-	salt, err := hex.DecodeString(request.Salt)
-	if err != nil {
-		handleInputError(w, s.logger, fmt.Errorf("error decoding salt: %w", err))
+	salt, success := new(big.Int).SetString(request.Salt, 10)
+	if !success {
+		handleInputError(w, s.logger, fmt.Errorf("error decoding salt"))
 		return
 	}
 	query := r.URL.Query()
