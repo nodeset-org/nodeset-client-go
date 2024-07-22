@@ -3,6 +3,7 @@ package apiv2
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
@@ -17,10 +18,14 @@ const (
 type WhitelistData struct {
 	// The signature for Whitelist.addOperator()
 	Signature string `json:"signature"`
+	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) Whitelist(ctx context.Context) (WhitelistData, error) {
-	code, response, err := apiv1.SubmitRequest[WhitelistData](c.NodeSetClient, ctx, true, http.MethodGet, nil, nil, c.routes.Whitelist)
+func (c *NodeSetClient) Whitelist(ctx context.Context, chainId *big.Int) (WhitelistData, error) {
+	args := map[string]string{
+		"chainId": chainId.String(),
+	}
+	code, response, err := apiv1.SubmitRequest[WhitelistData](c.NodeSetClient, ctx, true, http.MethodGet, nil, args, c.routes.Whitelist)
 	if err != nil {
 		return WhitelistData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}

@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"math/big"
 	"net/http"
 
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
@@ -21,13 +22,22 @@ func (s *NodeSetMockServer) getWhitelistSignature(w http.ResponseWriter, r *http
 		return
 	}
 
+	query := r.URL.Query()
+	chainId := query.Get("chainId")
+	chainIdBig, success := new(big.Int).SetString(chainId, 10)
+	if !success {
+		handleInputError(w, s.logger, fmt.Errorf("invalid chainId"))
+		return
+	}
+
 	// Get the signature
-	signature, err := s.manager.GetConstellationWhitelistSignature(node.Address)
+	time, signature, err := s.manager.GetConstellationWhitelistSignatureAndTime(node.Address, chainIdBig)
 	if err != nil {
 		handleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return
 	}
 	data.Signature = utils.EncodeHexWithPrefix(signature)
+	data.Time = time.Unix()
 	s.logger.Info("Fetched Constellation whitelist")
 	handleSuccess(w, s.logger, data)
 }

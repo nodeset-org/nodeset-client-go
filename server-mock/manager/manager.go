@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math/big"
 	"net/http"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -229,6 +231,11 @@ func (m *NodeSetMockManager) SetConstellationWhitelistAddress(address common.Add
 	m.database.ConstellationWhitelistAddress = address
 }
 
+// Set the address of Constellation's Supernode contract
+func (m *NodeSetMockManager) SetConstellationSupernodeAddress(address common.Address) {
+	m.database.ConstellationSupernodeAddress = address
+}
+
 // Call this to set the AvailableConstellationMinipoolCount for a user
 func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
 	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
@@ -245,38 +252,65 @@ func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress 
 }
 
 // Call this to get a signature for adding the node to the Constellation whitelist
-func (m *NodeSetMockManager) GetConstellationWhitelistSignature(nodeAddress common.Address) ([]byte, error) {
+func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
-		return nil, fmt.Errorf("constellation admin private key not set")
+		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
 	var emptyAddress common.Address
 	if m.database.ConstellationWhitelistAddress == emptyAddress {
-		return nil, fmt.Errorf("constellation whitelist address not set")
+		return time.Time{}, nil, fmt.Errorf("constellation whitelist address not set")
 	}
+	currentTime := time.Now().UTC()
+	currentTimeBig := big.NewInt(currentTime.Unix())
+	timestampBytes := [32]byte{}
+	currentTimeBig.FillBytes(timestampBytes[:])
 
-	message := crypto.Keccak256(nodeAddress[:], m.database.ConstellationWhitelistAddress[:]) // Hash of the concatenated addresses
+	chainIdBytes := [32]byte{}
+	chainId.FillBytes(chainIdBytes[:])
+
+	message := crypto.Keccak256(
+		nodeAddress[:],
+		timestampBytes[:],
+		m.database.ConstellationWhitelistAddress[:],
+		chainIdBytes[:],
+	)
+	// Hash of the concatenated addresses
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("error creating signature: %w", err)
+		return time.Time{}, nil, fmt.Errorf("error creating signature: %w", err)
 	}
-	return signature, nil
+	return currentTime, signature, nil
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (m *NodeSetMockManager) GetConstellationDepositSignature(minipoolAddress common.Address, salt []byte) ([]byte, error) {
+func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAddress common.Address, salt *big.Int, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
-		return nil, fmt.Errorf("constellation admin private key not set")
+		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
 
-	// Make the message
-	adminAddress := crypto.PubkeyToAddress(m.database.ConstellationAdminPrivateKey.PublicKey)
-	message := append(minipoolAddress[:], salt...)
-	message = append(message, adminAddress[:]...)
+	currentTime := time.Now().UTC()
+	currentTimeBig := big.NewInt(currentTime.Unix())
+	timestampBytes := [32]byte{}
+	currentTimeBig.FillBytes(timestampBytes[:])
+
+	chainIdBytes := [32]byte{}
+	chainId.FillBytes(chainIdBytes[:])
+
+	saltBytes := [32]byte{}
+	salt.FillBytes(saltBytes[:])
+
+	message := crypto.Keccak256(
+		minipoolAddress[:],
+		saltBytes[:],
+		timestampBytes[:],
+		m.database.ConstellationSupernodeAddress[:],
+		chainIdBytes[:],
+	)
 
 	// Sign the message
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("error creating signature: %w", err)
+		return time.Time{}, nil, fmt.Errorf("error creating signature: %w", err)
 	}
-	return signature, nil
+	return currentTime, signature, nil
 }

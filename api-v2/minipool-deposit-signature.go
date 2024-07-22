@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
 	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
-	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 const (
@@ -21,23 +21,28 @@ const (
 type MinipoolDepositSignatureRequest struct {
 	// the EIP55-compliant hex string representing the address of the
 	// minipool that will be created (the address to generate the signature for)
-	Address string `json:"address"`
+	MinipoolAddress common.Address `json:"minipoolAddress"`
 
 	// a hex string (lower-case, no 0x prefix) representing the 32-byte salt used
 	// to create minipoolAddress during CREATE2 calculation
 	Salt string `json:"salt"`
+
+	// the chain ID of the network the minipool will be created on
+	ChainId string `json:"chainId"`
 }
 
 // Response to a create minipool signature request
 type MinipoolDepositSignatureData struct {
 	// The signature for SuperNodeAccount.createMinipool()
 	Signature string `json:"signature"`
+	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, address common.Address, salt []byte) (MinipoolDepositSignatureData, error) {
+func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, minipoolAddress common.Address, salt *big.Int, chainId *big.Int) (MinipoolDepositSignatureData, error) {
 	request := MinipoolDepositSignatureRequest{
-		Address: address.Hex(),
-		Salt:    utils.EncodeHexWithPrefix(salt),
+		MinipoolAddress: minipoolAddress,
+		Salt:            salt.String(),
+		ChainId:         chainId.String(),
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
