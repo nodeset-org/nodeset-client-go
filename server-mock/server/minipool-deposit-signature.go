@@ -38,7 +38,7 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 	// Get the signature
 	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(request.MinipoolAddress, salt, request.SuperNodeAddress, chainIdBig)
 	if err != nil {
-		fmt.Printf("error creating signature: %w", err)
+		handleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return
 	}
 	data.Signature = utils.EncodeHexWithPrefix(signature)
