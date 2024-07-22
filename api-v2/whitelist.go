@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/ethereum/go-ethereum/common"
 	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 )
 
@@ -21,9 +22,10 @@ type WhitelistData struct {
 	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) Whitelist(ctx context.Context, chainId *big.Int) (WhitelistData, error) {
+func (c *NodeSetClient) Whitelist(ctx context.Context, chainId *big.Int, whitelistAddress common.Address) (WhitelistData, error) {
 	args := map[string]string{
-		"chainId": chainId.String(),
+		"chainId":          chainId.String(),
+		"whitelistAddress": whitelistAddress.Hex(),
 	}
 	code, response, err := apiv1.SubmitRequest[WhitelistData](c.NodeSetClient, ctx, true, http.MethodGet, nil, args, c.routes.Whitelist)
 	if err != nil {

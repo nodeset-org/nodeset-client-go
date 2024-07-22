@@ -226,14 +226,9 @@ func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey *ecdsa.P
 	m.database.SetConstellationAdminPrivateKey(privateKey)
 }
 
-// Set the address of Constellation's Whitelist contract
-func (m *NodeSetMockManager) SetConstellationWhitelistAddress(address common.Address) {
-	m.database.ConstellationWhitelistAddress = address
-}
-
-// Set the address of Constellation's Supernode contract
-func (m *NodeSetMockManager) SetConstellationSupernodeAddress(address common.Address) {
-	m.database.ConstellationSupernodeAddress = address
+// Set the manual timestamp override to use for signatures. Set to nil to use the current time during signature requests instead.
+func (m *NodeSetMockManager) SetManualSignatureTimestamp(timestamp *time.Time) {
+	m.database.ManualSignatureTimestamp = timestamp
 }
 
 // Call this to set the AvailableConstellationMinipoolCount for a user
@@ -252,15 +247,17 @@ func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress 
 }
 
 // Call this to get a signature for adding the node to the Constellation whitelist
-func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress common.Address, chainId *big.Int, whitelistAddress common.Address) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
 		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
-	var emptyAddress common.Address
-	if m.database.ConstellationWhitelistAddress == emptyAddress {
-		return time.Time{}, nil, fmt.Errorf("constellation whitelist address not set")
+
+	var currentTime time.Time
+	if m.database.ManualSignatureTimestamp != nil {
+		currentTime = *m.database.ManualSignatureTimestamp
+	} else {
+		currentTime = time.Now().UTC()
 	}
-	currentTime := time.Now().UTC()
 	currentTimeBig := big.NewInt(currentTime.Unix())
 	timestampBytes := [32]byte{}
 	currentTimeBig.FillBytes(timestampBytes[:])
@@ -271,9 +268,10 @@ func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddre
 	message := crypto.Keccak256(
 		nodeAddress[:],
 		timestampBytes[:],
-		m.database.ConstellationWhitelistAddress[:],
+		whitelistAddress[:],
 		chainIdBytes[:],
 	)
+
 	// Hash of the concatenated addresses
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
@@ -283,12 +281,17 @@ func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddre
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAddress common.Address, salt *big.Int, chainId *big.Int) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAddress common.Address, salt *big.Int, superNodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
 		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
 
-	currentTime := time.Now().UTC()
+	var currentTime time.Time
+	if m.database.ManualSignatureTimestamp != nil {
+		currentTime = *m.database.ManualSignatureTimestamp
+	} else {
+		currentTime = time.Now().UTC()
+	}
 	currentTimeBig := big.NewInt(currentTime.Unix())
 	timestampBytes := [32]byte{}
 	currentTimeBig.FillBytes(timestampBytes[:])
@@ -303,7 +306,7 @@ func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAdd
 		minipoolAddress[:],
 		saltBytes[:],
 		timestampBytes[:],
-		m.database.ConstellationSupernodeAddress[:],
+		superNodeAddress[:],
 		chainIdBytes[:],
 	)
 

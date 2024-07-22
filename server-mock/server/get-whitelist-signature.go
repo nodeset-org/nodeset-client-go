@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/ethereum/go-ethereum/common"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
@@ -29,9 +30,15 @@ func (s *NodeSetMockServer) getWhitelistSignature(w http.ResponseWriter, r *http
 		handleInputError(w, s.logger, fmt.Errorf("invalid chainId"))
 		return
 	}
+	whitelistAddressString := query.Get("whitelistAddress")
+	if whitelistAddressString == "" {
+		handleInputError(w, s.logger, fmt.Errorf("missing whitelistAddress"))
+		return
+	}
+	whitelistAddress := common.HexToAddress(whitelistAddressString)
 
 	// Get the signature
-	time, signature, err := s.manager.GetConstellationWhitelistSignatureAndTime(node.Address, chainIdBig)
+	time, signature, err := s.manager.GetConstellationWhitelistSignatureAndTime(node.Address, chainIdBig, whitelistAddress)
 	if err != nil {
 		handleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

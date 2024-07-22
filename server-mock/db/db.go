@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -25,11 +26,8 @@ type Database struct {
 	// Private ETH Wallet Key for ConstellationAdmin contract
 	ConstellationAdminPrivateKey *ecdsa.PrivateKey
 
-	// Address of the Constellation Whitelist contract
-	ConstellationWhitelistAddress common.Address
-
-	// Address of the Constellation Supernode contract
-	ConstellationSupernodeAddress common.Address
+	// Manual override for forcing the signature's timestamp (for testing)
+	ManualSignatureTimestamp *time.Time
 
 	// Internal fields
 	logger *slog.Logger
@@ -181,11 +179,11 @@ func (d *Database) Clone() *Database {
 	keyBytes := crypto.FromECDSA(d.ConstellationAdminPrivateKey)
 	clone.ConstellationAdminPrivateKey, _ = crypto.ToECDSA(keyBytes)
 
-	// Copy ConstellationWhitelistAddress
-	clone.ConstellationWhitelistAddress = d.ConstellationWhitelistAddress
-
-	// Copy ConstellationSupernodeAddress
-	clone.ConstellationSupernodeAddress = d.ConstellationSupernodeAddress
+	// Copy ManualSignatureTimestamp
+	if d.ManualSignatureTimestamp != nil {
+		clone.ManualSignatureTimestamp = new(time.Time)
+		*clone.ManualSignatureTimestamp = *d.ManualSignatureTimestamp
+	}
 	return clone
 }
 
