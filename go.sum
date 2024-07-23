@@ -276,8 +276,8 @@ github.com/uber/jaeger-client-go v2.25.0+incompatible h1:IxcNZ7WRY1Y3G4poYlx24sz
 github.com/uber/jaeger-client-go v2.25.0+incompatible/go.mod h1:WVhlPFC8FDjOFMMWRy2pZqQJSXxYSwNYOkTr/Z6d3Kk=
 github.com/umbracle/gohashtree v0.0.2-alpha.0.20230207094856-5b775a815c10 h1:CQh33pStIp/E30b7TxDlXfM0145bn2e8boI30IxAhTg=
 github.com/umbracle/gohashtree v0.0.2-alpha.0.20230207094856-5b775a815c10/go.mod h1:x/Pa0FF5Te9kdrlZKJK82YmAkvL8+f989USgz6Jiw7M=
-github.com/urfave/cli/v2 v2.27.1 h1:8xSQ6szndafKVRmfyeUMxkNUJQMjL1F2zmsZ+qHpfho=
-github.com/urfave/cli/v2 v2.27.1/go.mod h1:8qnjx1vcq5s2/wpsqoZFndg2CE5tNFyrTvS6SinrnYQ=
+github.com/urfave/cli/v2 v2.27.2 h1:6e0H+AkS+zDckwPCUrZkKX38mRaau4nL2uipkJpbkcI=
+github.com/urfave/cli/v2 v2.27.2/go.mod h1:g0+79LmHHATl7DAcHO99smiR/T7uGLw84w8Y42x+4eM=
 github.com/wealdtech/go-bytesutil v1.2.1 h1:TjuRzcG5KaPwaR5JB7L/OgJqMQWvlrblA1n0GfcXFSY=
 github.com/wealdtech/go-bytesutil v1.2.1/go.mod h1:RhUDUGT1F4UP4ydqbYp2MWJbAel3M+mKd057Pad7oag=
 github.com/wealdtech/go-eth2-types/v2 v2.8.2 h1:b5aXlNBLKgjAg/Fft9VvGlqAUCQMP5LzYhlHRrr4yPg=
@@ -288,8 +288,8 @@ github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4 v1.4.1 h1:9j7bpwjT9wmwB
 github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4 v1.4.1/go.mod h1:+tI1VD76E1WINI+Nstg7RVGpUolL5ql10nu2YztMO/4=
 github.com/wealdtech/go-eth2-wallet-types/v2 v2.11.0 h1:yX9+FfUXvPDvZ8Q5bhF+64AWrQwh4a3/HpfTx99DnZc=
 github.com/wealdtech/go-eth2-wallet-types/v2 v2.11.0/go.mod h1:UVP9YFcnPiIzHqbmCMW3qrQ3TK5FOqr1fmKqNT9JGr8=
-github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 h1:+qGGcbkzsfDQNPPe9UDgpxAWQrhbbBXOYJFQDq/dtJw=
-github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913/go.mod h1:4aEEwZQutDLsQv2Deui4iYQ6DWTxR14g6m8Wv88+Xqk=
+github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 h1:gEOO8jv9F4OT7lGCjxCBTO/36wtF6j2nSip77qHd4x4=
+github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1/go.mod h1:Ohn+xnUBiLI6FVj/9LpzZWtj1/D6lUovWYBkxHVV3aM=
 github.com/yusufpapurcu/wmi v1.2.4 h1:zFUKzehAFReQwLys1b/iSMl+JQGSCSjtVqQn9bBrPo0=
 github.com/yusufpapurcu/wmi v1.2.4/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQmPyzfmi0=
 go.opencensus.io v0.24.0 h1:y73uSU6J157QMP2kn2r30vwW1A2W2WFwSCGnAVxeaD0=

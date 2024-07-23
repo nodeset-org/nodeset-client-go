@@ -102,10 +102,9 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 
 func InitAvailableConstellationMinipoolCount(t *testing.T, db *db.Database) {
 	// Set the available minipool count for the nodes
-	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[0].PublicKey), 10)
-	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[1].PublicKey), 10)
-	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[2].PublicKey), 10)
-	db.SetAvailableConstellationMinipoolCount(crypto.PubkeyToAddress(NodeKeys[3].PublicKey), 10)
+	db.SetAvailableConstellationMinipoolCount(test.User1Email, 10)
+	db.SetAvailableConstellationMinipoolCount(test.User2Email, 10)
+	db.SetAvailableConstellationMinipoolCount(test.User3Email, 10)
 }
 
 // ==========================

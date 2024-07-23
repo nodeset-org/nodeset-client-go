@@ -232,8 +232,8 @@ func (m *NodeSetMockManager) SetManualSignatureTimestamp(timestamp *time.Time) {
 }
 
 // Call this to set the AvailableConstellationMinipoolCount for a user
-func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) {
-	m.database.SetAvailableConstellationMinipoolCount(nodeAddress, count)
+func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(userEmail string, count int) error {
+	return m.database.SetAvailableConstellationMinipoolCount(userEmail, count)
 }
 
 // Call this to get the AvailableConstellationMinipoolCount for a user

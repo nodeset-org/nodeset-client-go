@@ -453,16 +453,14 @@ func (d *Database) SetConstellationAdminPrivateKey(privateKey *ecdsa.PrivateKey)
 }
 
 // Call this to set the AvailableConstellationMinipoolCount for a user
-func (d *Database) SetAvailableConstellationMinipoolCount(nodeAddress common.Address, count int) error {
+func (d *Database) SetAvailableConstellationMinipoolCount(userEmail string, count int) error {
 	for _, user := range d.Users {
-		for _, candidate := range user.RegisteredNodes {
-			if candidate.Address == nodeAddress {
-				user.AvailableConstellationMinipoolCount = count
-				return nil
-			}
+		if user.Email == userEmail {
+			user.AvailableConstellationMinipoolCount = count
+			return nil
 		}
 	}
-	return fmt.Errorf("no registered node address [%s] found", nodeAddress)
+	return fmt.Errorf("no registered user [%s] found", userEmail)
 }
 
 // Call this to get the minipool availability count for a user

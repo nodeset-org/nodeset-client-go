@@ -191,6 +191,9 @@ func (s *NodeSetMockServer) registerAdminRoutes(adminRouter *mux.Router) {
 	adminRouter.HandleFunc("/"+api.AdminAddUserPath, s.addUser)
 	adminRouter.HandleFunc("/"+api.AdminWhitelistNodePath, s.whitelistNode)
 	adminRouter.HandleFunc("/"+api.AdminAddVaultPath, s.addStakeWiseVault)
+	adminRouter.HandleFunc("/"+api.AdminSetConstellationPrivateKeyPath, s.setConstellationAdminPrivateKey)
+	//adminRouter.HandleFunc("/"+api.AdminSetManualSignatureTimestampPath, s.setManualSignatureTimestamp)
+	adminRouter.HandleFunc("/"+api.AdminSetAvailableConstellationMinipoolCountPath, s.setAvailableConstellationMinipoolCount)
 }
 
 // =============
