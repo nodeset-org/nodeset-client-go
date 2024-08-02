@@ -20,12 +20,12 @@ import (
 )
 
 const (
-	mds_timestamp        int64  = 1721417393
+	mds_timestamp        int64  = 1722623396
 	mds_supernodeAddress string = "0x8ac5eE52F70AE01dB914bE459D8B3d50126fd6aE"
 	mds_chainId          int64  = 31337
-	mds_signature        string = "0xa0eb7eb385e480739549695fe8422e0c4e8a367a1d6898ae7af4ac659bdaf11e63bce68f80624b22432d256c3c01a9fddd562b6ef8d5db555038ff04a963fae61c"
+	mds_signature        string = "0x0a72f8a916178dd4e01c48869c1a2b08ca052620950c3b7f603500c9a25fa64f1df114e568da21e8ec32b3ea84edc248effcec7efdb78ce2a0b04b8b6cd2624b1c"
 	mds_salt             string = "90de5e7"
-	mds_mpAddress        string = "0x24c8F92242059f2407493A5F45A27cd1E4B97BEF"
+	mds_mpAddress        string = "0x21Aa2360e734b11BDE49F2C73d0CF751f4B2a4C3"
 )
 
 func TestConstellationDeposit(t *testing.T) {
@@ -67,7 +67,7 @@ func TestConstellationDeposit(t *testing.T) {
 	server.manager.SetConstellationAdminPrivateKey(adminKey)
 
 	// Set the manual timestamp
-	manualTime := time.Unix(whitelist_timestamp, 0)
+	manualTime := time.Unix(mds_timestamp, 0)
 	server.manager.SetManualSignatureTimestamp(&manualTime)
 
 	// Create the request

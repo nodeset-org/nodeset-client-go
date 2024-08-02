@@ -8,7 +8,7 @@ import (
 )
 
 func (s *NodeSetMockServer) setAvailableConstellationMinipoolCount(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodPost {
 		handleInvalidMethod(w, s.logger)
 		return
 	}
@@ -16,10 +16,6 @@ func (s *NodeSetMockServer) setAvailableConstellationMinipoolCount(w http.Respon
 	// Get the login request
 	var request api.AdminSetAvailableConstellationMinipoolCountRequest
 	_ = s.processApiRequest(w, r, &request)
-	session := s.processAuthHeader(w, r)
-	if session == nil {
-		return
-	}
 
 	// Set the count
 	err := s.manager.SetAvailableConstellationMinipoolCount(request.UserEmail, request.Count)

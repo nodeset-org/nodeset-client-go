@@ -35,8 +35,18 @@ func (s *NodeSetMockServer) minipoolDepositSignature(w http.ResponseWriter, r *h
 		return
 	}
 
+	// Get the requesting node
+	session := s.processAuthHeader(w, r)
+	if session == nil {
+		return
+	}
+	node := s.getNodeForSession(w, session)
+	if node == nil {
+		return
+	}
+
 	// Get the signature
-	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(request.MinipoolAddress, salt, request.SuperNodeAddress, chainIdBig)
+	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(node.Address, request.MinipoolAddress, salt, request.SuperNodeAddress, chainIdBig)
 	if err != nil {
 		handleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

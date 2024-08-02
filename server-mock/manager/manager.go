@@ -281,7 +281,7 @@ func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddre
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAddress common.Address, salt *big.Int, superNodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(nodeAddress common.Address, minipoolAddress common.Address, salt *big.Int, superNodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
 		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
@@ -302,9 +302,11 @@ func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(minipoolAdd
 	saltBytes := [32]byte{}
 	salt.FillBytes(saltBytes[:])
 
+	saltKeccak := crypto.Keccak256(saltBytes[:], nodeAddress[:])
+
 	message := crypto.Keccak256(
 		minipoolAddress[:],
-		saltBytes[:],
+		saltKeccak[:],
 		timestampBytes[:],
 		superNodeAddress[:],
 		chainIdBytes[:],

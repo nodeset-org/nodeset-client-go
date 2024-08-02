@@ -10,7 +10,7 @@ import (
 )
 
 func (s *NodeSetMockServer) setConstellationAdminPrivateKey(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodPost {
 		handleInvalidMethod(w, s.logger)
 		return
 	}
@@ -18,10 +18,6 @@ func (s *NodeSetMockServer) setConstellationAdminPrivateKey(w http.ResponseWrite
 	// Get the login request
 	var request api.AdminSetConstellationPrivateKeyRequest
 	_ = s.processApiRequest(w, r, &request)
-	session := s.processAuthHeader(w, r)
-	if session == nil {
-		return
-	}
 
 	// Decode the key
 	privateKey, err := crypto.HexToECDSA(request.PrivateKey)
