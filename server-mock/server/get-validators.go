@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 )
 
 func (s *NodeSetMockServer) getValidators(w http.ResponseWriter, r *http.Request) {
@@ -20,14 +20,14 @@ func (s *NodeSetMockServer) getValidators(w http.ResponseWriter, r *http.Request
 
 	// Get the registered validators
 	network := args.Get("network")
-	validatorStatuses := []apiv1.ValidatorStatus{}
+	validatorStatuses := []stakewise.ValidatorStatus{}
 	validatorsForNetwork := node.Validators[network]
 
 	// Iterate the validators
 	for _, validator := range validatorsForNetwork {
 		pubkey := validator.Pubkey
 		status := s.manager.GetValidatorStatus(network, pubkey)
-		validatorStatuses = append(validatorStatuses, apiv1.ValidatorStatus{
+		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
 			Pubkey:              pubkey,
 			Status:              status,
 			ExitMessageUploaded: validator.ExitMessageUploaded,
@@ -35,7 +35,7 @@ func (s *NodeSetMockServer) getValidators(w http.ResponseWriter, r *http.Request
 	}
 
 	// Write the response
-	data := apiv1.ValidatorsData{
+	data := stakewise.ValidatorsData{
 		Validators: validatorStatuses,
 	}
 	handleSuccess(w, s.logger, data)

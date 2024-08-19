@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 )
 
 const (
@@ -53,7 +53,7 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, minipoolAd
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error marshalling minipool deposit signature request: %w", err)
 	}
 
-	code, response, err := apiv1.SubmitRequest[MinipoolDepositSignatureData](c.NodeSetClient, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.MinipoolDepositSignature)
+	code, response, err := apiv0.SubmitRequest[MinipoolDepositSignatureData](c.NodeSetClient, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.MinipoolDepositSignature)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
 	}
@@ -82,9 +82,9 @@ func (c *NodeSetClient) MinipoolDepositSignature(ctx context.Context, minipoolAd
 			// Address not authorized to get minipool deposit signature
 			return MinipoolDepositSignatureData{}, ErrNotAuthorized
 
-		case apiv1.InvalidSessionKey:
+		case apiv0.InvalidSessionKey:
 			// Invalid session
-			return MinipoolDepositSignatureData{}, apiv1.ErrInvalidSession
+			return MinipoolDepositSignatureData{}, apiv0.ErrInvalidSession
 		}
 	}
 

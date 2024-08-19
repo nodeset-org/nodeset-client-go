@@ -1,4 +1,4 @@
-package apiv1
+package common
 
 import (
 	"context"
@@ -11,9 +11,6 @@ import (
 )
 
 const (
-	MessageKey string = "message"
-	NonceKey   string = "nonce"
-
 	// Header to include when sending messages that have been logged in
 	AuthHeader string = "Authorization"
 
@@ -21,59 +18,35 @@ const (
 	AuthHeaderFormat string = "Bearer %s"
 )
 
-// List of routes for v1 API functions
-type V1Routes struct {
-	Login           string
-	Nonce           string
-	NodeAddress     string
-	DepositData     string
-	DepositDataMeta string
-	Validators      string
-}
-
 // Client for interacting with the NodeSet server
-type NodeSetClient struct {
-	baseUrl      string
-	sessionToken string
-	client       *http.Client
-	routes       V1Routes
+type CommonNodeSetClient struct {
+	BaseUrl      string
+	SessionToken string
+	HttpClient   *http.Client
 }
 
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
-func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
-	return &NodeSetClient{
-		baseUrl: baseUrl, // v1 doesn't have a version in the subroute so just use the base URL
-		client: &http.Client{
+func NewCommonNodeSetClient(baseUrl string, timeout time.Duration) *CommonNodeSetClient {
+	return &CommonNodeSetClient{
+		BaseUrl: baseUrl, // v1 doesn't have a version in the subroute so just use the base URL
+		HttpClient: &http.Client{
 			Timeout: timeout,
-		},
-		routes: V1Routes{
-			Login:           LoginPath,
-			Nonce:           NoncePath,
-			NodeAddress:     NodeAddressPath,
-			DepositData:     DepositDataPath,
-			DepositDataMeta: DepositDataMetaPath,
-			Validators:      ValidatorsPath,
 		},
 	}
 }
 
 // Set the session token for the client after logging in
-func (c *NodeSetClient) SetSessionToken(sessionToken string) {
-	c.sessionToken = sessionToken
-}
-
-// Set custom routes for the v1 API functions
-func (c *NodeSetClient) SetRoutes(routes V1Routes) {
-	c.routes = routes
+func (c *CommonNodeSetClient) SetSessionToken(token string) {
+	c.SessionToken = token
 }
 
 // Send a request to the server and read the response
-func SubmitRequest[DataType any](c *NodeSetClient, ctx context.Context, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
+func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
 	var defaultVal NodeSetResponse[DataType]
 
 	// Make the request
-	path, err := url.JoinPath(c.baseUrl, subroutes...)
+	path, err := url.JoinPath(c.BaseUrl, subroutes...)
 	if err != nil {
 		return 0, defaultVal, fmt.Errorf("error joining path [%v]: %w", subroutes, err)
 	}
@@ -89,15 +62,15 @@ func SubmitRequest[DataType any](c *NodeSetClient, ctx context.Context, requireA
 
 	// Set the headers
 	if requireAuth {
-		if c.sessionToken == "" {
+		if c.SessionToken == "" {
 			return 0, defaultVal, ErrInvalidSession
 		}
-		request.Header.Set(AuthHeader, fmt.Sprintf(AuthHeaderFormat, c.sessionToken))
+		request.Header.Set(AuthHeader, fmt.Sprintf(AuthHeaderFormat, c.SessionToken))
 	}
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	// Upload it to the server
-	resp, err := c.client.Do(request)
+	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return 0, defaultVal, fmt.Errorf("error submitting request to nodeset server: %w", err)
 	}

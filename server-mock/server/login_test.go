@@ -9,7 +9,8 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
+	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/utils"
@@ -46,14 +47,14 @@ func TestLogin(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create the request
-	loginReq := apiv1.LoginRequest{
+	loginReq := core.LoginRequest{
 		Nonce:     session.Nonce,
 		Address:   node0Pubkey.Hex(),
 		Signature: utils.EncodeHexWithPrefix(loginSig),
 	}
 	body, err := json.Marshal(loginReq)
 	require.NoError(t, err)
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.LoginPath), bytes.NewReader(body))
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, core.LoginPath), bytes.NewReader(body))
 	require.NoError(t, err)
 	t.Logf("Created request")
 
@@ -70,7 +71,7 @@ func TestLogin(t *testing.T) {
 	defer response.Body.Close()
 	bytes, err := io.ReadAll(response.Body)
 	require.NoError(t, err)
-	var parsedResponse apiv1.NodeSetResponse[apiv1.LoginData]
+	var parsedResponse common.NodeSetResponse[core.LoginData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	require.NoError(t, err)
 

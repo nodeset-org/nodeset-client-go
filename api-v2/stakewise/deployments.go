@@ -1,4 +1,4 @@
-package apiv2
+package stakewise
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// Route for requesting whitelist signature
-	WhitelistPath string = "whitelist"
+	// Route for requesting deployments
+	DeploymentsPath string = "deployments"
 )
 
 // Response to a whitelist request
@@ -22,7 +22,7 @@ type WhitelistData struct {
 	Time      int64  `json:"time"`
 }
 
-func (c *NodeSetClient) Whitelist(ctx context.Context, chainId *big.Int, whitelistAddress common.Address) (WhitelistData, error) {
+func (c *StakewiseV2Module) Whitelist(ctx context.Context, chainId *big.Int, whitelistAddress common.Address) (WhitelistData, error) {
 	args := map[string]string{
 		"chainId":          chainId.String(),
 		"whitelistAddress": whitelistAddress.Hex(),

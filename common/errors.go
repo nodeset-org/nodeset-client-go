@@ -1,4 +1,4 @@
-package apiv1
+package common
 
 import "errors"
 
@@ -11,9 +11,6 @@ const (
 
 	// The request didn't have the correct fields or the fields were malformed
 	MalformedInputKey string = "malformed_input"
-
-	// The provided network was invalid
-	InvalidNetworkKey string = "invalid_network"
 )
 
 var (
@@ -25,7 +22,4 @@ var (
 
 	// The request didn't have the correct fields or the fields were malformed
 	ErrMalformedInput error = errors.New("the request didn't have the correct fields or the fields were malformed")
-
-	// The provided network was invalid
-	ErrInvalidNetwork error = errors.New("the provided network was invalid")
 )

@@ -3,12 +3,12 @@ package server
 import (
 	"net/http"
 
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
 )
 
 func (s *NodeSetMockServer) uploadSignedExits(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
-	var exitData []apiv1.ExitData
+	var exitData []common.ExitData
 	args := s.processApiRequest(w, r, &exitData)
 	session := s.processAuthHeader(w, r)
 	if session == nil {

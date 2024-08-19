@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
@@ -43,7 +43,7 @@ func NewDatabase(logger *slog.Logger) *Database {
 }
 
 // Adds a StakeWise vault to the database
-func (d *Database) AddStakeWiseVault(address common.Address, networkName string) error {
+func (d *Database) AddStakeWiseVault(address ethcommon.Address, networkName string) error {
 	networkVaults, exists := d.StakeWiseVaults[networkName]
 	if !exists {
 		networkVaults = []*StakeWiseVault{}
@@ -76,7 +76,7 @@ func (d *Database) AddUser(email string) error {
 }
 
 // Whitelists a node with a user
-func (d *Database) WhitelistNodeAccount(email string, nodeAddress common.Address) error {
+func (d *Database) WhitelistNodeAccount(email string, nodeAddress ethcommon.Address) error {
 	for _, user := range d.Users {
 		if user.Email != email {
 			continue
@@ -89,7 +89,7 @@ func (d *Database) WhitelistNodeAccount(email string, nodeAddress common.Address
 }
 
 // Registers a node with a user
-func (d *Database) RegisterNodeAccount(email string, nodeAddress common.Address) error {
+func (d *Database) RegisterNodeAccount(email string, nodeAddress ethcommon.Address) error {
 	for _, user := range d.Users {
 		if user.Email != email {
 			continue
@@ -128,7 +128,7 @@ func (d *Database) GetSessionByToken(token string) *Session {
 }
 
 // Attempts to log an existing session in with the provided node address and nonce
-func (d *Database) Login(nodeAddress common.Address, nonce string) error {
+func (d *Database) Login(nodeAddress ethcommon.Address, nonce string) error {
 	// Get the session
 	session := d.GetSessionByNonce(nonce)
 	if session == nil {
@@ -192,7 +192,7 @@ func (d *Database) Clone() *Database {
 // ===============
 
 // Get a node by address - returns true if registered, false if not registered and just whitelisted
-func (d *Database) GetNode(address common.Address) (*Node, bool) {
+func (d *Database) GetNode(address ethcommon.Address) (*Node, bool) {
 	for _, user := range d.Users {
 		for _, candidate := range user.RegisteredNodes {
 			if candidate.Address == address {
@@ -209,7 +209,7 @@ func (d *Database) GetNode(address common.Address) (*Node, bool) {
 }
 
 // Get the StakeWise status of a validator
-func (d *Database) GetStakeWiseVault(address common.Address, networkName string) *StakeWiseVault {
+func (d *Database) GetStakeWiseVault(address ethcommon.Address, networkName string) *StakeWiseVault {
 	vaults, exists := d.StakeWiseVaults[networkName]
 	if !exists {
 		return nil
@@ -223,7 +223,7 @@ func (d *Database) GetStakeWiseVault(address common.Address, networkName string)
 }
 
 // Handle a new collection of deposit data uploads from a node
-func (d *Database) HandleDepositDataUpload(nodeAddress common.Address, data []beacon.ExtendedDepositData) error {
+func (d *Database) HandleDepositDataUpload(nodeAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
 	// Get the node
 	var node *Node
 	for _, user := range d.Users {
@@ -243,7 +243,7 @@ func (d *Database) HandleDepositDataUpload(nodeAddress common.Address, data []be
 
 	// Add the deposit data
 	for _, depositData := range data {
-		vaultAddress := common.BytesToAddress(depositData.WithdrawalCredentials)
+		vaultAddress := ethcommon.BytesToAddress(depositData.WithdrawalCredentials)
 		vaults, exists := d.StakeWiseVaults[depositData.NetworkName]
 		if !exists {
 			return fmt.Errorf("network [%s] not found in StakeWise vaults", depositData.NetworkName)
@@ -265,7 +265,7 @@ func (d *Database) HandleDepositDataUpload(nodeAddress common.Address, data []be
 }
 
 // Handle a new collection of signed exits from a node
-func (d *Database) HandleSignedExitUpload(nodeAddress common.Address, network string, data []apiv1.ExitData) error {
+func (d *Database) HandleSignedExitUpload(nodeAddress ethcommon.Address, network string, data []common.ExitData) error {
 	// Get the node
 	var node *Node
 	for _, user := range d.Users {
@@ -343,7 +343,7 @@ func (d *Database) CreateNewDepositDataSet(network string, validatorsPerUser int
 }
 
 // Call this to "upload" a deposit data set to StakeWise
-func (d *Database) UploadDepositDataToStakeWise(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
+func (d *Database) UploadDepositDataToStakeWise(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
 	vaults, exists := d.StakeWiseVaults[network]
 	if !exists {
 		return fmt.Errorf("network [%s] not found in StakeWise vaults", network)
@@ -367,7 +367,7 @@ func (d *Database) UploadDepositDataToStakeWise(vaultAddress common.Address, net
 }
 
 // Call this once a deposit data set has been "uploaded" to StakeWise
-func (d *Database) MarkDepositDataSetUploaded(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
+func (d *Database) MarkDepositDataSetUploaded(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
 	vaults, exists := d.StakeWiseVaults[network]
 	if !exists {
 		return fmt.Errorf("network [%s] not found in StakeWise vaults", network)
@@ -409,7 +409,7 @@ func (d *Database) MarkDepositDataSetUploaded(vaultAddress common.Address, netwo
 	return nil
 }
 
-func (d *Database) MarkValidatorsRegistered(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
+func (d *Database) MarkValidatorsRegistered(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
 	vaults, exists := d.StakeWiseVaults[network]
 	if !exists {
 		return fmt.Errorf("network [%s] not found in StakeWise vaults", network)
@@ -464,7 +464,7 @@ func (d *Database) SetAvailableConstellationMinipoolCount(userEmail string, coun
 }
 
 // Call this to get the minipool availability count for a user
-func (d *Database) GetAvailableConstellationMinipoolCount(nodeAddress common.Address) (int, error) {
+func (d *Database) GetAvailableConstellationMinipoolCount(nodeAddress ethcommon.Address) (int, error) {
 	for _, user := range d.Users {
 		for _, candidate := range user.RegisteredNodes {
 			if candidate.Address == nodeAddress {

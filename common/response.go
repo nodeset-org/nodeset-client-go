@@ -1,4 +1,4 @@
-package apiv1
+package common
 
 // All responses from the NodeSet API will have this format
 // `message` may or may not be populated (but should always be populated if `ok` is false)

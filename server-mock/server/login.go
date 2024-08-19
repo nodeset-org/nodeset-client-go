@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
@@ -18,7 +18,7 @@ func (s *NodeSetMockServer) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the login request
-	var request apiv1.LoginRequest
+	var request core.LoginRequest
 	_ = s.processApiRequest(w, r, &request)
 	session := s.processAuthHeader(w, r)
 	if session == nil {
@@ -43,7 +43,7 @@ func (s *NodeSetMockServer) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond
-	data := apiv1.LoginData{
+	data := core.LoginData{
 		Token: session.Token,
 	}
 	handleSuccess(w, s.logger, data)

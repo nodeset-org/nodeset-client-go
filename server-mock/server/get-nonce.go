@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common/core"
 )
 
 func (s *NodeSetMockServer) getNonce(w http.ResponseWriter, r *http.Request) {
@@ -11,7 +11,7 @@ func (s *NodeSetMockServer) getNonce(w http.ResponseWriter, r *http.Request) {
 	session := s.manager.CreateSession()
 
 	// Write the response
-	data := apiv1.NonceData{
+	data := core.NonceData{
 		Nonce: session.Nonce,
 		Token: session.Token,
 	}

@@ -7,7 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -49,15 +50,15 @@ func TestUploadSignedExits(t *testing.T) {
 
 	// Run a get deposit data request to make sure it's uploaded
 	validatorsResponse := runGetValidatorsRequest(t, session)
-	expectedData := []apiv1.ValidatorStatus{
+	expectedData := []stakewise.ValidatorStatus{
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),
-			Status:              apiv1.StakeWiseStatus_Pending,
+			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[1].PublicKey),
-			Status:              apiv1.StakeWiseStatus_Pending,
+			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}
@@ -69,20 +70,20 @@ func TestUploadSignedExits(t *testing.T) {
 	t.Log("Generated signed exit")
 
 	// Upload it
-	runUploadSignedExitsRequest(t, session, []apiv1.ExitData{signedExit1})
+	runUploadSignedExitsRequest(t, session, []common.ExitData{signedExit1})
 	t.Logf("Uploaded signed exit")
 
 	// Get the validator status again
 	validatorsResponse = runGetValidatorsRequest(t, session)
-	expectedData = []apiv1.ValidatorStatus{
+	expectedData = []stakewise.ValidatorStatus{
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),
-			Status:              apiv1.StakeWiseStatus_Pending,
+			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[1].PublicKey),
-			Status:              apiv1.StakeWiseStatus_Pending,
+			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: true, // This should be true now
 		},
 	}
@@ -90,7 +91,7 @@ func TestUploadSignedExits(t *testing.T) {
 	t.Logf("Received matching response")
 }
 
-func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []apiv1.ExitData) {
+func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.ExitData) {
 	// Marshal the deposit data
 	body, err := json.Marshal(signedExits)
 	if err != nil {
@@ -98,7 +99,7 @@ func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits 
 	}
 
 	// Create the request
-	request, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.ValidatorsPath), strings.NewReader(string(body)))
+	request, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("http://localhost:%d/api/%s", port, stakewise.ValidatorsPath), strings.NewReader(string(body)))
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}

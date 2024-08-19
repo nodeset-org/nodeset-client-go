@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/utils"
@@ -38,14 +38,14 @@ func TestRegisterNode(t *testing.T) {
 	// Create the registration request
 	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key)
 	require.NoError(t, err)
-	regReq := apiv1.NodeAddressRequest{
+	regReq := core.NodeAddressRequest{
 		Email:       test.User0Email,
 		NodeAddress: node0Pubkey.Hex(),
 		Signature:   utils.EncodeHexWithPrefix(regSig),
 	}
 	body, err := json.Marshal(regReq)
 	require.NoError(t, err)
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.NodeAddressPath), bytes.NewReader(body))
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/%s", port, core.NodeAddressPath), bytes.NewReader(body))
 	require.NoError(t, err)
 	t.Logf("Created request")
 

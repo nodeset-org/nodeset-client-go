@@ -9,7 +9,8 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/utils"
@@ -70,7 +71,7 @@ func TestDepositDataMeta(t *testing.T) {
 	}
 
 	// Create the request
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.DepositDataMetaPath), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, stakewise.DepositDataMetaPath), nil)
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
@@ -101,7 +102,7 @@ func TestDepositDataMeta(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading the response body: %v", err)
 	}
-	var parsedResponse apiv1.NodeSetResponse[apiv1.DepositDataMetaData]
+	var parsedResponse common.NodeSetResponse[stakewise.DepositDataMetaData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	if err != nil {
 		t.Fatalf("error deserializing response: %v", err)

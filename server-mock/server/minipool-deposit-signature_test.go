@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/stretchr/testify/require"
@@ -73,9 +73,9 @@ func TestConstellationDeposit(t *testing.T) {
 	// Create the request
 	salt, _ := big.NewInt(0).SetString(mds_salt, 16)
 	loginReq := apiv2.MinipoolDepositSignatureRequest{
-		MinipoolAddress:  common.HexToAddress(mds_mpAddress),
+		MinipoolAddress:  ethcommon.HexToAddress(mds_mpAddress),
 		Salt:             salt.String(),
-		SuperNodeAddress: common.HexToAddress(mds_supernodeAddress),
+		SuperNodeAddress: ethcommon.HexToAddress(mds_supernodeAddress),
 		ChainId:          big.NewInt(mds_chainId).String(),
 	}
 	body, err := json.Marshal(loginReq)
@@ -97,7 +97,7 @@ func TestConstellationDeposit(t *testing.T) {
 	defer response.Body.Close()
 	bytes, err := io.ReadAll(response.Body)
 	require.NoError(t, err)
-	var parsedResponse apiv1.NodeSetResponse[apiv2.MinipoolDepositSignatureData]
+	var parsedResponse common.NodeSetResponse[apiv2.MinipoolDepositSignatureData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	require.NoError(t, err)
 

@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/goccy/go-json"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
@@ -59,21 +59,21 @@ func handleInvalidSessionError(w http.ResponseWriter, logger *slog.Logger, err e
 }
 
 // Write an error if the node providing the request isn't registered
-func handleUnregisteredNode(w http.ResponseWriter, logger *slog.Logger, address common.Address) {
+func handleUnregisteredNode(w http.ResponseWriter, logger *slog.Logger, address ethcommon.Address) {
 	msg := fmt.Sprintf("No user found with authorized address %s", address.Hex())
 	bytes := formatError(msg, unregisteredAddressKey)
 	writeResponse(w, logger, http.StatusUnauthorized, bytes)
 }
 
 // Write an error if the node providing the request is already registered
-func handleNodeNotInWhitelist(w http.ResponseWriter, logger *slog.Logger, address common.Address) {
+func handleNodeNotInWhitelist(w http.ResponseWriter, logger *slog.Logger, address ethcommon.Address) {
 	msg := fmt.Sprintf("Address %s is not whitelisted", address.Hex())
 	bytes := formatError(msg, addressMissingWhitelistKey)
 	writeResponse(w, logger, http.StatusBadRequest, bytes)
 }
 
 // Write an error if the node providing the request is already registered
-func handleAlreadyRegisteredNode(w http.ResponseWriter, logger *slog.Logger, address common.Address) {
+func handleAlreadyRegisteredNode(w http.ResponseWriter, logger *slog.Logger, address ethcommon.Address) {
 	msg := fmt.Sprintf("Address %s already registered", address.Hex())
 	bytes := formatError(msg, addressAlreadyAuthorizedKey)
 	writeResponse(w, logger, http.StatusBadRequest, bytes)
@@ -88,7 +88,7 @@ func handleServerError(w http.ResponseWriter, logger *slog.Logger, err error) {
 
 // The request completed successfully
 func handleSuccess[DataType any](w http.ResponseWriter, logger *slog.Logger, data DataType) {
-	response := apiv1.NodeSetResponse[DataType]{
+	response := common.NodeSetResponse[DataType]{
 		OK:      true,
 		Message: "Success",
 		Error:   "",
@@ -135,7 +135,7 @@ func writeResponse(w http.ResponseWriter, logger *slog.Logger, statusCode int, m
 
 // JSONifies an error for responding to requests
 func formatError(message string, errorKey string) []byte {
-	msg := apiv1.NodeSetResponse[struct{}]{
+	msg := common.NodeSetResponse[struct{}]{
 		OK:      false,
 		Message: message,
 		Error:   errorKey,

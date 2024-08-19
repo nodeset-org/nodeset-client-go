@@ -1,14 +1,16 @@
-package apiv1
+package core
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/nodeset-org/nodeset-client-go/common"
 )
 
 const (
 	// Route for getting a nonce from the NodeSet server
-	NoncePath = "nonce"
+	NoncePath string = "nonce"
 )
 
 // Data used returned from nonce requests
@@ -21,9 +23,9 @@ type NonceData struct {
 }
 
 // Get a nonce from the NodeSet server for a new session
-func (c *NodeSetClient) Nonce(ctx context.Context) (NonceData, error) {
+func Nonce(c *common.CommonNodeSetClient, ctx context.Context, noncePath string) (NonceData, error) {
 	// Get the nonce
-	code, nonceResponse, err := SubmitRequest[NonceData](c, ctx, false, http.MethodGet, nil, nil, c.routes.Nonce)
+	code, nonceResponse, err := common.SubmitRequest[NonceData](c, ctx, false, http.MethodGet, nil, nil, noncePath)
 	if err != nil {
 		return NonceData{}, fmt.Errorf("error getting nonce: %w", err)
 	}

@@ -1,4 +1,4 @@
-package apiv1
+package core
 
 import (
 	"bytes"
@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
@@ -53,7 +54,7 @@ type LoginData struct {
 }
 
 // Logs into the NodeSet server, starting a new session
-func (c *NodeSetClient) Login(ctx context.Context, nonce string, address common.Address, signature []byte) (LoginData, error) {
+func Login(c *common.CommonNodeSetClient, ctx context.Context, nonce string, address ethcommon.Address, signature []byte, loginPath string) (LoginData, error) {
 	// Create the request body
 	addressString := address.Hex()
 	signatureString := utils.EncodeHexWithPrefix(signature)
@@ -68,7 +69,7 @@ func (c *NodeSetClient) Login(ctx context.Context, nonce string, address common.
 	}
 
 	// Submit the request
-	code, response, err := SubmitRequest[LoginData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.Login)
+	code, response, err := common.SubmitRequest[LoginData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, loginPath)
 	if err != nil {
 		return LoginData{}, fmt.Errorf("error submitting login request: %w", err)
 	}
@@ -81,13 +82,13 @@ func (c *NodeSetClient) Login(ctx context.Context, nonce string, address common.
 
 	case http.StatusBadRequest:
 		switch response.Error {
-		case InvalidSignatureKey:
+		case common.InvalidSignatureKey:
 			// Invalid signature
-			return LoginData{}, ErrInvalidSignature
+			return LoginData{}, common.ErrInvalidSignature
 
-		case MalformedInputKey:
+		case common.MalformedInputKey:
 			// Malformed input
-			return LoginData{}, ErrMalformedInput
+			return LoginData{}, common.ErrMalformedInput
 
 		case InvalidNonceKey:
 			// Invalid nonce
@@ -100,9 +101,9 @@ func (c *NodeSetClient) Login(ctx context.Context, nonce string, address common.
 			// Node hasn't been registered yet
 			return LoginData{}, ErrUnregisteredNode
 
-		case InvalidSessionKey:
+		case common.InvalidSessionKey:
 			// The nonce wasn't expected?
-			return LoginData{}, ErrInvalidSession
+			return LoginData{}, common.ErrInvalidSession
 		}
 	}
 	return LoginData{}, fmt.Errorf("nodeset server responded to login request with code %d: [%s]", code, response.Message)

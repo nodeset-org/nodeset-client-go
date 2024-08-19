@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 )
 
 func (s *NodeSetMockServer) getDepositData(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func (s *NodeSetMockServer) getDepositData(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Write the data
-	data := apiv1.DepositDataData{
+	data := stakewise.DepositDataData{
 		Version:     vault.LatestDepositDataSetIndex,
 		DepositData: vault.LatestDepositDataSet,
 	}

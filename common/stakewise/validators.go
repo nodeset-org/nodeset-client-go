@@ -1,4 +1,4 @@
-package apiv1
+package stakewise
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/goccy/go-json"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
@@ -61,107 +62,62 @@ type ValidatorsData struct {
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func (c *NodeSetClient) Validators_Get(ctx context.Context, network string) (ValidatorsData, error) {
-	// Create the request params
-	queryParams := map[string]string{
-		"network": network,
-	}
-
+func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
 	// Send the request
-	code, response, err := SubmitRequest[ValidatorsData](c, ctx, true, http.MethodGet, nil, queryParams, c.routes.Validators)
+	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, true, http.MethodGet, nil, params, validatorsPath)
 	if err != nil {
-		return ValidatorsData{}, fmt.Errorf("error getting registered validators: %w", err)
+		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
 	}
 
-	// Handle response based on return code
+	// Handle common errors
 	switch code {
-	case http.StatusOK:
-		return response.Data, nil
-
-	case http.StatusBadRequest:
-		switch response.Error {
-		case InvalidNetworkKey:
-			// Network not known
-			return ValidatorsData{}, ErrInvalidNetwork
-		}
-
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case InvalidSessionKey:
+		case common.InvalidSessionKey:
 			// Invalid or expird session
-			return ValidatorsData{}, ErrInvalidSession
+			return code, nil, common.ErrInvalidSession
 		}
 	}
-	return ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
-}
-
-// Details of an exit message
-type ExitMessageDetails struct {
-	Epoch          string `json:"epoch"`
-	ValidatorIndex string `json:"validator_index"`
-}
-
-// Voluntary exit message
-type ExitMessage struct {
-	Message   ExitMessageDetails `json:"message"`
-	Signature string             `json:"signature"`
-}
-
-// Data for a pubkey's voluntary exit message
-type ExitData struct {
-	Pubkey      string      `json:"pubkey"`
-	ExitMessage ExitMessage `json:"exit_message"`
+	return code, &response, nil
 }
 
 // Submit signed exit data to Nodeset
-func (c *NodeSetClient) Validators_Patch(ctx context.Context, exitData []ExitData, network string) error {
+func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, exitData []common.ExitData, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
 	// Create the request body
 	jsonData, err := json.Marshal(exitData)
 	if err != nil {
-		return fmt.Errorf("error marshalling exit data to JSON: %w", err)
-	}
-
-	// Create the request params
-	params := map[string]string{
-		"network": network,
+		return -1, nil, fmt.Errorf("error marshalling exit data to JSON: %w", err)
 	}
 
 	// Submit the request
-	code, response, err := SubmitRequest[struct{}](c, ctx, true, http.MethodPatch, bytes.NewBuffer(jsonData), params, c.routes.Validators)
+	code, response, err := common.SubmitRequest[struct{}](c, ctx, true, http.MethodPatch, bytes.NewBuffer(jsonData), params, validatorsPath)
 	if err != nil {
-		return fmt.Errorf("error submitting exit data: %w", err)
+		return code, nil, fmt.Errorf("error submitting exit data: %w", err)
 	}
 
-	// Handle response based on return code
+	// Handle common errors
 	switch code {
-	case http.StatusOK:
-		return nil
-
 	case http.StatusBadRequest:
 		switch response.Error {
-		case InvalidNetworkKey:
-			// Network not known
-			return ErrInvalidNetwork
-
-		case MalformedInputKey:
+		case common.MalformedInputKey:
 			// Invalid input
-			return ErrMalformedInput
+			return code, nil, common.ErrMalformedInput
 
 		case InvalidValidatorOwnerKey:
 			// Invalid validator owner
-			return ErrInvalidValidatorOwner
+			return code, nil, ErrInvalidValidatorOwner
 
 		case InvalidExitMessage:
 			// Invalid exit message
-			return ErrInvalidExitMessage
+			return code, nil, ErrInvalidExitMessage
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case InvalidSessionKey:
+		case common.InvalidSessionKey:
 			// Invalid or expird session
-			return ErrInvalidSession
+			return code, nil, common.ErrInvalidSession
 		}
 	}
-	return fmt.Errorf("nodeset server responded to validators-patch request with code %d: [%s]", code, response.Message)
+	return code, &response, nil
 }

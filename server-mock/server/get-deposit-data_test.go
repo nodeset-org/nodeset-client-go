@@ -8,7 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -43,9 +44,9 @@ func TestGetDepositData(t *testing.T) {
 	t.Logf("Received correct response - version = %d, deposit data matches", parsedResponse.Data.Version)
 }
 
-func runGetDepositDataRequest(t *testing.T, session *db.Session) apiv1.NodeSetResponse[apiv1.DepositDataData] {
+func runGetDepositDataRequest(t *testing.T, session *db.Session) common.NodeSetResponse[stakewise.DepositDataData] {
 	// Create the request
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, apiv1.DepositDataPath), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/%s", port, stakewise.DepositDataPath), nil)
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
@@ -72,7 +73,7 @@ func runGetDepositDataRequest(t *testing.T, session *db.Session) apiv1.NodeSetRe
 	if err != nil {
 		t.Fatalf("error reading the response body: %v", err)
 	}
-	var parsedResponse apiv1.NodeSetResponse[apiv1.DepositDataData]
+	var parsedResponse common.NodeSetResponse[stakewise.DepositDataData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	if err != nil {
 		t.Fatalf("error deserializing response: %v", err)

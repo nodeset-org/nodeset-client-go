@@ -1,4 +1,4 @@
-package apiv1
+package core
 
 import (
 	"bytes"
@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
@@ -48,7 +49,7 @@ type NodeAddressRequest struct {
 
 // Registers the node with the NodeSet server. Assumes wallet validation has already been done and the actual wallet address
 // is provided here; if it's not, the signature won't come from the node being registered so it will fail validation.
-func (c *NodeSetClient) NodeAddress(ctx context.Context, email string, nodeWallet common.Address, signature []byte) error {
+func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, email string, nodeWallet ethcommon.Address, signature []byte, nodeAddressPath string) error {
 	// Create the request body
 	signatureString := utils.EncodeHexWithPrefix(signature)
 	request := NodeAddressRequest{
@@ -62,7 +63,7 @@ func (c *NodeSetClient) NodeAddress(ctx context.Context, email string, nodeWalle
 	}
 
 	// Submit the request
-	code, response, err := SubmitRequest[struct{}](c, ctx, false, http.MethodPost, bytes.NewBuffer(jsonData), nil, c.routes.NodeAddress)
+	code, response, err := common.SubmitRequest[struct{}](c, ctx, false, http.MethodPost, bytes.NewBuffer(jsonData), nil, nodeAddressPath)
 	if err != nil {
 		return fmt.Errorf("error registering node: %w", err)
 	}
@@ -83,13 +84,13 @@ func (c *NodeSetClient) NodeAddress(ctx context.Context, email string, nodeWalle
 			// Not whitelisted in the user account
 			return ErrNotWhitelisted
 
-		case InvalidSignatureKey:
+		case common.InvalidSignatureKey:
 			// Invalid signature
-			return ErrInvalidSignature
+			return common.ErrInvalidSignature
 
-		case MalformedInputKey:
+		case common.MalformedInputKey:
 			// Malformed input
-			return ErrMalformedInput
+			return common.ErrMalformedInput
 		}
 	}
 	return fmt.Errorf("nodeset server responded to node-address request with code %d: [%s]", code, response.Message)

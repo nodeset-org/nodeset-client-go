@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/beacon"
@@ -120,7 +120,7 @@ func addUserToDatabase(t *testing.T, db *db.Database, userEmail string) {
 }
 
 // Create a node, register it with the user, and log it in with a new session
-func createNodeAndAddToDatabase(t *testing.T, db *db.Database, userEmail string, index uint) common.Address {
+func createNodeAndAddToDatabase(t *testing.T, db *db.Database, userEmail string, index uint) ethcommon.Address {
 	nodeKey, exists := NodeKeys[index]
 	if !exists {
 		var err error
@@ -154,7 +154,7 @@ func createNodeAndAddToDatabase(t *testing.T, db *db.Database, userEmail string,
 }
 
 // Generate a validator private key and deposit data for the given index
-func GenerateDepositData(t *testing.T, index uint, withdrawalAddress common.Address) beacon.ExtendedDepositData {
+func GenerateDepositData(t *testing.T, index uint, withdrawalAddress ethcommon.Address) beacon.ExtendedDepositData {
 	validatorKey, exists := BeaconKeys[index]
 	if !exists {
 		var err error
@@ -178,7 +178,7 @@ func GenerateDepositData(t *testing.T, index uint, withdrawalAddress common.Addr
 }
 
 // Generate a signed exit for the given validator index
-func GenerateSignedExit(t *testing.T, index uint) apiv1.ExitData {
+func GenerateSignedExit(t *testing.T, index uint) common.ExitData {
 	// Create the exit domain
 	domain, err := types.ComputeDomain(types.DomainVoluntaryExit, test.CapellaForkVersion, test.GenesisValidatorsRoot)
 	if err != nil {
@@ -210,10 +210,10 @@ func GenerateSignedExit(t *testing.T, index uint) apiv1.ExitData {
 
 	// Return the exit data
 	pubkey := beacon.ValidatorPubkey(validatorKey.PublicKey().Marshal())
-	return apiv1.ExitData{
+	return common.ExitData{
 		Pubkey: pubkey.HexWithPrefix(),
-		ExitMessage: apiv1.ExitMessage{
-			Message: apiv1.ExitMessageDetails{
+		ExitMessage: common.ExitMessage{
+			Message: common.ExitMessageDetails{
 				Epoch:          strconv.FormatUint(test.ExitEpoch, 10),
 				ValidatorIndex: validatorIndex,
 			},

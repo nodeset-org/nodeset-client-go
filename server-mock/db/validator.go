@@ -1,22 +1,22 @@
 package db
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
 type Validator struct {
 	Pubkey              beacon.ValidatorPubkey
-	VaultAddress        common.Address
+	VaultAddress        ethcommon.Address
 	DepositData         beacon.ExtendedDepositData
-	SignedExit          apiv1.ExitMessage
+	SignedExit          common.ExitMessage
 	ExitMessageUploaded bool
 	DepositDataUsed     bool
 	MarkedActive        bool
 }
 
-func newValidator(depositData beacon.ExtendedDepositData, vaultAddress common.Address) *Validator {
+func newValidator(depositData beacon.ExtendedDepositData, vaultAddress ethcommon.Address) *Validator {
 	return &Validator{
 		Pubkey:       beacon.ValidatorPubkey(depositData.PublicKey),
 		VaultAddress: vaultAddress,
@@ -32,7 +32,7 @@ func (v *Validator) MarkActive() {
 	v.MarkedActive = true
 }
 
-func (v *Validator) SetExitMessage(exitMessage apiv1.ExitMessage) {
+func (v *Validator) SetExitMessage(exitMessage common.ExitMessage) {
 	// Normally this is where validation would occur
 	v.SignedExit = exitMessage
 	v.ExitMessageUploaded = true

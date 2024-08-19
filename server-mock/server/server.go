@@ -13,8 +13,9 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	"github.com/nodeset-org/nodeset-client-go/common/core"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -114,10 +115,10 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 		}
 	}
 	// v1
-	apiRouter.HandleFunc("/"+apiv1.DepositDataMetaPath, depositDataMeta)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.DepositDataMetaPath, depositDataMeta)
+	apiRouter.HandleFunc("/"+stakewise.DepositDataMetaPath, depositDataMeta)
+	apiRouter.HandleFunc("/"+api.DevPath+stakewise.DepositDataMetaPath, depositDataMeta)
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+apiv1.DepositDataMetaPath, depositDataMeta)
+	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+stakewise.DepositDataMetaPath, depositDataMeta)
 
 	// deposit-data
 	depositData := func(w http.ResponseWriter, r *http.Request) {
@@ -131,10 +132,10 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 		}
 	}
 	// v1
-	apiRouter.HandleFunc("/"+apiv1.DepositDataPath, depositData)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.DepositDataPath, depositData)
+	apiRouter.HandleFunc("/"+stakewise.DepositDataPath, depositData)
+	apiRouter.HandleFunc("/"+api.DevPath+stakewise.DepositDataPath, depositData)
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+apiv1.DepositDataPath, depositData)
+	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+stakewise.DepositDataPath, depositData)
 
 	// validators
 	validators := func(w http.ResponseWriter, r *http.Request) {
@@ -148,31 +149,31 @@ func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
 		}
 	}
 	// v1
-	apiRouter.HandleFunc("/"+apiv1.ValidatorsPath, validators)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.ValidatorsPath, validators)
+	apiRouter.HandleFunc("/"+stakewise.ValidatorsPath, validators)
+	apiRouter.HandleFunc("/"+api.DevPath+stakewise.ValidatorsPath, validators)
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+apiv1.ValidatorsPath, validators)
+	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+stakewise.ValidatorsPath, validators)
 
 	// node-address
 	// v1
-	apiRouter.HandleFunc("/"+apiv1.NodeAddressPath, s.registerNode)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.NodeAddressPath, s.registerNode)
+	apiRouter.HandleFunc("/"+core.NodeAddressPath, s.registerNode)
+	apiRouter.HandleFunc("/"+api.DevPath+core.NodeAddressPath, s.registerNode)
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+apiv1.NodeAddressPath, s.registerNode)
+	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+core.NodeAddressPath, s.registerNode)
 
 	// nonce
 	// v1
-	apiRouter.HandleFunc("/"+apiv1.NoncePath, s.getNonce)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.NoncePath, s.getNonce)
+	apiRouter.HandleFunc("/"+core.NoncePath, s.getNonce)
+	apiRouter.HandleFunc("/"+api.DevPath+core.NoncePath, s.getNonce)
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+apiv1.NoncePath, s.getNonce)
+	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+core.NoncePath, s.getNonce)
 
 	// login
 	// v1
-	apiRouter.HandleFunc("/"+apiv1.LoginPath, s.login)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.LoginPath, s.login)
+	apiRouter.HandleFunc("/"+core.LoginPath, s.login)
+	apiRouter.HandleFunc("/"+api.DevPath+core.LoginPath, s.login)
 	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+apiv1.LoginPath, s.login)
+	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+core.LoginPath, s.login)
 
 	// constellation
 	// v1 - constellation introduced in later version

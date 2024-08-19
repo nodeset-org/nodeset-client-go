@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	"github.com/nodeset-org/nodeset-client-go/common"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/utils"
@@ -67,12 +68,12 @@ func (m *NodeSetMockManager) RevertToSnapshot(name string) error {
 // ================
 
 // Adds a StakeWise vault
-func (m *NodeSetMockManager) AddStakeWiseVault(address common.Address, networkName string) error {
+func (m *NodeSetMockManager) AddStakeWiseVault(address ethcommon.Address, networkName string) error {
 	return m.database.AddStakeWiseVault(address, networkName)
 }
 
 // Gets a StakeWise vault
-func (m *NodeSetMockManager) GetStakeWiseVault(address common.Address, networkName string) *db.StakeWiseVault {
+func (m *NodeSetMockManager) GetStakeWiseVault(address ethcommon.Address, networkName string) *db.StakeWiseVault {
 	return m.database.GetStakeWiseVault(address, networkName)
 }
 
@@ -82,12 +83,12 @@ func (m *NodeSetMockManager) AddUser(email string) error {
 }
 
 // Whitelists a node with a user
-func (m *NodeSetMockManager) WhitelistNodeAccount(email string, nodeAddress common.Address) error {
+func (m *NodeSetMockManager) WhitelistNodeAccount(email string, nodeAddress ethcommon.Address) error {
 	return m.database.WhitelistNodeAccount(email, nodeAddress)
 }
 
 // Registers a whitelisted node with a user
-func (m *NodeSetMockManager) RegisterNodeAccount(email string, nodeAddress common.Address, signature []byte) error {
+func (m *NodeSetMockManager) RegisterNodeAccount(email string, nodeAddress ethcommon.Address, signature []byte) error {
 	// Verify the signature
 	err := auth.VerifyRegistrationSignature(email, nodeAddress, signature)
 	if err != nil {
@@ -104,7 +105,7 @@ func (m *NodeSetMockManager) CreateSession() *db.Session {
 }
 
 // Logs a session in
-func (m *NodeSetMockManager) Login(nonce string, nodeAddress common.Address, signature []byte) error {
+func (m *NodeSetMockManager) Login(nonce string, nodeAddress ethcommon.Address, signature []byte) error {
 	// Verify the signature
 	err := auth.VerifyLoginSignature(nonce, nodeAddress, signature)
 	if err != nil {
@@ -141,15 +142,15 @@ func (m *NodeSetMockManager) VerifyRequest(r *http.Request) (*db.Session, error)
 }
 
 // Get a node by address - returns true if registered, false if just whitelisted
-func (m *NodeSetMockManager) GetNode(address common.Address) (*db.Node, bool) {
+func (m *NodeSetMockManager) GetNode(address ethcommon.Address) (*db.Node, bool) {
 	return m.database.GetNode(address)
 }
 
 // Get the StakeWise status of a validator
-func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.ValidatorPubkey) apiv1.StakeWiseStatus {
+func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.ValidatorPubkey) stakewise.StakeWiseStatus {
 	vaults, exists := m.database.StakeWiseVaults[network]
 	if !exists {
-		return apiv1.StakeWiseStatus_Pending
+		return stakewise.StakeWiseStatus_Pending
 	}
 
 	// Get the validator for this pubkey
@@ -172,32 +173,32 @@ func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.Va
 		}
 	}
 	if validator == nil {
-		return apiv1.StakeWiseStatus_Pending
+		return stakewise.StakeWiseStatus_Pending
 	}
 
 	// Check if the StakeWise vault has already seen it
 	for _, vault := range vaults {
 		if vault.Address == validator.VaultAddress && vault.UploadedData[validator.Pubkey] {
 			if validator.MarkedActive {
-				return apiv1.StakeWiseStatus_Registered
+				return stakewise.StakeWiseStatus_Registered
 			}
 		}
 	}
 
 	// Check to see if the deposit data has been used
 	if validator.DepositDataUsed {
-		return apiv1.StakeWiseStatus_Uploaded
+		return stakewise.StakeWiseStatus_Uploaded
 	}
-	return apiv1.StakeWiseStatus_Pending
+	return stakewise.StakeWiseStatus_Pending
 }
 
 // Handle a new collection of deposit data uploads from a node
-func (m *NodeSetMockManager) HandleDepositDataUpload(nodeAddress common.Address, data []beacon.ExtendedDepositData) error {
+func (m *NodeSetMockManager) HandleDepositDataUpload(nodeAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
 	return m.database.HandleDepositDataUpload(nodeAddress, data)
 }
 
 // Handle a new collection of signed exits from a node
-func (m *NodeSetMockManager) HandleSignedExitUpload(nodeAddress common.Address, network string, data []apiv1.ExitData) error {
+func (m *NodeSetMockManager) HandleSignedExitUpload(nodeAddress ethcommon.Address, network string, data []common.ExitData) error {
 	return m.database.HandleSignedExitUpload(nodeAddress, network, data)
 }
 
@@ -207,17 +208,17 @@ func (m *NodeSetMockManager) CreateNewDepositDataSet(network string, validatorsP
 }
 
 // Call this to "upload" a deposit data set to StakeWise
-func (m *NodeSetMockManager) UploadDepositDataToStakeWise(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
+func (m *NodeSetMockManager) UploadDepositDataToStakeWise(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
 	return m.database.UploadDepositDataToStakeWise(vaultAddress, network, data)
 }
 
 // Call this once a deposit data set has been "uploaded" to StakeWise
-func (m *NodeSetMockManager) MarkDepositDataSetUploaded(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
+func (m *NodeSetMockManager) MarkDepositDataSetUploaded(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
 	return m.database.MarkDepositDataSetUploaded(vaultAddress, network, data)
 }
 
 // Call this once a deposit data set has been "registered" to StakeWise
-func (m *NodeSetMockManager) MarkValidatorsRegistered(vaultAddress common.Address, network string, data []beacon.ExtendedDepositData) error {
+func (m *NodeSetMockManager) MarkValidatorsRegistered(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
 	return m.database.MarkValidatorsRegistered(vaultAddress, network, data)
 }
 
@@ -237,7 +238,7 @@ func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(userEmail st
 }
 
 // Call this to get the AvailableConstellationMinipoolCount for a user
-func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress common.Address) (int, error) {
+func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress ethcommon.Address) (int, error) {
 	count, err := m.database.GetAvailableConstellationMinipoolCount(nodeAddress)
 	if err != nil {
 		m.logger.Error("Error getting available minipool count", "error", err)
@@ -247,7 +248,7 @@ func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress 
 }
 
 // Call this to get a signature for adding the node to the Constellation whitelist
-func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress common.Address, chainId *big.Int, whitelistAddress common.Address) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress ethcommon.Address, chainId *big.Int, whitelistAddress ethcommon.Address) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
 		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
@@ -281,7 +282,7 @@ func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddre
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(nodeAddress common.Address, minipoolAddress common.Address, salt *big.Int, superNodeAddress common.Address, chainId *big.Int) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(nodeAddress ethcommon.Address, minipoolAddress ethcommon.Address, salt *big.Int, superNodeAddress ethcommon.Address, chainId *big.Int) (time.Time, []byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
 		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
 	}
