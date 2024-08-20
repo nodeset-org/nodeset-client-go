@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
@@ -16,7 +15,6 @@ import (
 )
 
 const (
-	whitelist_timestamp int64  = 1721417393
 	whitelist_signature string = "0x8d6779cdc17bbfd0416fce5af7e4bde2b106ea5904d4c532eee8dfd73e60019b08c35f86b5dd94713b1dc30fa2fc8f91dd1bd32ab2592c22bfade08bfab3817d1b"
 )
 
@@ -59,18 +57,12 @@ func TestConstellationWhitelist(t *testing.T) {
 	require.NoError(t, err)
 	mgr.SetConstellationAdminPrivateKey(adminKey)
 
-	// Set the manual timestamp
-	manualTime := time.Unix(whitelist_timestamp, 0)
-	mgr.SetManualSignatureTimestamp(&manualTime)
-
 	// Create the request
 	data := runWhitelistRequest(t, session)
 
 	// Make sure the response is correct
-	parsedTime := time.Unix(data.Time, 0)
-	require.Equal(t, manualTime, parsedTime)
 	require.Equal(t, whitelist_signature, data.Signature)
-	t.Logf("Received correct response:\nTime = %s\nSignature = %s", parsedTime, data.Signature)
+	t.Logf("Received correct response:\nSignature = %s", data.Signature)
 }
 
 // Run a GET api/v2/modules/constellation/{deployment}/whitelist request

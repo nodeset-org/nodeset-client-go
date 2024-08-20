@@ -42,6 +42,6 @@ func (s *AdminServer) RegisterRoutes(adminRouter *mux.Router) {
 	adminRouter.HandleFunc("/"+api.AdminWhitelistNodePath, s.whitelistNode)
 	adminRouter.HandleFunc("/"+api.AdminAddVaultPath, s.addStakeWiseVault)
 	adminRouter.HandleFunc("/"+api.AdminSetConstellationPrivateKeyPath, s.setConstellationAdminPrivateKey)
-	//adminRouter.HandleFunc("/"+api.AdminSetManualSignatureTimestampPath, s.setManualSignatureTimestamp)
-	adminRouter.HandleFunc("/"+api.AdminSetAvailableConstellationMinipoolCountPath, s.setAvailableConstellationMinipoolCount)
+	adminRouter.HandleFunc("/"+api.AdminIncrementWhitelistNoncePath, s.incrementWhitelistNonce)
+	adminRouter.HandleFunc("/"+api.AdminIncrementSuperNodeNoncePath, s.incrementSuperNodeNonce)
 }

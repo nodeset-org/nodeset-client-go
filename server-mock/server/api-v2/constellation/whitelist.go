@@ -31,7 +31,7 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Get the signature
-	time, signature, err := s.manager.GetConstellationWhitelistSignatureAndTime(node.Address, deployment.ChainID, deployment.WhitelistAddress)
+	signature, err := s.manager.GetConstellationWhitelistSignature(node.Address, deployment.ChainID, deployment.WhitelistAddress)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return
@@ -41,7 +41,6 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	// Write the data
 	data := v2constellation.WhitelistData{
 		Signature: utils.EncodeHexWithPrefix(signature),
-		Time:      time.Unix(),
 	}
 	common.HandleSuccess(w, s.logger, data)
 }

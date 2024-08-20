@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log/slog"
-	"time"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -26,11 +25,12 @@ type Database struct {
 	// Private ETH Wallet Key for ConstellationAdmin contract
 	ConstellationAdminPrivateKey *ecdsa.PrivateKey
 
-	// Manual override for forcing the signature's timestamp (for testing)
-	ManualSignatureTimestamp *time.Time
-
 	// The current deployment - TEMP until multiples are supported
 	Deployment *Deployment
+
+	// Maps for signature nonces - TEMP until proper reading from an EL
+	ConstellationWhitelistNonces map[ethcommon.Address]uint64
+	ConstellationSuperNodeNonces map[ethcommon.Address]uint64
 
 	// Internal fields
 	logger *slog.Logger
@@ -39,9 +39,11 @@ type Database struct {
 // Creates a new database
 func NewDatabase(logger *slog.Logger) *Database {
 	return &Database{
-		StakeWiseVaults: map[string][]*StakeWiseVault{},
-		Users:           []*User{},
-		logger:          logger,
+		StakeWiseVaults:              map[string][]*StakeWiseVault{},
+		Users:                        []*User{},
+		ConstellationWhitelistNonces: map[ethcommon.Address]uint64{},
+		ConstellationSuperNodeNonces: map[ethcommon.Address]uint64{},
+		logger:                       logger,
 	}
 }
 
@@ -187,16 +189,19 @@ func (d *Database) Clone() *Database {
 	keyBytes := crypto.FromECDSA(d.ConstellationAdminPrivateKey)
 	clone.ConstellationAdminPrivateKey, _ = crypto.ToECDSA(keyBytes)
 
-	// Copy ManualSignatureTimestamp
-	if d.ManualSignatureTimestamp != nil {
-		clone.ManualSignatureTimestamp = new(time.Time)
-		*clone.ManualSignatureTimestamp = *d.ManualSignatureTimestamp
-	}
-
 	// Copy deployment
 	if d.Deployment != nil {
 		clone.Deployment = d.Deployment.Clone()
 	}
+
+	// Copy nonce maps
+	for address, nonce := range d.ConstellationWhitelistNonces {
+		clone.ConstellationWhitelistNonces[address] = nonce
+	}
+	for address, nonce := range d.ConstellationSuperNodeNonces {
+		clone.ConstellationSuperNodeNonces[address] = nonce
+	}
+
 	return clone
 }
 

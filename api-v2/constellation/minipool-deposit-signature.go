@@ -32,7 +32,6 @@ type MinipoolDepositSignatureRequest struct {
 type MinipoolDepositSignatureData struct {
 	// The signature for SuperNodeAccount.createMinipool()
 	Signature string `json:"signature"`
-	Time      int64  `json:"time"`
 }
 
 func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, deployment string, minipoolAddress ethcommon.Address, salt *big.Int) (MinipoolDepositSignatureData, error) {

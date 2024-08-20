@@ -52,7 +52,7 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	}
 
 	// Get the signature
-	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(node.Address, request.MinipoolAddress, salt, deployment.SuperNodeAddress, deployment.ChainID)
+	signature, err := s.manager.GetConstellationDepositSignature(node.Address, request.MinipoolAddress, salt, deployment.SuperNodeAddress, deployment.ChainID)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return
@@ -61,7 +61,6 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	// Write the data
 	data := v2constellation.MinipoolDepositSignatureData{
 		Signature: utils.EncodeHexWithPrefix(signature),
-		Time:      time.Unix(),
 	}
 	s.logger.Info("Fetched minipool deposit signature")
 	common.HandleSuccess(w, s.logger, data)

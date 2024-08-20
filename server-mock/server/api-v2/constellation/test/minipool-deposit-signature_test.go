@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
-	"time"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -18,7 +17,6 @@ import (
 )
 
 const (
-	mds_timestamp int64  = 1722623396
 	mds_signature string = "0x11f89ab4a09010fdb8809aaf018ef5f55a535c98afbe7977d2d55ef81af9361b0b674bb1c65893c102888dc0db79e1f254ea813bbb1417ea2866edf22fa544f01c"
 	mds_salt      string = "90de5e7"
 	mds_mpAddress string = "0x21Aa2360e734b11BDE49F2C73d0CF751f4B2a4C3"
@@ -63,19 +61,13 @@ func TestConstellationDeposit(t *testing.T) {
 	require.NoError(t, err)
 	mgr.SetConstellationAdminPrivateKey(adminKey)
 
-	// Set the manual timestamp
-	manualTime := time.Unix(mds_timestamp, 0)
-	mgr.SetManualSignatureTimestamp(&manualTime)
-
 	// Run the request
 	salt, _ := big.NewInt(0).SetString(mds_salt, 16)
 	data := runMinipoolDepositSignatureRequest(t, session, ethcommon.HexToAddress(mds_mpAddress), salt)
 
 	// Make sure the response is correct
-	parsedTime := time.Unix(data.Time, 0)
-	require.Equal(t, manualTime, parsedTime)
 	require.Equal(t, mds_signature, data.Signature)
-	t.Logf("Received correct response:\nTime = %s\nSignature = %s", parsedTime, data.Signature)
+	t.Logf("Received correct response:\nSignature = %s", data.Signature)
 }
 
 // Run a GET api/v2/modules/constellation/{deployment}/minipool/deposit-signature request

@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"math/big"
 	"net/http"
-	"time"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -240,11 +239,6 @@ func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey *ecdsa.P
 	m.database.SetConstellationAdminPrivateKey(privateKey)
 }
 
-// Set the manual timestamp override to use for signatures. Set to nil to use the current time during signature requests instead.
-func (m *NodeSetMockManager) SetManualSignatureTimestamp(timestamp *time.Time) {
-	m.database.ManualSignatureTimestamp = timestamp
-}
-
 // Call this to set the AvailableConstellationMinipoolCount for a user
 func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(userEmail string, count int) error {
 	return m.database.SetAvailableConstellationMinipoolCount(userEmail, count)
@@ -261,54 +255,41 @@ func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress 
 }
 
 // Call this to get a signature for adding the node to the Constellation whitelist
-func (m *NodeSetMockManager) GetConstellationWhitelistSignatureAndTime(nodeAddress ethcommon.Address, chainId *big.Int, whitelistAddress ethcommon.Address) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationWhitelistSignature(nodeAddress ethcommon.Address, chainId *big.Int, whitelistAddress ethcommon.Address) ([]byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
-		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
+		return nil, fmt.Errorf("constellation admin private key not set")
 	}
-
-	var currentTime time.Time
-	if m.database.ManualSignatureTimestamp != nil {
-		currentTime = *m.database.ManualSignatureTimestamp
-	} else {
-		currentTime = time.Now().UTC()
-	}
-	currentTimeBig := big.NewInt(currentTime.Unix())
-	timestampBytes := [32]byte{}
-	currentTimeBig.FillBytes(timestampBytes[:])
 
 	chainIdBytes := [32]byte{}
 	chainId.FillBytes(chainIdBytes[:])
 
+	nonceBytes := [32]byte{}
+	nonce := m.GetWhitelistNonce(nodeAddress)
+	nonce.FillBytes(nonceBytes[:])
+
+	sigTypeBytes := [32]byte{} // Always 0 for the mock
+
 	message := crypto.Keccak256(
 		nodeAddress[:],
-		timestampBytes[:],
 		whitelistAddress[:],
+		nonceBytes[:],
+		sigTypeBytes[:],
 		chainIdBytes[:],
 	)
 
 	// Hash of the concatenated addresses
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
-		return time.Time{}, nil, fmt.Errorf("error creating signature: %w", err)
+		return nil, fmt.Errorf("error creating signature: %w", err)
 	}
-	return currentTime, signature, nil
+	return signature, nil
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(nodeAddress ethcommon.Address, minipoolAddress ethcommon.Address, salt *big.Int, superNodeAddress ethcommon.Address, chainId *big.Int) (time.Time, []byte, error) {
+func (m *NodeSetMockManager) GetConstellationDepositSignature(nodeAddress ethcommon.Address, minipoolAddress ethcommon.Address, salt *big.Int, superNodeAddress ethcommon.Address, chainId *big.Int) ([]byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {
-		return time.Time{}, nil, fmt.Errorf("constellation admin private key not set")
+		return nil, fmt.Errorf("constellation admin private key not set")
 	}
-
-	var currentTime time.Time
-	if m.database.ManualSignatureTimestamp != nil {
-		currentTime = *m.database.ManualSignatureTimestamp
-	} else {
-		currentTime = time.Now().UTC()
-	}
-	currentTimeBig := big.NewInt(currentTime.Unix())
-	timestampBytes := [32]byte{}
-	currentTimeBig.FillBytes(timestampBytes[:])
 
 	chainIdBytes := [32]byte{}
 	chainId.FillBytes(chainIdBytes[:])
@@ -318,18 +299,53 @@ func (m *NodeSetMockManager) GetConstellationDepositSignatureAndTime(nodeAddress
 
 	saltKeccak := crypto.Keccak256(saltBytes[:], nodeAddress[:])
 
+	nonceBytes := [32]byte{}
+	nonce := m.GetSuperNodeNonce(nodeAddress)
+	nonce.FillBytes(nonceBytes[:])
+
+	sigTypeBytes := [32]byte{} // Always 0 for the mock
+
 	message := crypto.Keccak256(
 		minipoolAddress[:],
 		saltKeccak[:],
-		timestampBytes[:],
 		superNodeAddress[:],
+		nonceBytes[:],
+		sigTypeBytes[:],
 		chainIdBytes[:],
 	)
 
 	// Sign the message
 	signature, err := utils.CreateSignature(message, m.database.ConstellationAdminPrivateKey)
 	if err != nil {
-		return time.Time{}, nil, fmt.Errorf("error creating signature: %w", err)
+		return nil, fmt.Errorf("error creating signature: %w", err)
 	}
-	return currentTime, signature, nil
+	return signature, nil
+}
+
+// Get the whitelist signature nonce for a node address
+func (m *NodeSetMockManager) GetWhitelistNonce(nodeAddress ethcommon.Address) *big.Int {
+	nonce, exists := m.database.ConstellationWhitelistNonces[nodeAddress]
+	if !exists {
+		m.database.ConstellationWhitelistNonces[nodeAddress] = 0
+	}
+	return new(big.Int).SetUint64(nonce)
+}
+
+// Get the supernode signature nonce for a node address
+func (m *NodeSetMockManager) GetSuperNodeNonce(nodeAddress ethcommon.Address) *big.Int {
+	nonce, exists := m.database.ConstellationSuperNodeNonces[nodeAddress]
+	if !exists {
+		m.database.ConstellationSuperNodeNonces[nodeAddress] = 0
+	}
+	return new(big.Int).SetUint64(nonce)
+}
+
+// Increment the whitelist nonce for a node address
+func (m *NodeSetMockManager) IncrementWhitelistNonce(nodeAddress ethcommon.Address) {
+	m.database.ConstellationWhitelistNonces[nodeAddress]++
+}
+
+// Increment the supernode nonce for a node address
+func (m *NodeSetMockManager) IncrementSuperNodeNonce(nodeAddress ethcommon.Address) {
+	m.database.ConstellationSuperNodeNonces[nodeAddress]++
 }

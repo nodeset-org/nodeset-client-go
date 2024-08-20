@@ -17,7 +17,6 @@ const (
 type WhitelistData struct {
 	// The signature for Whitelist.addOperator()
 	Signature string `json:"signature"`
-	Time      int64  `json:"time"`
 }
 
 func (c *V2ConstellationClient) Whitelist(ctx context.Context, deployment string) (WhitelistData, error) {
