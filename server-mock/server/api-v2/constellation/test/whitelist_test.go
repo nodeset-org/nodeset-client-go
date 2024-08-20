@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
@@ -18,9 +17,9 @@ import (
 
 const (
 	whitelist_timestamp int64  = 1721417393
-	whitelist_address   string = "0x1E3b98102e19D3a164d239BdD190913C2F02E756"
+	whitelist_address   string = "0xA9e6Bfa2BF53dE88FEb19761D9b2eE2e821bF1Bf"
 	whitelist_chainId   int64  = 31337
-	whitelist_signature string = "0xdd45a03d896d93e4fd2ee947bed23fb4f87a24d528cd5ecfe847f4c521cba8c1519f4fbc74d9a12d40fa64244a0616370ae709394a0217659d028351bb8dc3c21b"
+	whitelist_signature string = "0x8d6779cdc17bbfd0416fce5af7e4bde2b106ea5904d4c532eee8dfd73e60019b08c35f86b5dd94713b1dc30fa2fc8f91dd1bd32ab2592c22bfade08bfab3817d1b"
 )
 
 func TestConstellationWhitelist(t *testing.T) {
@@ -82,7 +81,7 @@ func runWhitelistRequest(t *testing.T, session *db.Session) v2constellation.Whit
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.Whitelist(context.Background(), test.Network, ethcommon.HexToAddress(whitelist_address))
+	data, err := client.Constellation.Whitelist(context.Background(), test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

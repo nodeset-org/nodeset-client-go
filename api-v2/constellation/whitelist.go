@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
 )
 
@@ -21,15 +20,10 @@ type WhitelistData struct {
 	Time      int64  `json:"time"`
 }
 
-func (c *V2ConstellationClient) Whitelist(ctx context.Context, deployment string, whitelistAddress ethcommon.Address) (WhitelistData, error) {
-	// Make the parameters
-	args := map[string]string{
-		"whitelistAddress": whitelistAddress.Hex(),
-	}
-
+func (c *V2ConstellationClient) Whitelist(ctx context.Context, deployment string) (WhitelistData, error) {
 	// Send the request
 	path := ConstellationPrefix + deployment + "/" + WhitelistPath
-	code, response, err := common.SubmitRequest[WhitelistData](c.commonClient, ctx, true, http.MethodGet, nil, args, path)
+	code, response, err := common.SubmitRequest[WhitelistData](c.commonClient, ctx, true, http.MethodGet, nil, nil, path)
 	if err != nil {
 		return WhitelistData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}

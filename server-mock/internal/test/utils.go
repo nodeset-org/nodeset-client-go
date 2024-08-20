@@ -33,6 +33,7 @@ const (
 	// TEMP
 	ChainID                uint64 = 31337
 	SuperNodeAddressString string = "0xF342E904702b1D021F03f519D6D9614916b03f37"
+	WhitelistAddressString string = "0xA9e6Bfa2BF53dE88FEb19761D9b2eE2e821bF1Bf"
 )
 
 var (
@@ -44,6 +45,7 @@ var (
 	// TEMP
 	ChainIDBig       *big.Int       = new(big.Int).SetUint64(ChainID)
 	SuperNodeAddress common.Address = common.HexToAddress(SuperNodeAddressString)
+	WhitelistAddress common.Address = common.HexToAddress(WhitelistAddressString)
 )
 
 // Get the EL private key for the given index
