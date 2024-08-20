@@ -1,11 +1,11 @@
-package v0server_test
+package v2server_stakewise_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
+	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -98,11 +98,11 @@ func TestUploadDepositData(t *testing.T) {
 // Run a GET api/deposit-data request
 func runGetDepositDataRequest(t *testing.T, session *db.Session) stakewise.DepositDataData {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.DepositData_Get(context.Background(), test.StakeWiseVaultAddress, test.Network)
+	data, err := client.StakeWise.DepositData_Get(context.Background(), test.Network, test.StakeWiseVaultAddress)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -111,11 +111,11 @@ func runGetDepositDataRequest(t *testing.T, session *db.Session) stakewise.Depos
 // Run a POST api/deposit-data request
 func runUploadDepositDataRequest(t *testing.T, session *db.Session, depositData []beacon.ExtendedDepositData) {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	err := client.DepositData_Post(context.Background(), depositData)
+	err := client.StakeWise.DepositData_Post(context.Background(), test.Network, test.StakeWiseVaultAddress, depositData)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

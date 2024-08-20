@@ -26,12 +26,6 @@ type MinipoolDepositSignatureRequest struct {
 	// a hex string (lower-case, no 0x prefix) representing the 32-byte salt used
 	// to create minipoolAddress during CREATE2 calculation
 	Salt string `json:"salt"`
-
-	// The EIP55-compliant hex string representing the address of the super node
-	SuperNodeAddress ethcommon.Address `json:"superNodeAddress"`
-
-	// the chain ID of the network the minipool will be created on
-	ChainId string `json:"chainId"`
 }
 
 // Response to a create minipool signature request

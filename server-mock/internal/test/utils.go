@@ -3,6 +3,7 @@ package test
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
@@ -18,7 +19,7 @@ const (
 	BeaconDerivationPath        string = "m/12381/3600/%d/0/0"
 	Mnemonic                    string = "test test test test test test test test test test test junk"
 	StakeWiseVaultAddressHex    string = "0x57ace215eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-	Network                     string = "holesky"
+	Network                     string = "localtest"
 	GenesisForkVersionString    string = "0x01017000"
 	CapellaForkVersionString    string = "0x04017000"
 	GenesisValidatorsRootString string = "0x9143aa7c615a7f7115e2b6aac319c03529df8242ae705fba9df39b79c59fa8b1"
@@ -28,6 +29,10 @@ const (
 	User3Email                  string = "user_3@test.com"
 	DepositAmount               uint64 = 32e9
 	ExitEpoch                   uint64 = 100
+
+	// TEMP
+	ChainID                uint64 = 31337
+	SuperNodeAddressString string = "0xF342E904702b1D021F03f519D6D9614916b03f37"
 )
 
 var (
@@ -35,6 +40,10 @@ var (
 	GenesisForkVersion    []byte         = common.FromHex(GenesisForkVersionString)
 	CapellaForkVersion    []byte         = common.FromHex(CapellaForkVersionString)
 	GenesisValidatorsRoot []byte         = common.FromHex(GenesisValidatorsRootString)
+
+	// TEMP
+	ChainIDBig       *big.Int       = new(big.Int).SetUint64(ChainID)
+	SuperNodeAddress common.Address = common.HexToAddress(SuperNodeAddressString)
 )
 
 // Get the EL private key for the given index

@@ -9,13 +9,15 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gorilla/mux"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/manager"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
-func ProcessApiRequest(serverImpl IServerImpl, w http.ResponseWriter, r *http.Request, requestBody any) url.Values {
+// Logs the request and returns the query args and path args
+func ProcessApiRequest(serverImpl IServerImpl, w http.ResponseWriter, r *http.Request, requestBody any) (url.Values, map[string]string) {
 	args := r.URL.Query()
 	logger := serverImpl.GetLogger()
 	logger.Info("New request", slog.String(log.MethodKey, r.Method), slog.String(log.PathKey, r.URL.Path))
@@ -26,7 +28,7 @@ func ProcessApiRequest(serverImpl IServerImpl, w http.ResponseWriter, r *http.Re
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			HandleInputError(w, logger, fmt.Errorf("error reading request body: %w", err))
-			return nil
+			return nil, nil
 		}
 		logger.Debug("Request body:", slog.String(log.BodyKey, string(bodyBytes)))
 
@@ -34,13 +36,14 @@ func ProcessApiRequest(serverImpl IServerImpl, w http.ResponseWriter, r *http.Re
 		err = json.Unmarshal(bodyBytes, &requestBody)
 		if err != nil {
 			HandleInputError(w, logger, fmt.Errorf("error deserializing request body: %w", err))
-			return nil
+			return nil, nil
 		}
 	}
 
-	return args
+	return args, mux.Vars(r)
 }
 
+// Makes sure the request has a valid auth header and returns the session it belongs to
 func ProcessAuthHeader(serverImpl IServerImpl, w http.ResponseWriter, r *http.Request) *db.Session {
 	// Get the auth header
 	mgr := serverImpl.GetManager()
@@ -68,6 +71,7 @@ func ProcessAuthHeader(serverImpl IServerImpl, w http.ResponseWriter, r *http.Re
 	return session
 }
 
+// Gets the node for the session, making sure it's registered and logged in
 func GetNodeForSession(serverImpl IServerImpl, w http.ResponseWriter, session *db.Session) *db.Node {
 	// Get the node
 	mgr := serverImpl.GetManager()

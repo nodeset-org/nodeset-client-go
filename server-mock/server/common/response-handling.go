@@ -9,6 +9,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/core"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
@@ -63,6 +64,20 @@ func HandleNodeNotInWhitelist(w http.ResponseWriter, logger *slog.Logger, addres
 func HandleAlreadyRegisteredNode(w http.ResponseWriter, logger *slog.Logger, address ethcommon.Address) {
 	msg := fmt.Sprintf("Address %s already registered", address.Hex())
 	bytes := formatError(msg, core.AddressAlreadyAuthorizedKey)
+	writeResponse(w, logger, http.StatusBadRequest, bytes)
+}
+
+// Handles an invalid deployment
+func HandleInvalidDeployment(w http.ResponseWriter, logger *slog.Logger, deployment string) {
+	msg := fmt.Sprintf("Invalid or unknown deployment: %s", deployment)
+	bytes := formatError(msg, common.InvalidDeploymentKey)
+	writeResponse(w, logger, http.StatusBadRequest, bytes)
+}
+
+// Handles an invalid StakeWise vault
+func HandleInvalidVault(w http.ResponseWriter, logger *slog.Logger, deployment string, vault ethcommon.Address) {
+	msg := fmt.Sprintf("vault with address [%s] on deployment [%s] not found", vault.Hex(), deployment)
+	bytes := formatError(msg, stakewise.InvalidVaultKey)
 	writeResponse(w, logger, http.StatusBadRequest, bytes)
 }
 

@@ -17,7 +17,7 @@ func (s *AdminServer) setAvailableConstellationMinipoolCount(w http.ResponseWrit
 
 	// Get the login request
 	var request api.AdminSetAvailableConstellationMinipoolCountRequest
-	_ = common.ProcessApiRequest(s, w, r, &request)
+	_, _ = common.ProcessApiRequest(s, w, r, &request)
 
 	// Set the count
 	err := s.manager.SetAvailableConstellationMinipoolCount(request.UserEmail, request.Count)

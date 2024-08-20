@@ -19,7 +19,7 @@ func (s *AdminServer) setConstellationAdminPrivateKey(w http.ResponseWriter, r *
 
 	// Get the login request
 	var request api.AdminSetConstellationPrivateKeyRequest
-	_ = common.ProcessApiRequest(s, w, r, &request)
+	_, _ = common.ProcessApiRequest(s, w, r, &request)
 
 	// Decode the key
 	privateKey, err := crypto.HexToECDSA(request.PrivateKey)

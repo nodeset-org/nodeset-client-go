@@ -1,4 +1,4 @@
-package v0server
+package v2server_core
 
 import (
 	"fmt"
@@ -10,8 +10,8 @@ import (
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
-// POST api/node-address
-func (s *V0Server) nodeAddress(w http.ResponseWriter, r *http.Request) {
+// POST api/v2/core/node-address
+func (s *V2CoreServer) nodeAddress(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		common.HandleInvalidMethod(w, s.logger)
 		return

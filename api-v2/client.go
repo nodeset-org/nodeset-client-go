@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"time"
 
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
 	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -23,6 +24,9 @@ type NodeSetClient struct {
 
 	// StakeWise routes
 	StakeWise *v2stakewise.V2StakeWiseClient
+
+	// Constellation routes
+	Constellation *v2constellation.V2ConstellationClient
 }
 
 // Creates a new NodeSet client
@@ -34,5 +38,6 @@ func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
 		CommonNodeSetClient: commonClient,
 		Core:                v2core.NewV2CoreClient(commonClient),
 		StakeWise:           v2stakewise.NewV2StakeWiseClient(commonClient),
+		Constellation:       v2constellation.NewV2ConstellationClient(commonClient),
 	}
 }

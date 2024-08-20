@@ -1,17 +1,17 @@
-package v0server
+package v2server_stakewise
 
 import (
-	"fmt"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
-// Handler for api/deposit-data
-func (s *V0Server) handleDepositData(w http.ResponseWriter, r *http.Request) {
+// Handler for api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
+func (s *V2StakeWiseServer) handleDepositData(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.getDepositData(w, r)
@@ -22,10 +22,10 @@ func (s *V0Server) handleDepositData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GET api/deposit-data
-func (s *V0Server) getDepositData(w http.ResponseWriter, r *http.Request) {
+// GET api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
+func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
-	args, _ := common.ProcessApiRequest(s, w, r, nil)
+	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 	session := common.ProcessAuthHeader(s, w, r)
 	if session == nil {
 		return
@@ -36,11 +36,15 @@ func (s *V0Server) getDepositData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Input validation
-	network := args.Get("network")
-	vaultAddress := ethcommon.HexToAddress(args.Get("vault"))
-	vault := s.manager.GetStakeWiseVault(vaultAddress, network)
+	deployment := pathArgs["deployment"]
+	if deployment != test.Network { // TEMP
+		common.HandleInvalidDeployment(w, s.logger, deployment)
+		return
+	}
+	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
+	vault := s.manager.GetStakeWiseVault(vaultAddress, deployment)
 	if vault == nil {
-		common.HandleInputError(w, s.logger, fmt.Errorf("vault with address [%s] on network [%s] not found", vaultAddress.Hex(), network))
+		common.HandleInvalidVault(w, s.logger, deployment, vaultAddress)
 		return
 	}
 
@@ -52,8 +56,8 @@ func (s *V0Server) getDepositData(w http.ResponseWriter, r *http.Request) {
 	common.HandleSuccess(w, s.logger, data)
 }
 
-// POST api/deposit-data
-func (s *V0Server) uploadDepositData(w http.ResponseWriter, r *http.Request) {
+// POST api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
+func (s *V2StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	var depositData []beacon.ExtendedDepositData
 	_, _ = common.ProcessApiRequest(s, w, r, &depositData)

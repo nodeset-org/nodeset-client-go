@@ -10,8 +10,6 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/manager"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/admin"
 	v0server "github.com/nodeset-org/nodeset-client-go/server-mock/server/api-v0"
@@ -109,15 +107,4 @@ func (s *NodeSetMockServer) GetPort() uint16 {
 // Get the mock manager for direct access
 func (s *NodeSetMockServer) GetManager() *manager.NodeSetMockManager {
 	return s.manager
-}
-
-// API routes
-func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
-	// constellation
-	// v1 - constellation introduced in later version
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+v2constellation.ConstellationPrefix+v2constellation.WhitelistPath, s.getWhitelistSignature)
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+v2constellation.ConstellationPrefix+v2constellation.MinipoolAvailablePath, s.getMinipoolAvailable)
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+v2constellation.ConstellationPrefix+v2constellation.MinipoolDepositSignaturePath, s.minipoolDepositSignature)
-
 }

@@ -1,4 +1,4 @@
-package v0server_test
+package v2server_stakewise_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
+	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
@@ -148,11 +148,11 @@ func TestUploadSignedExits(t *testing.T) {
 // Run a GET api/validators request
 func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.ValidatorsData {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Validators_Get(context.Background(), test.Network)
+	data, err := client.StakeWise.Validators_Get(context.Background(), test.Network, test.StakeWiseVaultAddress)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -161,11 +161,11 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.Valida
 // Run a PATCH api/validators request
 func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []clientcommon.ExitData) {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	err := client.Validators_Patch(context.Background(), signedExits, test.Network)
+	err := client.StakeWise.Validators_Patch(context.Background(), test.Network, test.StakeWiseVaultAddress, signedExits)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

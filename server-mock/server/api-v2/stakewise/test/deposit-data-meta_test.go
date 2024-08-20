@@ -1,4 +1,4 @@
-package v0server_test
+package v2server_stakewise_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
+	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -78,11 +78,11 @@ func TestDepositDataMeta(t *testing.T) {
 // Run a GET api/deposit-data/meta request
 func runDepositDataMetaRequest(t *testing.T, session *db.Session) stakewise.DepositDataMetaData {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.DepositDataMeta(context.Background(), test.StakeWiseVaultAddress, test.Network)
+	data, err := client.StakeWise.DepositDataMeta(context.Background(), test.Network, test.StakeWiseVaultAddress)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

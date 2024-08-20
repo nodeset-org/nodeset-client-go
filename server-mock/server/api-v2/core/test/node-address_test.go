@@ -1,4 +1,4 @@
-package v0server_test
+package v2server_core_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
+	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/stretchr/testify/require"
@@ -43,10 +43,10 @@ func TestRegisterNode(t *testing.T) {
 // Run a POST api/node-address request
 func runNodeAddressRequest(t *testing.T, email string, nodeAddress common.Address, signature []byte) {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 
 	// Run the request
-	err := client.NodeAddress(context.Background(), email, nodeAddress, signature)
+	err := client.Core.NodeAddress(context.Background(), email, nodeAddress, signature)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }
