@@ -11,8 +11,7 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	"github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
@@ -71,7 +70,7 @@ func TestConstellationWhitelist(t *testing.T) {
 	// Create the request
 	chainID := big.NewInt(whitelist_chainId)
 	whitelistAddress := ethcommon.HexToAddress(whitelist_address)
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/v2/modules/constellation/%s", port, apiv2.WhitelistPath), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%d/api/v2/modules/constellation/%s", port, v2constellation.WhitelistPath), nil)
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
@@ -102,7 +101,7 @@ func TestConstellationWhitelist(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading the response body: %v", err)
 	}
-	var parsedResponse common.NodeSetResponse[stakewise.WhitelistData]
+	var parsedResponse common.NodeSetResponse[v2constellation.WhitelistData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	if err != nil {
 		t.Fatalf("error deserializing response: %v", err)

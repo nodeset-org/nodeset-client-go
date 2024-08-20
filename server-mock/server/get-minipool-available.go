@@ -3,11 +3,11 @@ package server
 import (
 	"net/http"
 
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 )
 
 func (s *NodeSetMockServer) getMinipoolAvailable(w http.ResponseWriter, r *http.Request) {
-	data := apiv2.MinipoolAvailableData{}
+	data := v2constellation.MinipoolAvailableData{}
 
 	// Get the requesting node
 	session := s.processAuthHeader(w, r)

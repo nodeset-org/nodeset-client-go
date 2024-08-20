@@ -20,17 +20,17 @@ const (
 
 // Client for interacting with the NodeSet server
 type CommonNodeSetClient struct {
-	BaseUrl      string
-	SessionToken string
-	HttpClient   *http.Client
+	baseUrl      string
+	sessionToken string
+	httpClient   *http.Client
 }
 
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
 func NewCommonNodeSetClient(baseUrl string, timeout time.Duration) *CommonNodeSetClient {
 	return &CommonNodeSetClient{
-		BaseUrl: baseUrl, // v1 doesn't have a version in the subroute so just use the base URL
-		HttpClient: &http.Client{
+		baseUrl: baseUrl,
+		httpClient: &http.Client{
 			Timeout: timeout,
 		},
 	}
@@ -38,15 +38,30 @@ func NewCommonNodeSetClient(baseUrl string, timeout time.Duration) *CommonNodeSe
 
 // Set the session token for the client after logging in
 func (c *CommonNodeSetClient) SetSessionToken(token string) {
-	c.SessionToken = token
+	c.sessionToken = token
+}
+
+// =============================
+// === HTTP Request Handling ===
+// =============================
+
+// All responses from the NodeSet API will have this format
+// `message` may or may not be populated (but should always be populated if `ok` is false)
+// `data` should be populated if `ok` is true, and will be omitted if `ok` is false
+type NodeSetResponse[DataType any] struct {
+	OK      bool     `json:"ok"`
+	Message string   `json:"message,omitempty"`
+	Data    DataType `json:"data,omitempty"`
+	Error   string   `json:"error,omitempty"`
 }
 
 // Send a request to the server and read the response
+// NOTE: this is better suited to be a method of c but Go doesn't allow for generic methods yet
 func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
 	var defaultVal NodeSetResponse[DataType]
 
 	// Make the request
-	path, err := url.JoinPath(c.BaseUrl, subroutes...)
+	path, err := url.JoinPath(c.baseUrl, subroutes...)
 	if err != nil {
 		return 0, defaultVal, fmt.Errorf("error joining path [%v]: %w", subroutes, err)
 	}
@@ -62,15 +77,15 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 
 	// Set the headers
 	if requireAuth {
-		if c.SessionToken == "" {
+		if c.sessionToken == "" {
 			return 0, defaultVal, ErrInvalidSession
 		}
-		request.Header.Set(AuthHeader, fmt.Sprintf(AuthHeaderFormat, c.SessionToken))
+		request.Header.Set(AuthHeader, fmt.Sprintf(AuthHeaderFormat, c.sessionToken))
 	}
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	// Upload it to the server
-	resp, err := c.HttpClient.Do(request)
+	resp, err := c.httpClient.Do(request)
 	if err != nil {
 		return 0, defaultVal, fmt.Errorf("error submitting request to nodeset server: %w", err)
 	}

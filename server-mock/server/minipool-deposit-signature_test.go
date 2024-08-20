@@ -12,7 +12,7 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
@@ -72,7 +72,7 @@ func TestConstellationDeposit(t *testing.T) {
 
 	// Create the request
 	salt, _ := big.NewInt(0).SetString(mds_salt, 16)
-	loginReq := apiv2.MinipoolDepositSignatureRequest{
+	loginReq := v2constellation.MinipoolDepositSignatureRequest{
 		MinipoolAddress:  ethcommon.HexToAddress(mds_mpAddress),
 		Salt:             salt.String(),
 		SuperNodeAddress: ethcommon.HexToAddress(mds_supernodeAddress),
@@ -80,7 +80,7 @@ func TestConstellationDeposit(t *testing.T) {
 	}
 	body, err := json.Marshal(loginReq)
 	require.NoError(t, err)
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/v2/modules/constellation/%s", port, apiv2.MinipoolDepositSignaturePath), bytes.NewReader(body))
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%d/api/v2/modules/constellation/%s", port, v2constellation.MinipoolDepositSignaturePath), bytes.NewReader(body))
 	require.NoError(t, err)
 	t.Logf("Created request")
 
@@ -97,7 +97,7 @@ func TestConstellationDeposit(t *testing.T) {
 	defer response.Body.Close()
 	bytes, err := io.ReadAll(response.Body)
 	require.NoError(t, err)
-	var parsedResponse common.NodeSetResponse[apiv2.MinipoolDepositSignatureData]
+	var parsedResponse common.NodeSetResponse[v2constellation.MinipoolDepositSignatureData]
 	err = json.Unmarshal(bytes, &parsedResponse)
 	require.NoError(t, err)
 

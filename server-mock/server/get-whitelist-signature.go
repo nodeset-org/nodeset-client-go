@@ -6,12 +6,12 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 func (s *NodeSetMockServer) getWhitelistSignature(w http.ResponseWriter, r *http.Request) {
-	data := apiv2.WhitelistData{}
+	data := v2constellation.WhitelistData{}
 
 	// Get the requesting node
 	session := s.processAuthHeader(w, r)

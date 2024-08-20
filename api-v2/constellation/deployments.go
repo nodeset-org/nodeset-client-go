@@ -1,4 +1,4 @@
-package v2stakewise
+package v2constellation
 
 import (
 	"context"
@@ -9,9 +9,9 @@ import (
 )
 
 // Gets the list of deployments available on the server
-func (c *V2StakeWiseClient) Deployments(ctx context.Context) (common.DeploymentsData, error) {
+func (c *V2ConstellationClient) Deployments(ctx context.Context) (common.DeploymentsData, error) {
 	// Submit the request
-	code, response, err := common.SubmitRequest[common.DeploymentsData](c.commonClient, ctx, true, http.MethodGet, nil, nil, StakeWisePrefix+common.DeploymentsPath)
+	code, response, err := common.SubmitRequest[common.DeploymentsData](c.commonClient, ctx, true, http.MethodGet, nil, nil, ConstellationPrefix+common.DeploymentsPath)
 	if err != nil {
 		return common.DeploymentsData{}, fmt.Errorf("error submitting deployments request: %w", err)
 	}

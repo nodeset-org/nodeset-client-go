@@ -14,20 +14,6 @@ import (
 const (
 	// Route for interacting with the list of validators
 	ValidatorsPath string = "validators"
-
-	// The requester doesn't own the provided validator
-	InvalidValidatorOwnerKey string = "invalid_validator_owner"
-
-	// The exit message provided was invalid
-	InvalidExitMessage string = "invalid_exit_message"
-)
-
-var (
-	// The requester doesn't own the provided validator
-	ErrInvalidValidatorOwner error = fmt.Errorf("this node doesn't own one of the provided validators")
-
-	// The exit message provided was invalid
-	ErrInvalidExitMessage error = fmt.Errorf("the provided exit message was invalid")
 )
 
 type StakeWiseStatus string
@@ -103,13 +89,13 @@ func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, exitDa
 			// Invalid input
 			return code, nil, common.ErrMalformedInput
 
-		case InvalidValidatorOwnerKey:
+		case common.InvalidValidatorOwnerKey:
 			// Invalid validator owner
-			return code, nil, ErrInvalidValidatorOwner
+			return code, nil, common.ErrInvalidValidatorOwner
 
-		case InvalidExitMessage:
+		case common.InvalidExitMessage:
 			// Invalid exit message
-			return code, nil, ErrInvalidExitMessage
+			return code, nil, common.ErrInvalidExitMessage
 		}
 
 	case http.StatusUnauthorized:
