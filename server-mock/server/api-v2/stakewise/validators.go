@@ -5,7 +5,6 @@ import (
 
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -35,18 +34,19 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 	}
 
 	// Get the registered validators
-	deployment := pathArgs["deployment"]
-	if deployment != test.Network { // TEMP
-		common.HandleInvalidDeployment(w, s.logger, deployment)
+	deploymentID := pathArgs["deployment"]
+	deployment := s.manager.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 	validatorStatuses := []stakewise.ValidatorStatus{}
-	validatorsForDeployment := node.Validators[deployment]
+	validatorsForDeployment := node.Validators[deployment.DeploymentID]
 
 	// Iterate the validators
 	for _, validator := range validatorsForDeployment {
 		pubkey := validator.Pubkey
-		status := s.manager.GetValidatorStatus(deployment, pubkey)
+		status := s.manager.GetValidatorStatus(deployment.DeploymentID, pubkey)
 		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
 			Pubkey:              pubkey,
 			Status:              status,

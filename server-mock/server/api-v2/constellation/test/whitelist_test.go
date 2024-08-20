@@ -17,8 +17,6 @@ import (
 
 const (
 	whitelist_timestamp int64  = 1721417393
-	whitelist_address   string = "0xA9e6Bfa2BF53dE88FEb19761D9b2eE2e821bF1Bf"
-	whitelist_chainId   int64  = 31337
 	whitelist_signature string = "0x8d6779cdc17bbfd0416fce5af7e4bde2b106ea5904d4c532eee8dfd73e60019b08c35f86b5dd94713b1dc30fa2fc8f91dd1bd32ab2592c22bfade08bfab3817d1b"
 )
 
@@ -33,6 +31,7 @@ func TestConstellationWhitelist(t *testing.T) {
 	}()
 
 	// Provision the database
+	mgr.SetDeployment(test.GetTestDeployment())
 	node4Key, err := test.GetEthPrivateKey(4)
 	require.NoError(t, err)
 	node4Pubkey := crypto.PubkeyToAddress(node4Key.PublicKey)

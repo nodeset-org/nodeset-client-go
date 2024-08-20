@@ -5,7 +5,6 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -28,15 +27,16 @@ func (s *V2StakeWiseServer) depositDataMeta(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Input validation
-	deployment := pathArgs["deployment"]
-	if deployment != test.Network { // TEMP
-		common.HandleInvalidDeployment(w, s.logger, deployment)
+	deploymentID := pathArgs["deployment"]
+	deployment := s.manager.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := s.manager.GetStakeWiseVault(vaultAddress, deployment)
+	vault := s.manager.GetStakeWiseVault(vaultAddress, deployment.DeploymentID)
 	if vault == nil {
-		common.HandleInvalidVault(w, s.logger, deployment, vaultAddress)
+		common.HandleInvalidVault(w, s.logger, deployment.DeploymentID, vaultAddress)
 		return
 	}
 

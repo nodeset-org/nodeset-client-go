@@ -24,7 +24,9 @@ var (
 
 // Create a full database for testing
 func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositDataSet bool) *db.Database {
+	// Make the DB
 	db := db.NewDatabase(logger)
+	db.SetDeployment(test.GetTestDeployment())
 
 	// Add a StakeWise vault to the database
 	err := db.AddStakeWiseVault(test.StakeWiseVaultAddress, test.Network)

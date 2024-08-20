@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	"github.com/nodeset-org/nodeset-client-go/common"
-	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -30,6 +29,7 @@ func TestGetValidators(t *testing.T) {
 	}()
 
 	// Provision the database
+	mgr.SetDeployment(test.GetTestDeployment())
 	node0Key, err := test.GetEthPrivateKey(0)
 	if err != nil {
 		t.Fatalf("error getting private key: %v", err)
@@ -159,7 +159,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.Valida
 }
 
 // Run a PATCH api/validators request
-func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []clientcommon.ExitData) {
+func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.ExitData) {
 	// Create the client
 	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)

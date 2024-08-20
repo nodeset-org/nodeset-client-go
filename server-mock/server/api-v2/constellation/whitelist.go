@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
@@ -24,14 +23,15 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Input validation
-	deployment := pathArgs["deployment"]
-	if deployment != test.Network { // TEMP
-		common.HandleInvalidDeployment(w, s.logger, deployment)
+	deploymentID := pathArgs["deployment"]
+	deployment := s.manager.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 
 	// Get the signature
-	time, signature, err := s.manager.GetConstellationWhitelistSignatureAndTime(node.Address, test.ChainIDBig, test.WhitelistAddress)
+	time, signature, err := s.manager.GetConstellationWhitelistSignatureAndTime(node.Address, deployment.ChainID, deployment.WhitelistAddress)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

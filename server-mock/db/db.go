@@ -29,6 +29,9 @@ type Database struct {
 	// Manual override for forcing the signature's timestamp (for testing)
 	ManualSignatureTimestamp *time.Time
 
+	// The current deployment - TEMP until multiples are supported
+	Deployment *Deployment
+
 	// Internal fields
 	logger *slog.Logger
 }
@@ -40,6 +43,11 @@ func NewDatabase(logger *slog.Logger) *Database {
 		Users:           []*User{},
 		logger:          logger,
 	}
+}
+
+// Sets the deployment
+func (d *Database) SetDeployment(deployment *Deployment) {
+	d.Deployment = deployment
 }
 
 // Adds a StakeWise vault to the database
@@ -183,6 +191,11 @@ func (d *Database) Clone() *Database {
 	if d.ManualSignatureTimestamp != nil {
 		clone.ManualSignatureTimestamp = new(time.Time)
 		*clone.ManualSignatureTimestamp = *d.ManualSignatureTimestamp
+	}
+
+	// Copy deployment
+	if d.Deployment != nil {
+		clone.Deployment = d.Deployment.Clone()
 	}
 	return clone
 }

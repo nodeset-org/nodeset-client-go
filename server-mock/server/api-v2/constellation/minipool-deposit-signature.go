@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
@@ -28,9 +27,10 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 
 	// Input validation
-	deployment := pathArgs["deployment"]
-	if deployment != test.Network { // TEMP
-		common.HandleInvalidDeployment(w, s.logger, deployment)
+	deploymentID := pathArgs["deployment"]
+	deployment := s.manager.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	}
 
 	// Get the signature
-	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(node.Address, request.MinipoolAddress, salt, test.SuperNodeAddress, test.ChainIDBig)
+	time, signature, err := s.manager.GetConstellationDepositSignatureAndTime(node.Address, request.MinipoolAddress, salt, deployment.SuperNodeAddress, deployment.ChainID)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

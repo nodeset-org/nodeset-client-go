@@ -67,6 +67,19 @@ func (m *NodeSetMockManager) RevertToSnapshot(name string) error {
 // === Database ===
 // ================
 
+// Sets the deployment for the database
+func (m *NodeSetMockManager) SetDeployment(deployment *db.Deployment) {
+	m.database.SetDeployment(deployment)
+}
+
+// Gets the deployment with the given ID
+func (m *NodeSetMockManager) GetDeployment(id string) *db.Deployment {
+	if m.database.Deployment == nil || m.database.Deployment.DeploymentID != id {
+		return nil
+	}
+	return m.database.Deployment
+}
+
 // Adds a StakeWise vault
 func (m *NodeSetMockManager) AddStakeWiseVault(address ethcommon.Address, networkName string) error {
 	return m.database.AddStakeWiseVault(address, networkName)

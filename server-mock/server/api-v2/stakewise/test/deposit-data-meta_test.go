@@ -28,6 +28,7 @@ func TestDepositDataMeta(t *testing.T) {
 	}()
 
 	// Provision the database
+	mgr.SetDeployment(test.GetTestDeployment())
 	node0Key, err := test.GetEthPrivateKey(0)
 	if err != nil {
 		t.Fatalf("error getting private key: %v", err)
