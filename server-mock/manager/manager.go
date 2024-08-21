@@ -239,21 +239,6 @@ func (m *NodeSetMockManager) SetConstellationAdminPrivateKey(privateKey *ecdsa.P
 	m.database.SetConstellationAdminPrivateKey(privateKey)
 }
 
-// Call this to set the AvailableConstellationMinipoolCount for a user
-func (m *NodeSetMockManager) SetAvailableConstellationMinipoolCount(userEmail string, count int) error {
-	return m.database.SetAvailableConstellationMinipoolCount(userEmail, count)
-}
-
-// Call this to get the AvailableConstellationMinipoolCount for a user
-func (m *NodeSetMockManager) GetAvailableConstellationMinipoolCount(nodeAddress ethcommon.Address) (int, error) {
-	count, err := m.database.GetAvailableConstellationMinipoolCount(nodeAddress)
-	if err != nil {
-		m.logger.Error("Error getting available minipool count", "error", err)
-		return 0, err
-	}
-	return count, nil
-}
-
 // Call this to get a signature for adding the node to the Constellation whitelist
 func (m *NodeSetMockManager) GetConstellationWhitelistSignature(nodeAddress ethcommon.Address, chainId *big.Int, whitelistAddress ethcommon.Address) ([]byte, error) {
 	if m.database.ConstellationAdminPrivateKey == nil {

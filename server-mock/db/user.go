@@ -12,10 +12,9 @@ var (
 )
 
 type User struct {
-	Email                               string
-	WhitelistedNodes                    []*Node
-	RegisteredNodes                     []*Node
-	AvailableConstellationMinipoolCount int
+	Email            string
+	WhitelistedNodes []*Node
+	RegisteredNodes  []*Node
 }
 
 func newUser(email string) *User {
@@ -63,7 +62,6 @@ func (u *User) Clone() *User {
 	clone := newUser(u.Email)
 	clone.WhitelistedNodes = make([]*Node, len(u.WhitelistedNodes))
 	clone.RegisteredNodes = make([]*Node, len(u.RegisteredNodes))
-	clone.AvailableConstellationMinipoolCount = u.AvailableConstellationMinipoolCount
 	for i, node := range u.WhitelistedNodes {
 		clone.WhitelistedNodes[i] = node.Clone()
 	}

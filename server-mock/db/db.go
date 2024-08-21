@@ -469,26 +469,3 @@ func (d *Database) MarkValidatorsRegistered(vaultAddress ethcommon.Address, netw
 func (d *Database) SetConstellationAdminPrivateKey(privateKey *ecdsa.PrivateKey) {
 	d.ConstellationAdminPrivateKey = privateKey
 }
-
-// Call this to set the AvailableConstellationMinipoolCount for a user
-func (d *Database) SetAvailableConstellationMinipoolCount(userEmail string, count int) error {
-	for _, user := range d.Users {
-		if user.Email == userEmail {
-			user.AvailableConstellationMinipoolCount = count
-			return nil
-		}
-	}
-	return fmt.Errorf("no registered user [%s] found", userEmail)
-}
-
-// Call this to get the minipool availability count for a user
-func (d *Database) GetAvailableConstellationMinipoolCount(nodeAddress ethcommon.Address) (int, error) {
-	for _, user := range d.Users {
-		for _, candidate := range user.RegisteredNodes {
-			if candidate.Address == nodeAddress {
-				return user.AvailableConstellationMinipoolCount, nil
-			}
-		}
-	}
-	return 0, fmt.Errorf("no registered node address [%s] found", nodeAddress)
-}

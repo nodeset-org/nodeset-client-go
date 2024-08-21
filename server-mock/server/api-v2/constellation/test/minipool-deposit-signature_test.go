@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	mds_signature string = "0x11f89ab4a09010fdb8809aaf018ef5f55a535c98afbe7977d2d55ef81af9361b0b674bb1c65893c102888dc0db79e1f254ea813bbb1417ea2866edf22fa544f01c"
+	mds_signature string = "0x03de7587ca8f21acfc6654151aded28c5aacbc36de5f30b35fa20c3485f94fff6781355bf7091528376d2fdf01eda7a0e4d75c1995b84dae7a0943c132cfbcf11b"
 	mds_salt      string = "90de5e7"
 	mds_mpAddress string = "0x21Aa2360e734b11BDE49F2C73d0CF751f4B2a4C3"
 )

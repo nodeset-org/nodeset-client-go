@@ -102,13 +102,6 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	return db
 }
 
-func InitAvailableConstellationMinipoolCount(t *testing.T, db *db.Database) {
-	// Set the available minipool count for the nodes
-	db.SetAvailableConstellationMinipoolCount(test.User1Email, 10)
-	db.SetAvailableConstellationMinipoolCount(test.User2Email, 10)
-	db.SetAvailableConstellationMinipoolCount(test.User3Email, 10)
-}
-
 // ==========================
 // === Internal Functions ===
 // ==========================

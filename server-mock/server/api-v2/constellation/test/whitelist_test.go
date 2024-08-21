@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	whitelist_signature string = "0x8d6779cdc17bbfd0416fce5af7e4bde2b106ea5904d4c532eee8dfd73e60019b08c35f86b5dd94713b1dc30fa2fc8f91dd1bd32ab2592c22bfade08bfab3817d1b"
+	whitelist_signature string = "0xf2b73cd729a9b15e8f17ce0189c4ddfe63ad35917f63e2b1ffa7ea1dc527bdf535ba05ba44d2dce733096b8c389472e81a4548b1d75a600633c4ac4bcb8e7c6f1b"
 )
 
 func TestConstellationWhitelist(t *testing.T) {
