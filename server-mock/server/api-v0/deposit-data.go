@@ -38,7 +38,7 @@ func (s *V0Server) getDepositData(w http.ResponseWriter, r *http.Request) {
 	// Input validation
 	network := args.Get("network")
 	vaultAddress := ethcommon.HexToAddress(args.Get("vault"))
-	vault := s.manager.GetStakeWiseVault(vaultAddress, network)
+	vault := s.manager.GetStakeWiseVault(network, vaultAddress)
 	if vault == nil {
 		common.HandleInputError(w, s.logger, fmt.Errorf("vault with address [%s] on network [%s] not found", vaultAddress.Hex(), network))
 		return
@@ -67,7 +67,9 @@ func (s *V0Server) uploadDepositData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle the upload
-	err := s.manager.HandleDepositDataUpload(node.Address, depositData)
+	network := depositData[0].NetworkName
+	vaultAddress := ethcommon.BytesToAddress(depositData[0].WithdrawalCredentials)
+	err := s.manager.HandleDepositDataUpload(node.Address, network, vaultAddress, depositData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

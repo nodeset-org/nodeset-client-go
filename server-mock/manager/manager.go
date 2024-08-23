@@ -80,13 +80,18 @@ func (m *NodeSetMockManager) GetDeployment(id string) *db.Deployment {
 }
 
 // Adds a StakeWise vault
-func (m *NodeSetMockManager) AddStakeWiseVault(address ethcommon.Address, networkName string) error {
-	return m.database.AddStakeWiseVault(address, networkName)
+func (m *NodeSetMockManager) AddStakeWiseVault(deployment string, address ethcommon.Address) error {
+	return m.database.AddStakeWiseVault(deployment, address)
 }
 
 // Gets a StakeWise vault
-func (m *NodeSetMockManager) GetStakeWiseVault(address ethcommon.Address, networkName string) *db.StakeWiseVault {
-	return m.database.GetStakeWiseVault(address, networkName)
+func (m *NodeSetMockManager) GetStakeWiseVault(deployment string, address ethcommon.Address) *db.StakeWiseVault {
+	return m.database.GetStakeWiseVault(deployment, address)
+}
+
+// Get all of the StakeWise vaults for a deployment
+func (m *NodeSetMockManager) GetStakeWiseVaults(deployment string) []*db.StakeWiseVault {
+	return m.database.StakeWiseVaults[deployment]
 }
 
 // Adds a user to the database
@@ -205,33 +210,33 @@ func (m *NodeSetMockManager) GetValidatorStatus(network string, pubkey beacon.Va
 }
 
 // Handle a new collection of deposit data uploads from a node
-func (m *NodeSetMockManager) HandleDepositDataUpload(nodeAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
-	return m.database.HandleDepositDataUpload(nodeAddress, data)
+func (m *NodeSetMockManager) HandleDepositDataUpload(nodeAddress ethcommon.Address, deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	return m.database.HandleDepositDataUpload(nodeAddress, deployment, vaultAddress, data)
 }
 
 // Handle a new collection of signed exits from a node
-func (m *NodeSetMockManager) HandleSignedExitUpload(nodeAddress ethcommon.Address, network string, data []common.ExitData) error {
-	return m.database.HandleSignedExitUpload(nodeAddress, network, data)
+func (m *NodeSetMockManager) HandleSignedExitUpload(nodeAddress ethcommon.Address, deployment string, vaultAddress ethcommon.Address, data []common.ExitData) error {
+	return m.database.HandleSignedExitUpload(nodeAddress, deployment, vaultAddress, data)
 }
 
 // Create a new deposit data set
-func (m *NodeSetMockManager) CreateNewDepositDataSet(network string, validatorsPerUser int) []beacon.ExtendedDepositData {
-	return m.database.CreateNewDepositDataSet(network, validatorsPerUser)
+func (m *NodeSetMockManager) CreateNewDepositDataSet(deployment string, validatorsPerUser int) []beacon.ExtendedDepositData {
+	return m.database.CreateNewDepositDataSet(deployment, validatorsPerUser)
 }
 
 // Call this to "upload" a deposit data set to StakeWise
-func (m *NodeSetMockManager) UploadDepositDataToStakeWise(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
-	return m.database.UploadDepositDataToStakeWise(vaultAddress, network, data)
+func (m *NodeSetMockManager) UploadDepositDataToStakeWise(deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	return m.database.UploadDepositDataToStakeWise(deployment, vaultAddress, data)
 }
 
 // Call this once a deposit data set has been "uploaded" to StakeWise
-func (m *NodeSetMockManager) MarkDepositDataSetUploaded(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
-	return m.database.MarkDepositDataSetUploaded(vaultAddress, network, data)
+func (m *NodeSetMockManager) MarkDepositDataSetUploaded(deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	return m.database.MarkDepositDataSetUploaded(deployment, vaultAddress, data)
 }
 
 // Call this once a deposit data set has been "registered" to StakeWise
-func (m *NodeSetMockManager) MarkValidatorsRegistered(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
-	return m.database.MarkValidatorsRegistered(vaultAddress, network, data)
+func (m *NodeSetMockManager) MarkValidatorsRegistered(deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	return m.database.MarkValidatorsRegistered(deployment, vaultAddress, data)
 }
 
 // Call this to set the private key for the ConstellationAdmin contract

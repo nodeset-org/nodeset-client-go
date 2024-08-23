@@ -47,30 +47,57 @@ func NewDatabase(logger *slog.Logger) *Database {
 	}
 }
 
+// Clones the database
+func (d *Database) Clone() *Database {
+	clone := NewDatabase(d.logger)
+
+	// Copy StakeWise vaults
+	for network, vaults := range d.StakeWiseVaults {
+		networkVaults := make([]*StakeWiseVault, len(vaults))
+		for i, vault := range vaults {
+			networkVaults[i] = vault.Clone()
+		}
+		clone.StakeWiseVaults[network] = networkVaults
+	}
+
+	// Copy users
+	for _, user := range d.Users {
+		clone.Users = append(clone.Users, user.Clone())
+	}
+
+	// Copy sessions
+	for _, session := range d.Sessions {
+		clone.Sessions = append(clone.Sessions, session.Clone())
+	}
+
+	// Copy ConstellationAdmin private key
+	keyBytes := crypto.FromECDSA(d.ConstellationAdminPrivateKey)
+	clone.ConstellationAdminPrivateKey, _ = crypto.ToECDSA(keyBytes)
+
+	// Copy deployment
+	if d.Deployment != nil {
+		clone.Deployment = d.Deployment.Clone()
+	}
+
+	// Copy nonce maps
+	for address, nonce := range d.ConstellationWhitelistNonces {
+		clone.ConstellationWhitelistNonces[address] = nonce
+	}
+	for address, nonce := range d.ConstellationSuperNodeNonces {
+		clone.ConstellationSuperNodeNonces[address] = nonce
+	}
+
+	return clone
+}
+
 // Sets the deployment
 func (d *Database) SetDeployment(deployment *Deployment) {
 	d.Deployment = deployment
 }
 
-// Adds a StakeWise vault to the database
-func (d *Database) AddStakeWiseVault(address ethcommon.Address, networkName string) error {
-	networkVaults, exists := d.StakeWiseVaults[networkName]
-	if !exists {
-		networkVaults = []*StakeWiseVault{}
-		d.StakeWiseVaults[networkName] = networkVaults
-	}
-
-	for _, vault := range networkVaults {
-		if vault.Address == address {
-			return fmt.Errorf("stakewise vault with address [%s] already exists", address.Hex())
-		}
-	}
-
-	vault := NewStakeWiseVaultInfo(address)
-	networkVaults = append(networkVaults, vault)
-	d.StakeWiseVaults[networkName] = networkVaults
-	return nil
-}
+// =========================
+// === Website Emulation ===
+// =========================
 
 // Adds a user to the database
 func (d *Database) AddUser(email string) error {
@@ -96,6 +123,27 @@ func (d *Database) WhitelistNodeAccount(email string, nodeAddress ethcommon.Addr
 	}
 
 	return fmt.Errorf("user with email [%s] not found", email)
+}
+
+// ============
+// === Core ===
+// ============
+
+// Get a node by address - returns true if registered, false if not registered and just whitelisted
+func (d *Database) GetNode(address ethcommon.Address) (*Node, bool) {
+	for _, user := range d.Users {
+		for _, candidate := range user.RegisteredNodes {
+			if candidate.Address == address {
+				return candidate, true
+			}
+		}
+		for _, candidate := range user.WhitelistedNodes {
+			if candidate.Address == address {
+				return candidate, false
+			}
+		}
+	}
+	return nil, false
 }
 
 // Registers a node with a user
@@ -162,73 +210,33 @@ func (d *Database) Login(nodeAddress ethcommon.Address, nonce string) error {
 	return ErrUnregisteredNode
 }
 
-// Clones the database
-func (d *Database) Clone() *Database {
-	clone := NewDatabase(d.logger)
+// =================
+// === StakeWise ===
+// =================
 
-	// Copy StakeWise vaults
-	for network, vaults := range d.StakeWiseVaults {
-		networkVaults := make([]*StakeWiseVault, len(vaults))
-		for i, vault := range vaults {
-			networkVaults[i] = vault.Clone()
+// Adds a StakeWise vault to the database
+func (d *Database) AddStakeWiseVault(deployment string, address ethcommon.Address) error {
+	deploymentVaults, exists := d.StakeWiseVaults[deployment]
+	if !exists {
+		deploymentVaults = []*StakeWiseVault{}
+		d.StakeWiseVaults[deployment] = deploymentVaults
+	}
+
+	for _, vault := range deploymentVaults {
+		if vault.Address == address {
+			return fmt.Errorf("stakewise vault with address [%s] already exists in deployment %s", address.Hex(), deployment)
 		}
-		clone.StakeWiseVaults[network] = networkVaults
 	}
 
-	// Copy users
-	for _, user := range d.Users {
-		clone.Users = append(clone.Users, user.Clone())
-	}
-
-	// Copy sessions
-	for _, session := range d.Sessions {
-		clone.Sessions = append(clone.Sessions, session.Clone())
-	}
-
-	// Copy ConstellationAdmin private key
-	keyBytes := crypto.FromECDSA(d.ConstellationAdminPrivateKey)
-	clone.ConstellationAdminPrivateKey, _ = crypto.ToECDSA(keyBytes)
-
-	// Copy deployment
-	if d.Deployment != nil {
-		clone.Deployment = d.Deployment.Clone()
-	}
-
-	// Copy nonce maps
-	for address, nonce := range d.ConstellationWhitelistNonces {
-		clone.ConstellationWhitelistNonces[address] = nonce
-	}
-	for address, nonce := range d.ConstellationSuperNodeNonces {
-		clone.ConstellationSuperNodeNonces[address] = nonce
-	}
-
-	return clone
+	vault := NewStakeWiseVaultInfo(address)
+	deploymentVaults = append(deploymentVaults, vault)
+	d.StakeWiseVaults[deployment] = deploymentVaults
+	return nil
 }
 
-// ===============
-// === Getters ===
-// ===============
-
-// Get a node by address - returns true if registered, false if not registered and just whitelisted
-func (d *Database) GetNode(address ethcommon.Address) (*Node, bool) {
-	for _, user := range d.Users {
-		for _, candidate := range user.RegisteredNodes {
-			if candidate.Address == address {
-				return candidate, true
-			}
-		}
-		for _, candidate := range user.WhitelistedNodes {
-			if candidate.Address == address {
-				return candidate, false
-			}
-		}
-	}
-	return nil, false
-}
-
-// Get the StakeWise status of a validator
-func (d *Database) GetStakeWiseVault(address ethcommon.Address, networkName string) *StakeWiseVault {
-	vaults, exists := d.StakeWiseVaults[networkName]
+// Get the StakeWise vault for the given deployment and address
+func (d *Database) GetStakeWiseVault(deployment string, address ethcommon.Address) *StakeWiseVault {
+	vaults, exists := d.StakeWiseVaults[deployment]
 	if !exists {
 		return nil
 	}
@@ -241,7 +249,7 @@ func (d *Database) GetStakeWiseVault(address ethcommon.Address, networkName stri
 }
 
 // Handle a new collection of deposit data uploads from a node
-func (d *Database) HandleDepositDataUpload(nodeAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+func (d *Database) HandleDepositDataUpload(nodeAddress ethcommon.Address, deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
 	// Get the node
 	var node *Node
 	for _, user := range d.Users {
@@ -260,30 +268,23 @@ func (d *Database) HandleDepositDataUpload(nodeAddress ethcommon.Address, data [
 	}
 
 	// Add the deposit data
+	vault := d.GetStakeWiseVault(deployment, vaultAddress)
+	if vault == nil {
+		return fmt.Errorf("StakeWise vault with address [%s] not found in deployment [%s]", vaultAddress.Hex(), deployment)
+	}
 	for _, depositData := range data {
-		vaultAddress := ethcommon.BytesToAddress(depositData.WithdrawalCredentials)
-		vaults, exists := d.StakeWiseVaults[depositData.NetworkName]
-		if !exists {
-			return fmt.Errorf("network [%s] not found in StakeWise vaults", depositData.NetworkName)
+		wcAddress := ethcommon.BytesToAddress(depositData.WithdrawalCredentials)
+		if wcAddress != vaultAddress {
+			return fmt.Errorf("deposit data withdrawal credentials [%s] don't match vault address [%s]", wcAddress.Hex(), vaultAddress.Hex())
 		}
-		found := false
-		for _, vault := range vaults {
-			if vault.Address == vaultAddress {
-				found = true
-				node.AddDepositData(depositData, vaultAddress)
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("vault with address [%s] not found", vaultAddress.Hex())
-		}
+		node.AddDepositData(depositData, deployment, vaultAddress)
 	}
 
 	return nil
 }
 
 // Handle a new collection of signed exits from a node
-func (d *Database) HandleSignedExitUpload(nodeAddress ethcommon.Address, network string, data []common.ExitData) error {
+func (d *Database) HandleSignedExitUpload(nodeAddress ethcommon.Address, deployment string, vaultAddress ethcommon.Address, data []common.ExitData) error {
 	// Get the node
 	var node *Node
 	for _, user := range d.Users {
@@ -309,9 +310,9 @@ func (d *Database) HandleSignedExitUpload(nodeAddress ethcommon.Address, network
 		}
 
 		// Get the validator
-		validators, exists := node.Validators[network]
+		validators, exists := node.Validators[deployment]
 		if !exists {
-			return fmt.Errorf("network [%s] is not used by node [%s]", network, nodeAddress.Hex())
+			return fmt.Errorf("deployment [%s] is not used by node [%s]", deployment, nodeAddress.Hex())
 		}
 		found := false
 		for _, validator := range validators {
@@ -330,18 +331,18 @@ func (d *Database) HandleSignedExitUpload(nodeAddress ethcommon.Address, network
 }
 
 // Create a new deposit data set
-func (d *Database) CreateNewDepositDataSet(network string, validatorsPerUser int) []beacon.ExtendedDepositData {
+func (d *Database) CreateNewDepositDataSet(deployment string, validatorsPerUser int) []beacon.ExtendedDepositData {
 	depositData := []beacon.ExtendedDepositData{}
 
 	// Iterate the users
 	for _, user := range d.Users {
 		userCount := 0
 		for _, node := range user.RegisteredNodes {
-			validatorsForNetwork, exists := node.Validators[network]
+			validatorsForDeployment, exists := node.Validators[deployment]
 			if !exists {
 				continue
 			}
-			for _, validator := range validatorsForNetwork {
+			for _, validator := range validatorsForDeployment {
 				// Add this deposit data if it hasn't been used
 				if !validator.DepositDataUsed {
 					depositData = append(depositData, validator.DepositData)
@@ -361,10 +362,10 @@ func (d *Database) CreateNewDepositDataSet(network string, validatorsPerUser int
 }
 
 // Call this to "upload" a deposit data set to StakeWise
-func (d *Database) UploadDepositDataToStakeWise(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
-	vaults, exists := d.StakeWiseVaults[network]
+func (d *Database) UploadDepositDataToStakeWise(deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	vaults, exists := d.StakeWiseVaults[deployment]
 	if !exists {
-		return fmt.Errorf("network [%s] not found in StakeWise vaults", network)
+		return fmt.Errorf("deployment [%s] not found in StakeWise vaults", deployment)
 	}
 	var vault *StakeWiseVault
 	for _, candidate := range vaults {
@@ -385,10 +386,10 @@ func (d *Database) UploadDepositDataToStakeWise(vaultAddress ethcommon.Address, 
 }
 
 // Call this once a deposit data set has been "uploaded" to StakeWise
-func (d *Database) MarkDepositDataSetUploaded(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
-	vaults, exists := d.StakeWiseVaults[network]
+func (d *Database) MarkDepositDataSetUploaded(deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	vaults, exists := d.StakeWiseVaults[deployment]
 	if !exists {
-		return fmt.Errorf("network [%s] not found in StakeWise vaults", network)
+		return fmt.Errorf("deployment [%s] not found in StakeWise vaults", deployment)
 	}
 
 	var vault *StakeWiseVault
@@ -404,10 +405,9 @@ func (d *Database) MarkDepositDataSetUploaded(vaultAddress ethcommon.Address, ne
 
 	// Flag each deposit data as uploaded
 	for _, depositData := range data {
-		network := depositData.NetworkName
 		for _, user := range d.Users {
 			for _, node := range user.RegisteredNodes {
-				validators, exists := node.Validators[network]
+				validators, exists := node.Validators[deployment]
 				if !exists {
 					continue
 				}
@@ -427,10 +427,10 @@ func (d *Database) MarkDepositDataSetUploaded(vaultAddress ethcommon.Address, ne
 	return nil
 }
 
-func (d *Database) MarkValidatorsRegistered(vaultAddress ethcommon.Address, network string, data []beacon.ExtendedDepositData) error {
-	vaults, exists := d.StakeWiseVaults[network]
+func (d *Database) MarkValidatorsRegistered(deployment string, vaultAddress ethcommon.Address, data []beacon.ExtendedDepositData) error {
+	vaults, exists := d.StakeWiseVaults[deployment]
 	if !exists {
-		return fmt.Errorf("network [%s] not found in StakeWise vaults", network)
+		return fmt.Errorf("deployment [%s] not found in StakeWise vaults", deployment)
 	}
 
 	var vault *StakeWiseVault
@@ -446,10 +446,9 @@ func (d *Database) MarkValidatorsRegistered(vaultAddress ethcommon.Address, netw
 
 	// Flag each validator as registered
 	for _, depositData := range data {
-		network := depositData.NetworkName
 		for _, user := range d.Users {
 			for _, node := range user.RegisteredNodes {
-				validators, exists := node.Validators[network]
+				validators, exists := node.Validators[deployment]
 				if !exists {
 					continue
 				}
@@ -464,6 +463,10 @@ func (d *Database) MarkValidatorsRegistered(vaultAddress ethcommon.Address, netw
 
 	return nil
 }
+
+// =====================
+// === Constellation ===
+// =====================
 
 // Call this to set the private key for the ConstellationAdmin contract
 func (d *Database) SetConstellationAdminPrivateKey(privateKey *ecdsa.PrivateKey) {

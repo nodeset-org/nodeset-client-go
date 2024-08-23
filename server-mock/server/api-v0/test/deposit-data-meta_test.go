@@ -49,11 +49,11 @@ func TestDepositDataMeta(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error registering node account: %v", err)
 	}
-	err = mgr.AddStakeWiseVault(test.StakeWiseVaultAddress, test.Network)
+	err = mgr.AddStakeWiseVault(test.Network, test.StakeWiseVaultAddress)
 	if err != nil {
 		t.Fatalf("error adding StakeWise vault to database: %v", err)
 	}
-	vault := mgr.GetStakeWiseVault(test.StakeWiseVaultAddress, test.Network)
+	vault := mgr.GetStakeWiseVault(test.Network, test.StakeWiseVaultAddress)
 	vault.LatestDepositDataSetIndex = depositDataSet
 
 	// Create a session

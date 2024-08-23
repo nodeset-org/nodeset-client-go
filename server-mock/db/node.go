@@ -17,15 +17,15 @@ func newNode(address common.Address) *Node {
 	}
 }
 
-func (n *Node) AddDepositData(depositData beacon.ExtendedDepositData, vaultAddress common.Address) {
-	validatorsForNetwork, exists := n.Validators[depositData.NetworkName]
+func (n *Node) AddDepositData(depositData beacon.ExtendedDepositData, deployment string, vaultAddress common.Address) {
+	validatorsForDeployment, exists := n.Validators[deployment]
 	if !exists {
-		validatorsForNetwork = []*Validator{}
-		n.Validators[depositData.NetworkName] = validatorsForNetwork
+		validatorsForDeployment = []*Validator{}
+		n.Validators[deployment] = validatorsForDeployment
 	}
 
 	pubkey := beacon.ValidatorPubkey(depositData.PublicKey)
-	for _, validator := range validatorsForNetwork {
+	for _, validator := range validatorsForDeployment {
 		if validator.Pubkey == pubkey {
 			// Already present
 			return
@@ -33,18 +33,18 @@ func (n *Node) AddDepositData(depositData beacon.ExtendedDepositData, vaultAddre
 	}
 
 	validator := newValidator(depositData, vaultAddress)
-	validatorsForNetwork = append(validatorsForNetwork, validator)
-	n.Validators[depositData.NetworkName] = validatorsForNetwork
+	validatorsForDeployment = append(validatorsForDeployment, validator)
+	n.Validators[deployment] = validatorsForDeployment
 }
 
 func (n *Node) Clone() *Node {
 	clone := newNode(n.Address)
-	for network, validatorsForNetwork := range n.Validators {
-		cloneSlice := make([]*Validator, len(validatorsForNetwork))
-		for i, validator := range validatorsForNetwork {
+	for deployment, validatorsForDeployment := range n.Validators {
+		cloneSlice := make([]*Validator, len(validatorsForDeployment))
+		for i, validator := range validatorsForDeployment {
 			cloneSlice[i] = validator.Clone()
 		}
-		clone.Validators[network] = cloneSlice
+		clone.Validators[deployment] = cloneSlice
 	}
 	return clone
 }

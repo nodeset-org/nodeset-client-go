@@ -29,7 +29,7 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	db.SetDeployment(test.GetTestDeployment())
 
 	// Add a StakeWise vault to the database
-	err := db.AddStakeWiseVault(test.StakeWiseVaultAddress, test.Network)
+	err := db.AddStakeWiseVault(test.Network, test.StakeWiseVaultAddress)
 	if err != nil {
 		t.Fatalf("Error adding StakeWise vault to database: %v", err)
 	}
@@ -58,19 +58,19 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	t.Log("Generated deposit data")
 
 	// Handle the deposit data upload
-	err = db.HandleDepositDataUpload(node0, []beacon.ExtendedDepositData{depositData0})
+	err = db.HandleDepositDataUpload(node0, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData0})
 	if err != nil {
 		t.Fatalf("Error handling deposit data upload: %v", err)
 	}
-	err = db.HandleDepositDataUpload(node1, []beacon.ExtendedDepositData{depositData1, depositData2})
+	err = db.HandleDepositDataUpload(node1, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData1, depositData2})
 	if err != nil {
 		t.Fatalf("Error handling deposit data upload: %v", err)
 	}
-	err = db.HandleDepositDataUpload(node2, []beacon.ExtendedDepositData{depositData3})
+	err = db.HandleDepositDataUpload(node2, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData3})
 	if err != nil {
 		t.Fatalf("Error handling deposit data upload: %v", err)
 	}
-	err = db.HandleDepositDataUpload(node3, []beacon.ExtendedDepositData{depositData4})
+	err = db.HandleDepositDataUpload(node3, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData4})
 	if err != nil {
 		t.Fatalf("Error handling deposit data upload: %v", err)
 	}
@@ -86,14 +86,14 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	require.Equal(t, []beacon.ExtendedDepositData{depositData0, depositData1, depositData3}, depositDataSet)
 
 	// Handle the deposit data upload
-	err = db.UploadDepositDataToStakeWise(test.StakeWiseVaultAddress, test.Network, depositDataSet)
+	err = db.UploadDepositDataToStakeWise(test.Network, test.StakeWiseVaultAddress, depositDataSet)
 	if err != nil {
 		t.Fatalf("Error uploading deposit data to StakeWise: %v", err)
 	}
 	t.Log("Uploaded deposit data to StakeWise")
 
 	// Finalize the upload
-	err = db.MarkDepositDataSetUploaded(test.StakeWiseVaultAddress, test.Network, depositDataSet)
+	err = db.MarkDepositDataSetUploaded(test.Network, test.StakeWiseVaultAddress, depositDataSet)
 	if err != nil {
 		t.Fatalf("Error marking deposit data set uploaded: %v", err)
 	}

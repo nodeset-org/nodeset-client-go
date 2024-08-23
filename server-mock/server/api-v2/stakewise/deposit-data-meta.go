@@ -34,7 +34,7 @@ func (s *V2StakeWiseServer) depositDataMeta(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := s.manager.GetStakeWiseVault(vaultAddress, deployment.DeploymentID)
+	vault := s.manager.GetStakeWiseVault(deployment.DeploymentID, vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, deployment.DeploymentID, vaultAddress)
 		return

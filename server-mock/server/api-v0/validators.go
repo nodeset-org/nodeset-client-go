@@ -70,9 +70,16 @@ func (s *V0Server) patchValidators(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Handle the upload
+	// Just get the first vault for the deployment
 	network := args.Get("network")
-	err := s.manager.HandleSignedExitUpload(node.Address, network, exitData)
+	vaults := s.manager.GetStakeWiseVaults(network)
+	if len(vaults) == 0 {
+		common.HandleInvalidDeployment(w, s.logger, network)
+		return
+	}
+
+	// Handle the upload
+	err := s.manager.HandleSignedExitUpload(node.Address, network, vaults[0].Address, exitData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

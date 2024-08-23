@@ -30,7 +30,7 @@ func (s *V0Server) depositDataMeta(w http.ResponseWriter, r *http.Request) {
 	// Input validation
 	network := args.Get("network")
 	vaultAddress := ethcommon.HexToAddress(args.Get("vault"))
-	vault := s.manager.GetStakeWiseVault(vaultAddress, network)
+	vault := s.manager.GetStakeWiseVault(network, vaultAddress)
 	if vault == nil {
 		common.HandleInputError(w, s.logger, fmt.Errorf("vault with address [%s] on network [%s] not found", vaultAddress.Hex(), network))
 		return

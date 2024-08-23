@@ -18,9 +18,9 @@ func (s *AdminServer) cycleSet(w http.ResponseWriter, r *http.Request) {
 
 	// Input validation
 	query := r.URL.Query()
-	networkName := query.Get("network")
-	if networkName == "" {
-		common.HandleInputError(w, s.logger, fmt.Errorf("missing network query parameter"))
+	deployment := query.Get("deployment")
+	if deployment == "" {
+		common.HandleInputError(w, s.logger, fmt.Errorf("missing deployment query parameter"))
 		return
 	}
 	vaultAddressString := query.Get("vault")
@@ -41,23 +41,26 @@ func (s *AdminServer) cycleSet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a new deposit data set
-	set := s.manager.CreateNewDepositDataSet(networkName, int(validatorsPerUser))
-	s.logger.Info("Created new deposit data set", "network", networkName, "user-limit", validatorsPerUser)
+	set := s.manager.CreateNewDepositDataSet(deployment, int(validatorsPerUser))
+	s.logger.Info("Created new deposit data set",
+		"deployment", deployment,
+		"user-limit", validatorsPerUser,
+	)
 
-	err = s.manager.UploadDepositDataToStakeWise(vaultAddress, networkName, set)
+	err = s.manager.UploadDepositDataToStakeWise(deployment, vaultAddress, set)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return
 	}
 	s.logger.Info("Uploaded deposit data set", "vault", vaultAddress.Hex())
 
-	err = s.manager.MarkDepositDataSetUploaded(vaultAddress, networkName, set)
+	err = s.manager.MarkDepositDataSetUploaded(deployment, vaultAddress, set)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return
 	}
 
-	vault := s.manager.GetStakeWiseVault(vaultAddress, networkName)
+	vault := s.manager.GetStakeWiseVault(deployment, vaultAddress)
 	if vault != nil {
 		s.logger.Info("Marked deposit data set as uploaded", "version", vault.LatestDepositDataSetIndex)
 	}

@@ -3,6 +3,7 @@ package v2server_stakewise
 import (
 	"net/http"
 
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
@@ -76,8 +77,15 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Handle the upload
-	deployment := pathArgs["deployment"]
-	err := s.manager.HandleSignedExitUpload(node.Address, deployment, exitData)
+	deploymentID := pathArgs["deployment"]
+	deployment := s.manager.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
+		return
+	}
+	vault := pathArgs["vault"]
+	vaultAddress := ethcommon.HexToAddress(vault)
+	err := s.manager.HandleSignedExitUpload(node.Address, deploymentID, vaultAddress, exitData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return
