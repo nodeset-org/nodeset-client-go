@@ -64,7 +64,7 @@ func (c *NodeSetClient) DepositData_Get(ctx context.Context, vault ethcommon.Add
 	}
 
 	// Send it
-	code, response, err := stakewise.DepositData_Get(c.CommonNodeSetClient, ctx, params, stakewise.DepositDataPath)
+	code, response, err := stakewise.DepositData_Get[stakewise.DepositDataData](c.CommonNodeSetClient, ctx, params, stakewise.DepositDataPath)
 	if err != nil {
 		return stakewise.DepositDataData{}, err
 	}

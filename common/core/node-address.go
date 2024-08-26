@@ -10,7 +10,6 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 const (
@@ -49,14 +48,8 @@ type NodeAddressRequest struct {
 
 // Registers the node with the NodeSet server. Assumes wallet validation has already been done and the actual wallet address
 // is provided here; if it's not, the signature won't come from the node being registered so it will fail validation.
-func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, email string, nodeWallet ethcommon.Address, signature []byte, nodeAddressPath string) error {
+func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, email string, nodeWallet ethcommon.Address, signature []byte, nodeAddressPath string, request any) error {
 	// Create the request body
-	signatureString := utils.EncodeHexWithPrefix(signature)
-	request := NodeAddressRequest{
-		Email:       email,
-		NodeAddress: nodeWallet.Hex(),
-		Signature:   signatureString,
-	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
 		return fmt.Errorf("error marshalling registration request: %w", err)

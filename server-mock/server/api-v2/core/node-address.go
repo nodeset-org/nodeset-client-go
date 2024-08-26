@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/common/core"
+	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
@@ -18,7 +18,7 @@ func (s *V2CoreServer) nodeAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the requesting node
-	var request core.NodeAddressRequest
+	var request v2core.NodeAddressRequest
 	_, _ = common.ProcessApiRequest(s, w, r, &request)
 
 	// Get the node

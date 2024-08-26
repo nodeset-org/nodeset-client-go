@@ -28,6 +28,29 @@ type ValidatorsData struct {
 	Validators []ValidatorStatus `json:"validators"`
 }
 
+// Details of an exit message
+type ExitMessageDetails struct {
+	Epoch          string `json:"epoch"`
+	ValidatorIndex string `json:"validatorIndex"`
+}
+
+// Voluntary exit message
+type ExitMessage struct {
+	Message   ExitMessageDetails `json:"message"`
+	Signature string             `json:"signature"`
+}
+
+// Data for a pubkey's voluntary exit message
+type ExitData struct {
+	Pubkey      string      `json:"pubkey"`
+	ExitMessage ExitMessage `json:"exitMessage"`
+}
+
+// Request body for submitting exit data
+type Validators_PatchBody struct {
+	ExitData []ExitData `json:"exitData"`
+}
+
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
 func (c *V2ConstellationClient) Validators_Get(ctx context.Context, deployment string) (ValidatorsData, error) {
 	// Send the request
@@ -62,7 +85,19 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, deployment s
 // Submit signed exit data to NodeSet
 func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment string, vault ethcommon.Address, exitData []common.ExitData) error {
 	// Create the request body
-	jsonData, err := json.Marshal(exitData)
+	body := Validators_PatchBody{
+		ExitData: make([]ExitData, len(exitData)),
+	}
+	for i, data := range exitData {
+		body.ExitData[i] = ExitData{
+			Pubkey: data.Pubkey,
+			ExitMessage: ExitMessage{
+				Message:   ExitMessageDetails(data.ExitMessage.Message),
+				Signature: data.ExitMessage.Signature,
+			},
+		}
+	}
+	jsonData, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("error marshalling exit data to JSON: %w", err)
 	}

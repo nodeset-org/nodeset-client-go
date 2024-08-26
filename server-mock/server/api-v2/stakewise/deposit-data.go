@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
+	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
@@ -49,28 +49,34 @@ func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Write the data
-	data := stakewise.DepositDataData{
+	data := v2stakewise.DepositDataData{
 		Version:     vault.LatestDepositDataSetIndex,
-		DepositData: vault.LatestDepositDataSet,
+		DepositData: make([]v2stakewise.ExtendedDepositData, len(vault.LatestDepositDataSet)),
 	}
+	for i, deposit := range vault.LatestDepositDataSet {
+		data.DepositData[i] = v2stakewise.ExtendedDepositData(deposit)
+	}
+
 	common.HandleSuccess(w, s.logger, data)
 }
 
 // POST api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
 func (s *V2StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Request) {
-	// Get the requesting node
-	var depositData []beacon.ExtendedDepositData
-	_, pathArgs := common.ProcessApiRequest(s, w, r, &depositData)
+	// Get the params
+	var body v2stakewise.DepositData_PostBody
+	_, pathArgs := common.ProcessApiRequest(s, w, r, &body)
 	session := common.ProcessAuthHeader(s, w, r)
 	if session == nil {
 		return
 	}
+
+	// Get the requesting node
 	node := common.GetNodeForSession(s, w, session)
 	if node == nil {
 		return
 	}
 
-	// Handle the upload
+	// Input validation
 	deploymentID := pathArgs["deployment"]
 	deployment := s.manager.GetDeployment(deploymentID)
 	if deployment == nil {
@@ -79,7 +85,13 @@ func (s *V2StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Req
 	}
 	vault := pathArgs["vault"]
 	vaultAddress := ethcommon.HexToAddress(vault)
-	err := s.manager.HandleDepositDataUpload(node.Address, deploymentID, vaultAddress, depositData)
+
+	// Handle the request
+	castedDepositData := make([]beacon.ExtendedDepositData, len(body.Validators))
+	for i, deposit := range body.Validators {
+		castedDepositData[i] = beacon.ExtendedDepositData(deposit)
+	}
+	err := s.manager.HandleDepositDataUpload(node.Address, deploymentID, vaultAddress, castedDepositData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

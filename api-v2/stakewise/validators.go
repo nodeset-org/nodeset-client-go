@@ -10,6 +10,29 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 )
 
+// Details of an exit message
+type ExitMessageDetails struct {
+	Epoch          string `json:"epoch"`
+	ValidatorIndex string `json:"validatorIndex"`
+}
+
+// Voluntary exit message
+type ExitMessage struct {
+	Message   ExitMessageDetails `json:"message"`
+	Signature string             `json:"signature"`
+}
+
+// Data for a pubkey's voluntary exit message
+type ExitData struct {
+	Pubkey      string      `json:"pubkey"`
+	ExitMessage ExitMessage `json:"exitMessage"`
+}
+
+// Request body for submitting exit data
+type Validators_PatchBody struct {
+	ExitData []ExitData `json:"exitData"`
+}
+
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
 func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, deployment string, vault ethcommon.Address) (stakewise.ValidatorsData, error) {
 	// Send the request
@@ -40,9 +63,23 @@ func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, deployment strin
 
 // Submit signed exit data to NodeSet
 func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, deployment string, vault ethcommon.Address, exitData []common.ExitData) error {
+	// Create the request body
+	body := Validators_PatchBody{
+		ExitData: make([]ExitData, len(exitData)),
+	}
+	for i, data := range exitData {
+		body.ExitData[i] = ExitData{
+			Pubkey: data.Pubkey,
+			ExitMessage: ExitMessage{
+				Message:   ExitMessageDetails(data.ExitMessage.Message),
+				Signature: data.ExitMessage.Signature,
+			},
+		}
+	}
+
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Patch(c.commonClient, ctx, exitData, nil, path)
+	code, response, err := stakewise.Validators_Patch(c.commonClient, ctx, body, nil, path)
 	if err != nil {
 		return err
 	}

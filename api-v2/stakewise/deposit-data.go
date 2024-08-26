@@ -21,11 +21,34 @@ var (
 	ErrDepositDataMismatch error = fmt.Errorf("the provided deposit data does not match the given deployment or vault")
 )
 
+// Extended deposit data beyond what is required in an actual deposit message to Beacon, emulating what the deposit CLI produces
+type ExtendedDepositData struct {
+	PublicKey             beacon.ByteArray `json:"pubkey"`
+	WithdrawalCredentials beacon.ByteArray `json:"withdrawalCredentials"`
+	Amount                uint64           `json:"amount"`
+	Signature             beacon.ByteArray `json:"signature"`
+	DepositMessageRoot    beacon.ByteArray `json:"depositMessageRoot"`
+	DepositDataRoot       beacon.ByteArray `json:"depositDataRoot"`
+	ForkVersion           beacon.ByteArray `json:"forkVersion"`
+	NetworkName           string           `json:"networkName"`
+}
+
+// Response to a deposit data request
+type DepositDataData struct {
+	Version     int                   `json:"version"`
+	DepositData []ExtendedDepositData `json:"depositData"`
+}
+
+// Request body for uploading deposit data
+type DepositData_PostBody struct {
+	Validators []ExtendedDepositData `json:"validators"`
+}
+
 // Get the aggregated deposit data from the server
 func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, deployment string, vault ethcommon.Address) (stakewise.DepositDataData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Get(c.commonClient, ctx, nil, path)
+	code, response, err := stakewise.DepositData_Get[DepositDataData](c.commonClient, ctx, nil, path)
 	if err != nil {
 		return stakewise.DepositDataData{}, err
 	}
@@ -33,7 +56,15 @@ func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, deployment stri
 	// Handle response based on return code
 	switch code {
 	case http.StatusOK:
-		return response.Data, nil
+		// Convert to standard Beacon data
+		data := stakewise.DepositDataData{
+			Version:     response.Data.Version,
+			DepositData: make([]beacon.ExtendedDepositData, len(response.Data.DepositData)),
+		}
+		for i, deposit := range response.Data.DepositData {
+			data.DepositData[i] = beacon.ExtendedDepositData(deposit)
+		}
+		return data, nil
 
 	case http.StatusBadRequest:
 		switch response.Error {
@@ -51,9 +82,16 @@ func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, deployment stri
 
 // Uploads deposit data to NodeSet
 func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, deployment string, vault ethcommon.Address, depositData []beacon.ExtendedDepositData) error {
+	// Convert the deposit data to the NS form
+	body := DepositData_PostBody{}
+	body.Validators = make([]ExtendedDepositData, len(depositData))
+	for i, deposit := range depositData {
+		body.Validators[i] = ExtendedDepositData(deposit)
+	}
+
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Post(c.commonClient, ctx, depositData, path)
+	code, response, err := stakewise.DepositData_Post(c.commonClient, ctx, body, path)
 	if err != nil {
 		return err
 	}

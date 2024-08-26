@@ -59,7 +59,7 @@ var (
 // A deployment of the service
 type Deployment struct {
 	// The Ethereum chain ID of the deployment
-	ChainID string `json:"chainID"`
+	ChainID string `json:"chainId"`
 
 	// The name of the deployment, used as a key in subsequent requests
 	Name string `json:"name"`

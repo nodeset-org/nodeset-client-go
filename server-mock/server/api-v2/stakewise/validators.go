@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
@@ -65,8 +66,8 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 // PATCH api/v2/modules/stakewise/{deployment}/{vault}/validators
 func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
-	var exitData []clientcommon.ExitData
-	_, pathArgs := common.ProcessApiRequest(s, w, r, &exitData)
+	var body v2stakewise.Validators_PatchBody
+	_, pathArgs := common.ProcessApiRequest(s, w, r, &body)
 	session := common.ProcessAuthHeader(s, w, r)
 	if session == nil {
 		return
@@ -76,7 +77,7 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Handle the upload
+	// Input validation
 	deploymentID := pathArgs["deployment"]
 	deployment := s.manager.GetDeployment(deploymentID)
 	if deployment == nil {
@@ -85,7 +86,19 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 	}
 	vault := pathArgs["vault"]
 	vaultAddress := ethcommon.HexToAddress(vault)
-	err := s.manager.HandleSignedExitUpload(node.Address, deploymentID, vaultAddress, exitData)
+
+	// Handle the upload
+	castedExitData := make([]clientcommon.ExitData, len(body.ExitData))
+	for i, data := range body.ExitData {
+		castedExitData[i] = clientcommon.ExitData{
+			Pubkey: data.Pubkey,
+			ExitMessage: clientcommon.ExitMessage{
+				Message:   clientcommon.ExitMessageDetails(data.ExitMessage.Message),
+				Signature: data.ExitMessage.Signature,
+			},
+		}
+	}
+	err := s.manager.HandleSignedExitUpload(node.Address, deploymentID, vaultAddress, castedExitData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

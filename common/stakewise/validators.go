@@ -68,7 +68,7 @@ func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, params m
 }
 
 // Submit signed exit data to Nodeset
-func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, exitData []common.ExitData, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
+func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, exitData any, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
 	// Create the request body
 	jsonData, err := json.Marshal(exitData)
 	if err != nil {
