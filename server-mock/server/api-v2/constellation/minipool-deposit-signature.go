@@ -35,7 +35,7 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	}
 
 	// Prep the args
-	salt, success := new(big.Int).SetString(request.Salt, 10)
+	salt, success := new(big.Int).SetString(request.Salt, 16)
 	if !success {
 		common.HandleInputError(w, s.logger, fmt.Errorf("error decoding salt"))
 		return

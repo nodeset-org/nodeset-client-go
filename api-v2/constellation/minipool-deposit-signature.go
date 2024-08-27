@@ -38,7 +38,7 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, de
 	// Create the request body
 	request := MinipoolDepositSignatureRequest{
 		MinipoolAddress: minipoolAddress,
-		Salt:            salt.String(),
+		Salt:            salt.Text(16),
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
