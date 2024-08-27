@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/goccy/go-json"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
@@ -83,7 +82,7 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, deployment s
 }
 
 // Submit signed exit data to NodeSet
-func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment string, vault ethcommon.Address, exitData []common.ExitData) error {
+func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment string, exitData []common.ExitData) error {
 	// Create the request body
 	body := Validators_PatchBody{
 		ExitData: make([]ExitData, len(exitData)),
@@ -103,7 +102,7 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment
 	}
 
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath
+	path := ConstellationPrefix + deployment + "/" + ValidatorsPath
 	code, response, err := common.SubmitRequest[struct{}](c.commonClient, ctx, true, http.MethodPatch, bytes.NewBuffer(jsonData), nil, path)
 	if err != nil {
 		return fmt.Errorf("error submitting exit data: %w", err)
