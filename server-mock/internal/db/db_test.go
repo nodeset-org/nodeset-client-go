@@ -31,7 +31,7 @@ func TestDatabaseClone(t *testing.T) {
 
 	// Get the first pubkey from user 2 that hasn't been uploaded yet
 	user := db.Core.GetUser(test.User2Email)
-	vault := db.StakeWise.GetDeployment(test.Network).GetStakeWiseVault(test.StakeWiseVaultAddress)
+	vault := db.StakeWise.GetDeployment(test.Network).GetVault(test.StakeWiseVaultAddress)
 	var pubkey beacon.ValidatorPubkey
 	found := false
 	for _, node := range user.GetNodes() {
@@ -59,7 +59,7 @@ func TestDatabaseClone(t *testing.T) {
 	t.Log("Marked deposit data uploaded for StakeWise vault")
 
 	// Make sure the clone didn't get the update
-	if clone.StakeWise.GetDeployment(test.Network).GetStakeWiseVault(test.StakeWiseVaultAddress).UploadedData[pubkey] {
+	if clone.StakeWise.GetDeployment(test.Network).GetVault(test.StakeWiseVaultAddress).UploadedData[pubkey] {
 		t.Fatalf("Clone got the update")
 	}
 	t.Log("Clone wasn't updated, as expected")
@@ -75,8 +75,8 @@ func compareDatabases(t *testing.T, db *db.Database, clone *db.Database) {
 	assert.Equal(t, db.StakeWise.GetDeployments(), clone.StakeWise.GetDeployments())
 	for id, deployment := range db.StakeWise.GetDeployments() {
 		cloneDeployment := clone.StakeWise.GetDeployment(id)
-		for address, vault := range deployment.GetStakeWiseVaults() {
-			cloneVault := cloneDeployment.GetStakeWiseVault(address)
+		for address, vault := range deployment.GetVaults() {
+			cloneVault := cloneDeployment.GetVault(address)
 			assert.NotSame(t, vault, cloneVault)
 		}
 	}
@@ -93,7 +93,7 @@ func compareDatabases(t *testing.T, db *db.Database, clone *db.Database) {
 			assert.NotSame(t, node, cloneNode)
 
 			for _, deployment := range db.StakeWise.GetDeployments() {
-				for _, vault := range deployment.GetStakeWiseVaults() {
+				for _, vault := range deployment.GetVaults() {
 					nodeValidators := node.GetStakeWiseValidatorsForVault(vault)
 					cloneValidators := cloneNode.GetStakeWiseValidatorsForVault(vault)
 					for i, validator := range nodeValidators {

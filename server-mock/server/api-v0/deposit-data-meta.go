@@ -35,7 +35,7 @@ func (s *V0Server) depositDataMeta(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(args.Get("vault"))
-	vault := deployment.GetStakeWiseVault(vaultAddress)
+	vault := deployment.GetVault(vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, network, vaultAddress)
 		return

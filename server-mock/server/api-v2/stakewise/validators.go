@@ -44,7 +44,7 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := deployment.GetStakeWiseVault(vaultAddress)
+	vault := deployment.GetVault(vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return
@@ -91,7 +91,7 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := deployment.GetStakeWiseVault(vaultAddress)
+	vault := deployment.GetVault(vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return

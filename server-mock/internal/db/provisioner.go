@@ -30,7 +30,7 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	_ = database.Constellation.AddDeployment(test.Network, test.ChainIDBig, test.WhitelistAddress, test.SuperNodeAddress)
 
 	// Add a StakeWise vault to the database
-	vault := swDeployment.AddStakeWiseVault(test.StakeWiseVaultAddress)
+	vault := swDeployment.AddVault(test.StakeWiseVaultAddress)
 	t.Log("Added StakeWise vault to database")
 
 	// Add a users to the database

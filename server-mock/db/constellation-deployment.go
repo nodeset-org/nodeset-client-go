@@ -88,7 +88,7 @@ func (d *ConstellationDeployment) IncrementSuperNodeNonce(address ethcommon.Addr
 }
 
 // Call this to get a signature for adding the node to the Constellation whitelist
-func (d *ConstellationDeployment) GetConstellationWhitelistSignature(nodeAddress ethcommon.Address) ([]byte, error) {
+func (d *ConstellationDeployment) GetWhitelistSignature(nodeAddress ethcommon.Address) ([]byte, error) {
 	if d.adminPrivateKey == nil {
 		return nil, fmt.Errorf("constellation admin private key not set")
 	}
@@ -119,7 +119,7 @@ func (d *ConstellationDeployment) GetConstellationWhitelistSignature(nodeAddress
 }
 
 // Call this to get a signature for depositing a new minipool with Constellation
-func (d *ConstellationDeployment) GetConstellationDepositSignature(nodeAddress ethcommon.Address, minipoolAddress ethcommon.Address, salt *big.Int) ([]byte, error) {
+func (d *ConstellationDeployment) GetMinipoolDepositSignature(nodeAddress ethcommon.Address, minipoolAddress ethcommon.Address, salt *big.Int) ([]byte, error) {
 	if d.adminPrivateKey == nil {
 		return nil, fmt.Errorf("constellation admin private key not set")
 	}

@@ -53,7 +53,7 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	}
 
 	// Get the signature
-	signature, err := deployment.GetConstellationDepositSignature(node.Address, request.MinipoolAddress, salt)
+	signature, err := deployment.GetMinipoolDepositSignature(node.Address, request.MinipoolAddress, salt)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

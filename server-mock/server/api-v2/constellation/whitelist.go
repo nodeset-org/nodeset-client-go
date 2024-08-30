@@ -32,7 +32,7 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Get the signature
-	signature, err := deployment.GetConstellationWhitelistSignature(node.Address)
+	signature, err := deployment.GetWhitelistSignature(node.Address)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

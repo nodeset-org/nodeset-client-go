@@ -43,7 +43,7 @@ func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := deployment.GetStakeWiseVault(vaultAddress)
+	vault := deployment.GetVault(vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return
@@ -86,7 +86,7 @@ func (s *V2StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Req
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := deployment.GetStakeWiseVault(vaultAddress)
+	vault := deployment.GetVault(vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return

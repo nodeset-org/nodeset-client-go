@@ -47,7 +47,7 @@ func (s *AdminServer) cycleSet(w http.ResponseWriter, r *http.Request) {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
-	vault := deployment.GetStakeWiseVault(vaultAddress)
+	vault := deployment.GetVault(vaultAddress)
 	if vault == nil {
 		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return

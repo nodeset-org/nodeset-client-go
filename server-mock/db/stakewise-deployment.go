@@ -39,7 +39,7 @@ func (d *StakeWiseDeployment) clone(dbClone *Database) *StakeWiseDeployment {
 }
 
 // Add a new StakeWise vault to the deployment. If one already exists with that address, it is just returned.
-func (d *StakeWiseDeployment) AddStakeWiseVault(address ethcommon.Address) *StakeWiseVault {
+func (d *StakeWiseDeployment) AddVault(address ethcommon.Address) *StakeWiseVault {
 	vault, exists := d.vaults[address]
 	if exists {
 		return vault
@@ -50,11 +50,11 @@ func (d *StakeWiseDeployment) AddStakeWiseVault(address ethcommon.Address) *Stak
 }
 
 // Get a StakeWise vault by its address. If there isn't one, returns nil
-func (d *StakeWiseDeployment) GetStakeWiseVault(address ethcommon.Address) *StakeWiseVault {
+func (d *StakeWiseDeployment) GetVault(address ethcommon.Address) *StakeWiseVault {
 	return d.vaults[address]
 }
 
 // Get all vaults
-func (d *StakeWiseDeployment) GetStakeWiseVaults() map[ethcommon.Address]*StakeWiseVault {
+func (d *StakeWiseDeployment) GetVaults() map[ethcommon.Address]*StakeWiseVault {
 	return d.vaults
 }

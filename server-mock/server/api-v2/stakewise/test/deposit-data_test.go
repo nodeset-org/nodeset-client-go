@@ -33,7 +33,7 @@ func TestGetDepositData(t *testing.T) {
 	data := runGetDepositDataRequest(t, db.Core.GetSessions()[0])
 
 	// Make sure the response is correct
-	vault := db.StakeWise.GetDeployment(test.Network).GetStakeWiseVault(test.StakeWiseVaultAddress)
+	vault := db.StakeWise.GetDeployment(test.Network).GetVault(test.StakeWiseVaultAddress)
 	require.Equal(t, vault.LatestDepositDataSetIndex, data.Version)
 	require.Equal(t, vault.LatestDepositDataSet, data.DepositData)
 	require.Greater(t, len(data.DepositData), 0)

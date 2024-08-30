@@ -36,7 +36,7 @@ func (s *AdminServer) addStakeWiseVault(w http.ResponseWriter, r *http.Request) 
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
-	deployment.AddStakeWiseVault(address)
+	deployment.AddVault(address)
 	s.logger.Info("Added new stakewise vault",
 		"deployment", deploymentID,
 		"address", address.Hex(),

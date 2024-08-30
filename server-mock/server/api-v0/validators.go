@@ -85,7 +85,7 @@ func (s *V0Server) patchValidators(w http.ResponseWriter, r *http.Request) {
 		common.HandleInvalidDeployment(w, s.logger, network)
 		return
 	}
-	vaults := deployment.GetStakeWiseVaults()
+	vaults := deployment.GetVaults()
 	if len(vaults) == 0 {
 		common.HandleInvalidDeployment(w, s.logger, network)
 		return
