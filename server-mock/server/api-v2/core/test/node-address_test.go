@@ -25,18 +25,19 @@ func TestRegisterNode(t *testing.T) {
 	}()
 
 	// Provision the database
+	db := mgr.GetDatabase()
 	node0Key, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)
-	err = mgr.AddUser(test.User0Email)
+	user, err := db.Core.AddUser(test.User0Email)
 	require.NoError(t, err)
-	err = mgr.WhitelistNodeAccount(test.User0Email, node0Pubkey)
-	require.NoError(t, err)
+	node := user.WhitelistNode(node0Pubkey)
 
 	// Send the request
 	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key)
 	require.NoError(t, err)
 	runNodeAddressRequest(t, test.User0Email, node0Pubkey, regSig)
+	require.True(t, node.IsRegistered())
 	t.Logf("Node registered successfully")
 }
 

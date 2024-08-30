@@ -6,12 +6,11 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
-// Set the deployment values for the service
-func (s *AdminServer) setDeployment(w http.ResponseWriter, r *http.Request) {
+// Add a Constellation deployment to the service
+func (s *AdminServer) addConstellationDeployment(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		common.HandleInvalidMethod(w, s.logger)
 		return
@@ -22,6 +21,16 @@ func (s *AdminServer) setDeployment(w http.ResponseWriter, r *http.Request) {
 	id := query.Get("id")
 	if id == "" {
 		common.HandleInputError(w, s.logger, fmt.Errorf("missing id query parameter"))
+		return
+	}
+	chainIDString := query.Get("chain")
+	if chainIDString == "" {
+		common.HandleInputError(w, s.logger, fmt.Errorf("missing chain query parameter"))
+		return
+	}
+	chainID, success := new(big.Int).SetString(chainIDString, 10)
+	if !success {
+		common.HandleInputError(w, s.logger, fmt.Errorf("invalid chain id"))
 		return
 	}
 	whitelistString := query.Get("whitelist")
@@ -36,30 +45,15 @@ func (s *AdminServer) setDeployment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	superNode := ethcommon.HexToAddress(superNodeString)
-	chainIDString := query.Get("chain")
-	if chainIDString == "" {
-		common.HandleInputError(w, s.logger, fmt.Errorf("missing chain query parameter"))
-		return
-	}
-	chainID, success := new(big.Int).SetString(chainIDString, 10)
-	if !success {
-		common.HandleInputError(w, s.logger, fmt.Errorf("invalid chain id"))
-		return
-	}
 
-	// Create a new deployment
-	deployment := &db.Deployment{
-		DeploymentID:     id,
-		WhitelistAddress: whitelist,
-		SuperNodeAddress: superNode,
-		ChainID:          chainID,
-	}
-	s.manager.SetDeployment(deployment)
-	s.logger.Info("Set deployment info",
+	// Add a new deployment
+	db := s.manager.GetDatabase()
+	db.Constellation.AddDeployment(id, chainID, whitelist, superNode)
+	s.logger.Info("Added Constellation deployment",
 		"id", id,
+		"chain", chainIDString,
 		"whitelist", whitelistString,
 		"supernode", superNodeString,
-		"chain", chainIDString,
 	)
 	common.HandleSuccess(w, s.logger, "")
 }

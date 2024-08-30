@@ -1,7 +1,6 @@
 package v0server
 
 import (
-	"fmt"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -28,11 +27,17 @@ func (s *V0Server) depositDataMeta(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	network := args.Get("network")
+	deployment := db.StakeWise.GetDeployment(network)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, network)
+		return
+	}
 	vaultAddress := ethcommon.HexToAddress(args.Get("vault"))
-	vault := s.manager.GetStakeWiseVault(network, vaultAddress)
+	vault := deployment.GetStakeWiseVault(vaultAddress)
 	if vault == nil {
-		common.HandleInputError(w, s.logger, fmt.Errorf("vault with address [%s] on network [%s] not found", vaultAddress.Hex(), network))
+		common.HandleInvalidVault(w, s.logger, network, vaultAddress)
 		return
 	}
 

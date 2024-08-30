@@ -34,7 +34,8 @@ func (s *AdminServer) GetManager() *manager.NodeSetMockManager {
 
 // Registers the routes for the server
 func (s *AdminServer) RegisterRoutes(adminRouter *mux.Router) {
-	adminRouter.HandleFunc("/"+api.AdminSetDeploymentPath, s.setDeployment)
+	adminRouter.HandleFunc("/"+api.AdminAddConstellationDeploymentPath, s.addConstellationDeployment)
+	adminRouter.HandleFunc("/"+api.AdminAddStakeWiseDeploymentPath, s.addStakeWiseDeployment)
 	adminRouter.HandleFunc("/"+api.AdminSnapshotPath, s.snapshot)
 	adminRouter.HandleFunc("/"+api.AdminRevertPath, s.revert)
 	adminRouter.HandleFunc("/"+api.AdminCycleSetPath, s.cycleSet)

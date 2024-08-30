@@ -30,11 +30,16 @@ func (s *AdminServer) whitelistNode(w http.ResponseWriter, r *http.Request) {
 	address := ethcommon.HexToAddress(addressString)
 
 	// Whitelist the node
-	err := s.manager.WhitelistNodeAccount(email, address)
-	if err != nil {
-		common.HandleServerError(w, s.logger, err)
+	db := s.manager.GetDatabase()
+	user := db.Core.GetUser(email)
+	if user == nil {
+		common.HandleInputError(w, s.logger, fmt.Errorf("user [%s] not found", email))
 		return
 	}
-	s.logger.Info("Whitelisted new node account", "email", email, "address", address.Hex())
+	user.WhitelistNode(address)
+	s.logger.Info("Whitelisted new node account",
+		"email", email,
+		"address", address.Hex(),
+	)
 	common.HandleSuccess(w, s.logger, "")
 }

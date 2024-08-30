@@ -22,8 +22,9 @@ func (s *V0Server) nodeAddress(w http.ResponseWriter, r *http.Request) {
 	_, _ = common.ProcessApiRequest(s, w, r, &request)
 
 	// Get the node
+	db := s.manager.GetDatabase()
 	address := ethcommon.HexToAddress(request.NodeAddress)
-	node, isRegistered := s.manager.GetNode(address)
+	node, isRegistered := db.Core.GetNode(address)
 	if node == nil {
 		common.HandleNodeNotInWhitelist(w, s.logger, address)
 		return
@@ -39,7 +40,7 @@ func (s *V0Server) nodeAddress(w http.ResponseWriter, r *http.Request) {
 		common.HandleInputError(w, s.logger, fmt.Errorf("invalid signature"))
 		return
 	}
-	err = s.manager.RegisterNodeAccount(request.Email, address, sig)
+	err = node.Register(sig)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

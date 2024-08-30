@@ -11,7 +11,6 @@ import (
 	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	"github.com/rocket-pool/node-manager-core/utils"
 	"github.com/stretchr/testify/require"
@@ -62,7 +61,7 @@ func TestGoodRequest(t *testing.T) {
 		"vault":   vault,
 		"network": test.Network,
 	}
-	request, session, err := generateRequest(privateKey, http.MethodGet, nil, params, "deposit-data", "meta")
+	request, expectedToken, err := generateRequest(privateKey, http.MethodGet, nil, params, "deposit-data", "meta")
 	if err != nil {
 		t.Fatalf("error generating request: %v", err)
 	}
@@ -73,7 +72,7 @@ func TestGoodRequest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting session token from request: %v", err)
 	}
-	require.Equal(t, session.Token, token)
+	require.Equal(t, expectedToken, token)
 	t.Logf("Token matches (%s)", token)
 }
 
@@ -128,16 +127,16 @@ func TestLogin(t *testing.T) {
 // ==========================
 
 // Generate an HTTP request with the signed auth header
-func generateRequest(privateKey *ecdsa.PrivateKey, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (*http.Request, *db.Session, error) {
+func generateRequest(privateKey *ecdsa.PrivateKey, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (*http.Request, string, error) {
 
 	// Make the request
 	path, err := url.JoinPath("http://dummy", subroutes...)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error joining path [%v]: %w", subroutes, err)
+		return nil, "", fmt.Errorf("error joining path [%v]: %w", subroutes, err)
 	}
 	request, err := http.NewRequest(method, path, body)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error generating request to [%s]: %w", path, err)
+		return nil, "", fmt.Errorf("error generating request to [%s]: %w", path, err)
 	}
 	query := request.URL.Query()
 	for name, value := range queryParams {
@@ -145,18 +144,11 @@ func generateRequest(privateKey *ecdsa.PrivateKey, method string, body io.Reader
 	}
 	request.URL.RawQuery = query.Encode()
 
-	// Create a session
-	session := &db.Session{
-		Nonce:       "nonce",
-		Token:       "token",
-		NodeAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
-		IsLoggedIn:  true,
-	}
-
 	// Add the auth header
-	AddAuthorizationHeader(request, session)
+	token := "token"
+	AddAuthorizationHeader(request, token)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error adding auth header: %w", err)
+		return nil, "", fmt.Errorf("error adding auth header: %w", err)
 	}
-	return request, session, nil
+	return request, token, nil
 }

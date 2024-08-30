@@ -27,8 +27,9 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.Constellation.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
@@ -52,7 +53,7 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	}
 
 	// Get the signature
-	signature, err := s.manager.GetConstellationDepositSignature(node.Address, request.MinipoolAddress, salt, deployment.SuperNodeAddress, deployment.ChainID)
+	signature, err := deployment.GetConstellationDepositSignature(node.Address, request.MinipoolAddress, salt)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

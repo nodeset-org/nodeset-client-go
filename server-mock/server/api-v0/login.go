@@ -27,14 +27,17 @@ func (s *V0Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log it in
+	// Input validation
+	database := s.manager.GetDatabase()
 	address := ethcommon.HexToAddress(request.Address)
 	signature, err := utils.DecodeHex(request.Signature)
 	if err != nil {
 		common.HandleInputError(w, s.logger, fmt.Errorf("invalid signature"))
 		return
 	}
-	err = s.manager.Login(request.Nonce, address, signature)
+
+	// Log it in
+	err = database.Core.Login(address, request.Nonce, signature)
 	if err != nil {
 		if errors.Is(err, db.ErrUnregisteredNode) {
 			common.HandleUnregisteredNode(w, s.logger, address)

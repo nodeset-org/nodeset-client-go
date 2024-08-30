@@ -30,12 +30,12 @@ func TestDatabaseClone(t *testing.T) {
 	t.Log("Clone has identical contents to the original database but different pointers")
 
 	// Get the first pubkey from user 2 that hasn't been uploaded yet
-	user2 := db.Users[2]
-	vault := db.StakeWiseVaults[test.Network][0]
+	user := db.Core.GetUser(test.User2Email)
+	vault := db.StakeWise.GetDeployment(test.Network).GetStakeWiseVault(test.StakeWiseVaultAddress)
 	var pubkey beacon.ValidatorPubkey
 	found := false
-	for _, node := range user2.RegisteredNodes {
-		validators := node.Validators[test.Network]
+	for _, node := range user.GetNodes() {
+		validators := node.GetStakeWiseValidatorsForVault(vault)
 		for _, validator := range validators {
 			if vault.UploadedData[validator.Pubkey] {
 				continue
@@ -54,12 +54,12 @@ func TestDatabaseClone(t *testing.T) {
 	t.Logf("Using pubkey %s for testing", pubkey.HexWithPrefix())
 
 	// Mark the pubkey as uploaded in the original database
-	assert.Equal(t, false, db.StakeWiseVaults[test.Network][0].UploadedData[pubkey])
-	db.StakeWiseVaults[test.Network][0].MarkDepositDataUploaded(pubkey)
+	assert.Equal(t, false, vault.UploadedData[pubkey])
+	vault.MarkDepositDataUploaded(pubkey)
 	t.Log("Marked deposit data uploaded for StakeWise vault")
 
 	// Make sure the clone didn't get the update
-	if clone.StakeWiseVaults[test.Network][0].UploadedData[pubkey] {
+	if clone.StakeWise.GetDeployment(test.Network).GetStakeWiseVault(test.StakeWiseVaultAddress).UploadedData[pubkey] {
 		t.Fatalf("Clone got the update")
 	}
 	t.Log("Clone wasn't updated, as expected")
@@ -72,41 +72,34 @@ func TestDatabaseClone(t *testing.T) {
 // Compare two databases
 func compareDatabases(t *testing.T, db *db.Database, clone *db.Database) {
 	// Compare StakeWise vault networks
-	assert.Equal(t, db.StakeWiseVaults, clone.StakeWiseVaults)
-	for network, vaults := range db.StakeWiseVaults {
-		cloneVaults := clone.StakeWiseVaults[network]
-		for i, vault := range vaults {
-			cloneVault := cloneVaults[i]
+	assert.Equal(t, db.StakeWise.GetDeployments(), clone.StakeWise.GetDeployments())
+	for id, deployment := range db.StakeWise.GetDeployments() {
+		cloneDeployment := clone.StakeWise.GetDeployment(id)
+		for address, vault := range deployment.GetStakeWiseVaults() {
+			cloneVault := cloneDeployment.GetStakeWiseVault(address)
 			assert.NotSame(t, vault, cloneVault)
 		}
 	}
 
 	// Compare users
-	assert.Equal(t, db.Users, clone.Users)
+	assert.Equal(t, db.Core.GetUsers(), clone.Core.GetUsers())
 
 	// Make sure the user pointers are all different
-	for i, user := range db.Users {
-		cloneUser := clone.Users[i]
+	for _, user := range db.Core.GetUsers() {
+		cloneUser := clone.Core.GetUser(user.Email)
 		assert.NotSame(t, user, cloneUser)
-		for j, node := range user.WhitelistedNodes {
-			cloneNode := cloneUser.WhitelistedNodes[j]
+		for nodeAddress, node := range user.GetNodes() {
+			cloneNode := cloneUser.GetNode(nodeAddress)
 			assert.NotSame(t, node, cloneNode)
-			for k, validators := range node.Validators {
-				cloneValidators := cloneNode.Validators[k]
-				for l, validator := range validators {
-					cloneValidator := cloneValidators[l]
-					assert.NotSame(t, validator, cloneValidator)
-				}
-			}
-		}
-		for j, node := range user.RegisteredNodes {
-			cloneNode := cloneUser.RegisteredNodes[j]
-			assert.NotSame(t, node, cloneNode)
-			for k, validators := range node.Validators {
-				cloneValidators := cloneNode.Validators[k]
-				for l, validator := range validators {
-					cloneValidator := cloneValidators[l]
-					assert.NotSame(t, validator, cloneValidator)
+
+			for _, deployment := range db.StakeWise.GetDeployments() {
+				for _, vault := range deployment.GetStakeWiseVaults() {
+					nodeValidators := node.GetStakeWiseValidatorsForVault(vault)
+					cloneValidators := cloneNode.GetStakeWiseValidatorsForVault(vault)
+					for i, validator := range nodeValidators {
+						cloneValidator := cloneValidators[i]
+						assert.NotSame(t, validator, cloneValidator)
+					}
 				}
 			}
 		}

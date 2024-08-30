@@ -27,20 +27,20 @@ func TestLogin(t *testing.T) {
 	}()
 
 	// Provision the database
+	db := mgr.GetDatabase()
 	node0Key, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)
-	err = mgr.AddUser(test.User0Email)
+	user, err := db.Core.AddUser(test.User0Email)
 	require.NoError(t, err)
-	err = mgr.WhitelistNodeAccount(test.User0Email, node0Pubkey)
-	require.NoError(t, err)
+	node := user.WhitelistNode(node0Pubkey)
 	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key)
 	require.NoError(t, err)
-	err = mgr.RegisterNodeAccount(test.User0Email, node0Pubkey, regSig)
+	err = node.Register(regSig)
 	require.NoError(t, err)
 
 	// Create a session
-	session := mgr.CreateSession()
+	session := db.Core.CreateSession()
 	loginSig, err := auth.GetSignatureForLogin(session.Nonce, node0Pubkey, node0Key)
 	require.NoError(t, err)
 

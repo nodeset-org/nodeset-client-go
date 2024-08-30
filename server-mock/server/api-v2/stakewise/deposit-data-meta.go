@@ -27,16 +27,17 @@ func (s *V2StakeWiseServer) depositDataMeta(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.StakeWise.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := s.manager.GetStakeWiseVault(deployment.DeploymentID, vaultAddress)
+	vault := deployment.GetStakeWiseVault(vaultAddress)
 	if vault == nil {
-		common.HandleInvalidVault(w, s.logger, deployment.DeploymentID, vaultAddress)
+		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return
 	}
 

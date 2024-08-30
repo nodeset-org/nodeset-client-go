@@ -35,16 +35,17 @@ func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.StakeWise.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
-	vault := s.manager.GetStakeWiseVault(deployment.DeploymentID, vaultAddress)
+	vault := deployment.GetStakeWiseVault(vaultAddress)
 	if vault == nil {
-		common.HandleInvalidVault(w, s.logger, deployment.DeploymentID, vaultAddress)
+		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
 		return
 	}
 
@@ -77,21 +78,26 @@ func (s *V2StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Req
 	}
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.StakeWise.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
-	vault := pathArgs["vault"]
-	vaultAddress := ethcommon.HexToAddress(vault)
+	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
+	vault := deployment.GetStakeWiseVault(vaultAddress)
+	if vault == nil {
+		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
+		return
+	}
 
 	// Handle the request
 	castedDepositData := make([]beacon.ExtendedDepositData, len(body.Validators))
 	for i, deposit := range body.Validators {
 		castedDepositData[i] = beacon.ExtendedDepositData(deposit)
 	}
-	err := s.manager.HandleDepositDataUpload(node.Address, deploymentID, vaultAddress, castedDepositData)
+	err := vault.HandleDepositDataUpload(node, castedDepositData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

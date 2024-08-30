@@ -5,6 +5,7 @@ import (
 
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -34,19 +35,25 @@ func (s *V0Server) getValidators(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the registered validators
+	db := s.manager.GetDatabase()
 	network := args.Get("network")
+	deployment := db.StakeWise.GetDeployment(network)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, network)
+		return
+	}
 	validatorStatuses := []stakewise.ValidatorStatus{}
-	validatorsForNetwork := node.Validators[network]
+	validatorsForDeployment := node.GetAllStakeWiseValidators(deployment)
 
 	// Iterate the validators
-	for _, validator := range validatorsForNetwork {
-		pubkey := validator.Pubkey
-		status := s.manager.GetValidatorStatus(network, pubkey)
-		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
-			Pubkey:              pubkey,
-			Status:              status,
-			ExitMessageUploaded: validator.ExitMessageUploaded,
-		})
+	for _, validatorsForVault := range validatorsForDeployment {
+		for _, validator := range validatorsForVault {
+			validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
+				Pubkey:              validator.Pubkey,
+				Status:              validator.GetStatus(),
+				ExitMessageUploaded: validator.ExitMessageUploaded,
+			})
+		}
 	}
 
 	// Write the response
@@ -71,15 +78,26 @@ func (s *V0Server) patchValidators(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Just get the first vault for the deployment
+	database := s.manager.GetDatabase()
 	network := args.Get("network")
-	vaults := s.manager.GetStakeWiseVaults(network)
+	deployment := database.StakeWise.GetDeployment(network)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, network)
+		return
+	}
+	vaults := deployment.GetStakeWiseVaults()
 	if len(vaults) == 0 {
 		common.HandleInvalidDeployment(w, s.logger, network)
 		return
 	}
+	var vault *db.StakeWiseVault
+	for _, v := range vaults {
+		vault = v
+		break
+	}
 
 	// Handle the upload
-	err := s.manager.HandleSignedExitUpload(node.Address, network, vaults[0].Address, exitData)
+	err := vault.HandleSignedExitUpload(node, exitData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

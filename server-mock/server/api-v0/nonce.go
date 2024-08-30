@@ -15,7 +15,8 @@ func (s *V0Server) getNonce(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a new session
-	session := s.manager.CreateSession()
+	db := s.manager.GetDatabase()
+	session := db.Core.CreateSession()
 
 	// Write the response
 	data := core.NonceData{

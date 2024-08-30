@@ -9,7 +9,6 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/rocket-pool/node-manager-core/node/validator"
 	"github.com/tyler-smith/go-bip39"
 	types "github.com/wealdtech/go-eth2-types/v2"
@@ -44,16 +43,6 @@ var (
 	SuperNodeAddress      common.Address = common.HexToAddress(SuperNodeAddressString)
 	WhitelistAddress      common.Address = common.HexToAddress(WhitelistAddressString)
 )
-
-// Get a deployment for testing
-func GetTestDeployment() *db.Deployment {
-	return &db.Deployment{
-		DeploymentID:     Network,
-		WhitelistAddress: WhitelistAddress,
-		SuperNodeAddress: SuperNodeAddress,
-		ChainID:          ChainIDBig,
-	}
-}
 
 // Get the EL private key for the given index
 func GetEthPrivateKey(index uint) (*ecdsa.PrivateKey, error) {

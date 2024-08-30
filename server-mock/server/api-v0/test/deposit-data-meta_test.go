@@ -28,44 +28,27 @@ func TestDepositDataMeta(t *testing.T) {
 	}()
 
 	// Provision the database
+	db := mgr.GetDatabase()
+	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
 	node0Key, err := test.GetEthPrivateKey(0)
-	if err != nil {
-		t.Fatalf("error getting private key: %v", err)
-	}
+	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)
-	err = mgr.AddUser(test.User0Email)
-	if err != nil {
-		t.Fatalf("error adding user: %v", err)
-	}
-	err = mgr.WhitelistNodeAccount(test.User0Email, node0Pubkey)
-	if err != nil {
-		t.Fatalf("error whitelisting node account: %v", err)
-	}
+	user, err := db.Core.AddUser(test.User0Email)
+	require.NoError(t, err)
+	node := user.WhitelistNode(node0Pubkey)
 	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key)
-	if err != nil {
-		t.Fatalf("error getting signature for registration: %v", err)
-	}
-	err = mgr.RegisterNodeAccount(test.User0Email, node0Pubkey, regSig)
-	if err != nil {
-		t.Fatalf("error registering node account: %v", err)
-	}
-	err = mgr.AddStakeWiseVault(test.Network, test.StakeWiseVaultAddress)
-	if err != nil {
-		t.Fatalf("error adding StakeWise vault to database: %v", err)
-	}
-	vault := mgr.GetStakeWiseVault(test.Network, test.StakeWiseVaultAddress)
+	require.NoError(t, err)
+	err = node.Register(regSig)
+	require.NoError(t, err)
+	vault := deployment.AddStakeWiseVault(test.StakeWiseVaultAddress)
 	vault.LatestDepositDataSetIndex = depositDataSet
 
 	// Create a session
-	session := mgr.CreateSession()
+	session := db.Core.CreateSession()
 	loginSig, err := auth.GetSignatureForLogin(session.Nonce, node0Pubkey, node0Key)
-	if err != nil {
-		t.Fatalf("error getting signature for login: %v", err)
-	}
-	err = mgr.Login(session.Nonce, node0Pubkey, loginSig)
-	if err != nil {
-		t.Fatalf("error logging in: %v", err)
-	}
+	require.NoError(t, err)
+	err = db.Core.Login(node0Pubkey, session.Nonce, loginSig)
+	require.NoError(t, err)
 
 	// Run the request
 	data := runDepositDataMetaRequest(t, session)

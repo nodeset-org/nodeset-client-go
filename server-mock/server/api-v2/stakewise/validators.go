@@ -35,23 +35,28 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Get the registered validators
+	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.StakeWise.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
-	validatorStatuses := []stakewise.ValidatorStatus{}
-	validatorsForDeployment := node.Validators[deployment.DeploymentID]
+	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
+	vault := deployment.GetStakeWiseVault(vaultAddress)
+	if vault == nil {
+		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
+		return
+	}
 
-	// Iterate the validators
-	for _, validator := range validatorsForDeployment {
-		pubkey := validator.Pubkey
-		status := s.manager.GetValidatorStatus(deployment.DeploymentID, pubkey)
+	// Find the validator
+	validatorStatuses := []stakewise.ValidatorStatus{}
+	validators := node.GetStakeWiseValidatorsForVault(vault)
+	for _, validator := range validators {
 		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
-			Pubkey:              pubkey,
-			Status:              status,
+			Pubkey:              validator.Pubkey,
+			Status:              validator.GetStatus(),
 			ExitMessageUploaded: validator.ExitMessageUploaded,
 		})
 	}
@@ -78,14 +83,19 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.StakeWise.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
-	vault := pathArgs["vault"]
-	vaultAddress := ethcommon.HexToAddress(vault)
+	vaultAddress := ethcommon.HexToAddress(pathArgs["vault"])
+	vault := deployment.GetStakeWiseVault(vaultAddress)
+	if vault == nil {
+		common.HandleInvalidVault(w, s.logger, deploymentID, vaultAddress)
+		return
+	}
 
 	// Handle the upload
 	castedExitData := make([]clientcommon.ExitData, len(body.ExitData))
@@ -98,7 +108,7 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 			},
 		}
 	}
-	err := s.manager.HandleSignedExitUpload(node.Address, deploymentID, vaultAddress, castedExitData)
+	err := vault.HandleSignedExitUpload(node, castedExitData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

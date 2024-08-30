@@ -17,13 +17,19 @@ func (s *V2CoreServer) nodeAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get the requesting node
+	// Input validation
 	var request v2core.NodeAddressRequest
 	_, _ = common.ProcessApiRequest(s, w, r, &request)
-
-	// Get the node
 	address := ethcommon.HexToAddress(request.NodeAddress)
-	node, isRegistered := s.manager.GetNode(address)
+	sig, err := utils.DecodeHex(request.Signature)
+	if err != nil {
+		common.HandleInputError(w, s.logger, fmt.Errorf("invalid signature"))
+		return
+	}
+
+	// Get the requesting node
+	database := s.manager.GetDatabase()
+	node, isRegistered := database.Core.GetNode(address)
 	if node == nil {
 		common.HandleNodeNotInWhitelist(w, s.logger, address)
 		return
@@ -34,16 +40,14 @@ func (s *V2CoreServer) nodeAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Register the node
-	sig, err := utils.DecodeHex(request.Signature)
-	if err != nil {
-		common.HandleInputError(w, s.logger, fmt.Errorf("invalid signature"))
-		return
-	}
-	err = s.manager.RegisterNodeAccount(request.Email, address, sig)
+	err = node.Register(sig)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return
 	}
-	s.logger.Info("Registered new node account", "email", request.Email, "address", address.Hex())
+	s.logger.Info("Registered new node account",
+		"email", request.Email,
+		"address", address.Hex(),
+	)
 	common.HandleSuccess(w, s.logger, "")
 }

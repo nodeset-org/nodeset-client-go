@@ -12,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 )
 
 const (
@@ -93,8 +92,8 @@ func GetSessionTokenFromRequest(r *http.Request) (string, error) {
 }
 
 // Adds an authorization header to an HTTP request
-func AddAuthorizationHeader(request *http.Request, session *db.Session) {
-	request.Header.Set(authHeader, fmt.Sprintf(authHeaderFormat, session.Token))
+func AddAuthorizationHeader(request *http.Request, sessionToken string) {
+	request.Header.Set(authHeader, fmt.Sprintf(authHeaderFormat, sessionToken))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 }
 

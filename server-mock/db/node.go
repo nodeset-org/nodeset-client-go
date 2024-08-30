@@ -1,50 +1,127 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
+var (
+	ErrAlreadyRegistered error = errors.New("node has already been registered with the NodeSet server")
+)
+
+// A node
 type Node struct {
-	Address    common.Address
-	Validators map[string][]*Validator
+	Address             common.Address
+	stakeWiseValidators map[string]map[common.Address][]*StakeWiseValidatorInfo
+
+	isRegistered bool
+	user         *User
 }
 
-func newNode(address common.Address) *Node {
+// Create a new node
+func newNode(user *User, address common.Address) *Node {
 	return &Node{
-		Address:    address,
-		Validators: map[string][]*Validator{},
+		Address:             address,
+		stakeWiseValidators: map[string]map[common.Address][]*StakeWiseValidatorInfo{},
+		user:                user,
 	}
 }
 
-func (n *Node) AddDepositData(depositData beacon.ExtendedDepositData, deployment string, vaultAddress common.Address) {
-	validatorsForDeployment, exists := n.Validators[deployment]
+// Clone the node
+func (n *Node) Clone(userClone *User) *Node {
+	clone := newNode(userClone, n.Address)
+	clone.isRegistered = n.isRegistered
+
+	for deploymentID, deployment := range n.stakeWiseValidators {
+		for vaultAddress, validators := range deployment {
+			cloneSlice := make([]*StakeWiseValidatorInfo, len(validators))
+			for i, validator := range validators {
+				cloneSlice[i] = validator.Clone()
+			}
+			cloneDeploymentMap := clone.stakeWiseValidators[deploymentID]
+			if cloneDeploymentMap == nil {
+				cloneDeploymentMap = map[common.Address][]*StakeWiseValidatorInfo{}
+				clone.stakeWiseValidators[deploymentID] = cloneDeploymentMap
+			}
+			cloneDeploymentMap[vaultAddress] = cloneSlice
+		}
+	}
+	return clone
+}
+
+// Check if the node is registered or not
+func (n *Node) IsRegistered() bool {
+	return n.isRegistered
+}
+
+// Register the node with the NodeSet server
+func (n *Node) Register(signature []byte) error {
+	return n.registerImpl(signature, false)
+}
+
+// Register the node with the NodeSet server, bypassing the signature requirement for testing
+func (n *Node) RegisterWithoutSignature() error {
+	return n.registerImpl(nil, true)
+}
+
+// Add a new StakeWise validator to the node
+func (n *Node) AddStakeWiseDepositData(vault *StakeWiseVault, depositData beacon.ExtendedDepositData) {
+	validatorsForDeployment, exists := n.stakeWiseValidators[vault.deployment.ID]
 	if !exists {
-		validatorsForDeployment = []*Validator{}
-		n.Validators[deployment] = validatorsForDeployment
+		validatorsForDeployment = map[common.Address][]*StakeWiseValidatorInfo{}
+		n.stakeWiseValidators[vault.deployment.ID] = validatorsForDeployment
+	}
+
+	validatorsForVault, exists := validatorsForDeployment[vault.Address]
+	if !exists {
+		validatorsForVault = []*StakeWiseValidatorInfo{}
+		validatorsForDeployment[vault.Address] = validatorsForVault
 	}
 
 	pubkey := beacon.ValidatorPubkey(depositData.PublicKey)
-	for _, validator := range validatorsForDeployment {
+	for _, validator := range validatorsForVault {
 		if validator.Pubkey == pubkey {
 			// Already present
 			return
 		}
 	}
 
-	validator := newValidator(depositData, vaultAddress)
-	validatorsForDeployment = append(validatorsForDeployment, validator)
-	n.Validators[deployment] = validatorsForDeployment
+	validator := newStakeWiseValidatorInfo(depositData, vault)
+	validatorsForVault = append(validatorsForVault, validator)
+	n.stakeWiseValidators[vault.deployment.ID][vault.Address] = validatorsForVault
 }
 
-func (n *Node) Clone() *Node {
-	clone := newNode(n.Address)
-	for deployment, validatorsForDeployment := range n.Validators {
-		cloneSlice := make([]*Validator, len(validatorsForDeployment))
-		for i, validator := range validatorsForDeployment {
-			cloneSlice[i] = validator.Clone()
-		}
-		clone.Validators[deployment] = cloneSlice
+// Get the StakeWise validators for the node
+func (n *Node) GetStakeWiseValidatorsForVault(vault *StakeWiseVault) []*StakeWiseValidatorInfo {
+	validatorsForDeployment := n.stakeWiseValidators[vault.deployment.ID]
+	if validatorsForDeployment == nil {
+		return nil
 	}
-	return clone
+	return validatorsForDeployment[vault.Address]
+}
+
+// Get all StakeWise validators
+func (n *Node) GetAllStakeWiseValidators(deployment *StakeWiseDeployment) map[common.Address][]*StakeWiseValidatorInfo {
+	return n.stakeWiseValidators[deployment.ID]
+}
+
+// Implementation for registering the node
+func (n *Node) registerImpl(signature []byte, skipVerification bool) error {
+	if n.isRegistered {
+		return ErrAlreadyRegistered
+	}
+
+	// Verify the signature
+	if !skipVerification {
+		err := auth.VerifyRegistrationSignature(n.user.Email, n.Address, signature)
+		if err != nil {
+			return err
+		}
+	}
+
+	n.isRegistered = true
+	return nil
 }

@@ -5,7 +5,8 @@ const (
 	DevPath string = "dev/"
 
 	// Admin routes
-	AdminSetDeploymentPath              string = "set-deployment"
+	AdminAddConstellationDeploymentPath string = "add-constellation-deployment"
+	AdminAddStakeWiseDeploymentPath     string = "add-stakewise-deployment"
 	AdminSnapshotPath                   string = "snapshot"
 	AdminRevertPath                     string = "revert"
 	AdminCycleSetPath                   string = "cycle-set"

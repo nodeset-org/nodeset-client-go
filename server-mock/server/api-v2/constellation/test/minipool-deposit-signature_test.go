@@ -33,33 +33,31 @@ func TestConstellationDeposit(t *testing.T) {
 	}()
 
 	// Provision the database
-	mgr.SetDeployment(test.GetTestDeployment())
+	db := mgr.GetDatabase()
+	deployment := db.Constellation.AddDeployment(test.Network, test.ChainIDBig, test.WhitelistAddress, test.SuperNodeAddress)
 	node4Key, err := test.GetEthPrivateKey(4)
 	require.NoError(t, err)
 	node4Pubkey := crypto.PubkeyToAddress(node4Key.PublicKey)
-	err = mgr.AddUser(test.User0Email)
+	user, err := db.Core.AddUser(test.User0Email)
 	require.NoError(t, err)
-	err = mgr.WhitelistNodeAccount(test.User0Email, node4Pubkey)
+	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
 	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key)
 	require.NoError(t, err)
-	err = mgr.RegisterNodeAccount(test.User0Email, node4Pubkey, regSig)
+	err = node.Register(regSig)
 	require.NoError(t, err)
 
 	// Create a session
-	session := mgr.CreateSession()
+	session := db.Core.CreateSession()
 	loginSig, err := auth.GetSignatureForLogin(session.Nonce, node4Pubkey, node4Key)
 	require.NoError(t, err)
-
-	err = mgr.Login(session.Nonce, node4Pubkey, loginSig)
-	if err != nil {
-		t.Fatalf("error logging in: %v", err)
-	}
+	err = db.Core.Login(node4Pubkey, session.Nonce, loginSig)
+	require.NoError(t, err)
 
 	// Set the admin private key (just the first Hardhat address)
 	adminKey, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
-	mgr.SetConstellationAdminPrivateKey(adminKey)
+	deployment.SetAdminPrivateKey(adminKey)
 
 	// Run the request
 	salt, _ := big.NewInt(0).SetString(mds_salt, 16)

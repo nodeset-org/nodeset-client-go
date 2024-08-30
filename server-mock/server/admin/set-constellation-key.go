@@ -29,7 +29,13 @@ func (s *AdminServer) setConstellationAdminPrivateKey(w http.ResponseWriter, r *
 	}
 
 	// Set the key
-	s.manager.SetConstellationAdminPrivateKey(privateKey)
+	db := s.manager.GetDatabase()
+	deployment := db.Constellation.GetDeployment(request.Deployment)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, request.Deployment)
+		return
+	}
+	deployment.SetAdminPrivateKey(privateKey)
 	pubkey := ethcommon.BytesToAddress(crypto.FromECDSAPub(&privateKey.PublicKey))
 	s.logger.Info("Set Constellation private key", "address", pubkey.Hex())
 	common.HandleSuccess(w, s.logger, "")

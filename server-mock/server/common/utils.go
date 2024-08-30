@@ -12,8 +12,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/manager"
 	"github.com/rocket-pool/node-manager-core/log"
+)
+
+// ==============
+// === Errors ===
+// ==============
+
+var (
+	ErrInvalidSession error = errors.New("session token is invalid")
 )
 
 // Logs the request and returns the query args and path args
@@ -48,12 +55,10 @@ func ProcessAuthHeader(serverImpl IServerImpl, w http.ResponseWriter, r *http.Re
 	// Get the auth header
 	mgr := serverImpl.GetManager()
 	logger := serverImpl.GetLogger()
-	session, err := mgr.VerifyRequest(r)
+
+	// Get the session token
+	token, err := auth.GetSessionTokenFromRequest(r)
 	if err != nil {
-		if errors.Is(err, manager.ErrInvalidSession) {
-			HandleInvalidSessionError(w, logger, err)
-			return nil
-		}
 		if errors.Is(err, auth.ErrAuthHeader) {
 			HandleAuthHeaderError(w, logger, err)
 			return nil
@@ -68,6 +73,13 @@ func ProcessAuthHeader(serverImpl IServerImpl, w http.ResponseWriter, r *http.Re
 		return nil
 	}
 
+	// Get the session
+	db := mgr.GetDatabase()
+	session := db.Core.GetSessionByToken(token)
+	if session == nil {
+		HandleInvalidSessionError(w, logger, err)
+		return nil
+	}
 	return session
 }
 
@@ -75,8 +87,9 @@ func ProcessAuthHeader(serverImpl IServerImpl, w http.ResponseWriter, r *http.Re
 func GetNodeForSession(serverImpl IServerImpl, w http.ResponseWriter, session *db.Session) *db.Node {
 	// Get the node
 	mgr := serverImpl.GetManager()
+	db := mgr.GetDatabase()
 	logger := serverImpl.GetLogger()
-	node, isRegistered := mgr.GetNode(session.NodeAddress)
+	node, isRegistered := db.Core.GetNode(session.NodeAddress)
 	if node == nil || !isRegistered {
 		HandleUnregisteredNode(w, logger, session.NodeAddress)
 		return nil

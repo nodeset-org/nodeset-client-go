@@ -22,8 +22,9 @@ func (s *AdminServer) addUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create a new deposit data set
-	err := s.manager.AddUser(email)
+	// Create a new user
+	db := s.manager.GetDatabase()
+	_, err := db.Core.AddUser(email)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

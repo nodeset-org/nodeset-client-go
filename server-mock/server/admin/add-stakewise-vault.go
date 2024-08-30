@@ -17,8 +17,8 @@ func (s *AdminServer) addStakeWiseVault(w http.ResponseWriter, r *http.Request) 
 
 	// Input validation
 	query := r.URL.Query()
-	deployment := query.Get("deployment")
-	if deployment == "" {
+	deploymentID := query.Get("deployment")
+	if deploymentID == "" {
 		common.HandleInputError(w, s.logger, fmt.Errorf("missing deployment query parameter"))
 		return
 	}
@@ -29,14 +29,16 @@ func (s *AdminServer) addStakeWiseVault(w http.ResponseWriter, r *http.Request) 
 	}
 	address := ethcommon.HexToAddress(addressString)
 
-	// Create a new deposit data set
-	err := s.manager.AddStakeWiseVault(deployment, address)
-	if err != nil {
-		common.HandleServerError(w, s.logger, err)
+	// Create a new vault
+	db := s.manager.GetDatabase()
+	deployment := db.StakeWise.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
+	deployment.AddStakeWiseVault(address)
 	s.logger.Info("Added new stakewise vault",
-		"deployment", deployment,
+		"deployment", deploymentID,
 		"address", address.Hex(),
 	)
 	common.HandleSuccess(w, s.logger, "")

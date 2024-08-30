@@ -7,66 +7,45 @@ import (
 )
 
 var (
-	ErrAlreadyRegistered error = errors.New("node has already been registered with the NodeSet server")
-	ErrNotWhitelisted    error = errors.New("node address hasn't been whitelisted on the provided NodeSet account")
+	ErrNotWhitelisted error = errors.New("node address hasn't been whitelisted on the provided NodeSet account")
 )
 
 type User struct {
-	Email            string
-	WhitelistedNodes []*Node
-	RegisteredNodes  []*Node
+	Email string
+
+	nodes map[common.Address]*Node
+	db    *Database
 }
 
-func newUser(email string) *User {
+func newUser(db *Database, email string) *User {
 	return &User{
-		Email:            email,
-		WhitelistedNodes: []*Node{},
-		RegisteredNodes:  []*Node{},
+		Email: email,
+		nodes: map[common.Address]*Node{},
+		db:    db,
 	}
 }
 
-func (u *User) WhitelistNode(nodeAddress common.Address) {
-	for _, node := range u.RegisteredNodes {
-		if node.Address == nodeAddress {
-			return
-		}
+func (u *User) Clone(dbClone *Database) *User {
+	userClone := newUser(dbClone, u.Email)
+	for address, node := range u.nodes {
+		userClone.nodes[address] = node.Clone(userClone)
 	}
-	for _, node := range u.WhitelistedNodes {
-		if node.Address == nodeAddress {
-			return
-		}
-	}
-	node := newNode(nodeAddress)
-	u.WhitelistedNodes = append(u.WhitelistedNodes, node)
+	return userClone
 }
 
-func (u *User) RegisterNode(nodeAddress common.Address) error {
-	for _, node := range u.RegisteredNodes {
-		if node.Address == nodeAddress {
-			return ErrAlreadyRegistered
-		}
+func (u *User) WhitelistNode(nodeAddress common.Address) *Node {
+	node := u.nodes[nodeAddress]
+	if node == nil {
+		node = newNode(u, nodeAddress)
+		u.nodes[nodeAddress] = node
 	}
-	for i, node := range u.WhitelistedNodes {
-		if node.Address == nodeAddress {
-			u.RegisteredNodes = append(u.RegisteredNodes, node)
-			// Remove it from the whitelist
-			u.WhitelistedNodes = append(u.WhitelistedNodes[:i], u.WhitelistedNodes[i+1:]...)
-			return nil
-		}
-	}
-
-	return ErrNotWhitelisted
+	return node
 }
 
-func (u *User) Clone() *User {
-	clone := newUser(u.Email)
-	clone.WhitelistedNodes = make([]*Node, len(u.WhitelistedNodes))
-	clone.RegisteredNodes = make([]*Node, len(u.RegisteredNodes))
-	for i, node := range u.WhitelistedNodes {
-		clone.WhitelistedNodes[i] = node.Clone()
-	}
-	for i, node := range u.RegisteredNodes {
-		clone.RegisteredNodes[i] = node.Clone()
-	}
-	return clone
+func (u *User) GetNode(nodeAddress common.Address) *Node {
+	return u.nodes[nodeAddress]
+}
+
+func (u *User) GetNodes() map[common.Address]*Node {
+	return u.nodes
 }

@@ -17,6 +17,11 @@ func (s *AdminServer) incrementWhitelistNonce(w http.ResponseWriter, r *http.Req
 
 	// Input validation
 	query := r.URL.Query()
+	deploymentID := query.Get("deployment")
+	if deploymentID == "" {
+		common.HandleInputError(w, s.logger, fmt.Errorf("missing deployment query parameter"))
+		return
+	}
 	addressString := query.Get("address")
 	if addressString == "" {
 		common.HandleInputError(w, s.logger, fmt.Errorf("missing address query parameter"))
@@ -25,7 +30,13 @@ func (s *AdminServer) incrementWhitelistNonce(w http.ResponseWriter, r *http.Req
 	address := ethcommon.HexToAddress(addressString)
 
 	// Whitelist the node
-	s.manager.IncrementWhitelistNonce(address)
+	db := s.manager.GetDatabase()
+	deployment := db.Constellation.GetDeployment(deploymentID)
+	if deployment == nil {
+		common.HandleInvalidDeployment(w, s.logger, deploymentID)
+		return
+	}
+	deployment.IncrementWhitelistNonce(address)
 	s.logger.Info("Whitelist nonce incremented", "address", address.Hex())
 	common.HandleSuccess(w, s.logger, "")
 }

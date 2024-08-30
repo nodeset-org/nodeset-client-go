@@ -23,15 +23,16 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Input validation
+	db := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := s.manager.GetDeployment(deploymentID)
+	deployment := db.Constellation.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
 
 	// Get the signature
-	signature, err := s.manager.GetConstellationWhitelistSignature(node.Address, deployment.ChainID, deployment.WhitelistAddress)
+	signature, err := deployment.GetConstellationWhitelistSignature(node.Address)
 	if err != nil {
 		common.HandleServerError(w, s.logger, fmt.Errorf("error creating signature: %w", err))
 		return

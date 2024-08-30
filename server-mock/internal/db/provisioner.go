@@ -25,28 +25,26 @@ var (
 // Create a full database for testing
 func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositDataSet bool) *db.Database {
 	// Make the DB
-	db := db.NewDatabase(logger)
-	db.SetDeployment(test.GetTestDeployment())
+	database := db.NewDatabase(logger)
+	swDeployment := database.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
+	_ = database.Constellation.AddDeployment(test.Network, test.ChainIDBig, test.WhitelistAddress, test.SuperNodeAddress)
 
 	// Add a StakeWise vault to the database
-	err := db.AddStakeWiseVault(test.Network, test.StakeWiseVaultAddress)
-	if err != nil {
-		t.Fatalf("Error adding StakeWise vault to database: %v", err)
-	}
+	vault := swDeployment.AddStakeWiseVault(test.StakeWiseVaultAddress)
 	t.Log("Added StakeWise vault to database")
 
 	// Add a users to the database
-	addUserToDatabase(t, db, test.User0Email)
-	addUserToDatabase(t, db, test.User1Email)
-	addUserToDatabase(t, db, test.User2Email)
-	addUserToDatabase(t, db, test.User3Email)
+	_ = addUserToDatabase(t, database, test.User0Email)
+	user1 := addUserToDatabase(t, database, test.User1Email)
+	user2 := addUserToDatabase(t, database, test.User2Email)
+	user3 := addUserToDatabase(t, database, test.User3Email)
 	t.Log("Added users to database")
 
 	// Add nodes to the user
-	node0 := createNodeAndAddToDatabase(t, db, test.User1Email, 0)
-	node1 := createNodeAndAddToDatabase(t, db, test.User2Email, 1)
-	node2 := createNodeAndAddToDatabase(t, db, test.User3Email, 2)
-	node3 := createNodeAndAddToDatabase(t, db, test.User3Email, 3)
+	node0 := createNodeAndAddToDatabase(t, database, user1, 0)
+	node1 := createNodeAndAddToDatabase(t, database, user2, 1)
+	node2 := createNodeAndAddToDatabase(t, database, user3, 2)
+	node3 := createNodeAndAddToDatabase(t, database, user3, 3)
 	t.Log("Added nodes to users")
 
 	// Get some deposit data
@@ -58,48 +56,34 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	t.Log("Generated deposit data")
 
 	// Handle the deposit data upload
-	err = db.HandleDepositDataUpload(node0, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData0})
-	if err != nil {
-		t.Fatalf("Error handling deposit data upload: %v", err)
-	}
-	err = db.HandleDepositDataUpload(node1, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData1, depositData2})
-	if err != nil {
-		t.Fatalf("Error handling deposit data upload: %v", err)
-	}
-	err = db.HandleDepositDataUpload(node2, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData3})
-	if err != nil {
-		t.Fatalf("Error handling deposit data upload: %v", err)
-	}
-	err = db.HandleDepositDataUpload(node3, test.Network, test.StakeWiseVaultAddress, []beacon.ExtendedDepositData{depositData4})
-	if err != nil {
-		t.Fatalf("Error handling deposit data upload: %v", err)
-	}
+	err := vault.HandleDepositDataUpload(node0, []beacon.ExtendedDepositData{depositData0})
+	require.NoError(t, err)
+	err = vault.HandleDepositDataUpload(node1, []beacon.ExtendedDepositData{depositData1, depositData2})
+	require.NoError(t, err)
+	err = vault.HandleDepositDataUpload(node2, []beacon.ExtendedDepositData{depositData3})
+	require.NoError(t, err)
+	err = vault.HandleDepositDataUpload(node3, []beacon.ExtendedDepositData{depositData4})
+	require.NoError(t, err)
 	t.Log("Handled deposit data upload")
 
 	// Shortcut if skipping deposit data set generation
 	if !includeDepositDataSet {
-		return db
+		return database
 	}
 
 	// Create a new set with 1 DD per user and verify
-	depositDataSet := db.CreateNewDepositDataSet(test.Network, 1)
+	depositDataSet := vault.CreateNewDepositDataSet(1)
 	require.Equal(t, []beacon.ExtendedDepositData{depositData0, depositData1, depositData3}, depositDataSet)
 
 	// Handle the deposit data upload
-	err = db.UploadDepositDataToStakeWise(test.Network, test.StakeWiseVaultAddress, depositDataSet)
-	if err != nil {
-		t.Fatalf("Error uploading deposit data to StakeWise: %v", err)
-	}
+	vault.UploadDepositDataToStakeWise(depositDataSet)
 	t.Log("Uploaded deposit data to StakeWise")
 
 	// Finalize the upload
-	err = db.MarkDepositDataSetUploaded(test.Network, test.StakeWiseVaultAddress, depositDataSet)
-	if err != nil {
-		t.Fatalf("Error marking deposit data set uploaded: %v", err)
-	}
+	vault.MarkDepositDataSetUploaded(depositDataSet)
 	t.Log("Marked deposit data set uploaded")
 
-	return db
+	return database
 }
 
 // ==========================
@@ -107,15 +91,16 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 // ==========================
 
 // Add a user to the database
-func addUserToDatabase(t *testing.T, db *db.Database, userEmail string) {
-	err := db.AddUser(userEmail)
+func addUserToDatabase(t *testing.T, db *db.Database, userEmail string) *db.User {
+	user, err := db.Core.AddUser(userEmail)
 	if err != nil {
 		t.Fatalf("Error adding user [%s] to database: %v", userEmail, err)
 	}
+	return user
 }
 
 // Create a node, register it with the user, and log it in with a new session
-func createNodeAndAddToDatabase(t *testing.T, db *db.Database, userEmail string, index uint) ethcommon.Address {
+func createNodeAndAddToDatabase(t *testing.T, db *db.Database, user *db.User, index uint) *db.Node {
 	nodeKey, exists := NodeKeys[index]
 	if !exists {
 		var err error
@@ -128,24 +113,19 @@ func createNodeAndAddToDatabase(t *testing.T, db *db.Database, userEmail string,
 	nodeAddress := crypto.PubkeyToAddress(nodeKey.PublicKey)
 
 	// Whitelist the node
-	err := db.WhitelistNodeAccount(userEmail, nodeAddress)
-	if err != nil {
-		t.Fatalf("Error authorizing node [%s] with user [%s]: %v", nodeAddress.Hex(), userEmail, err)
-	}
+	node := user.WhitelistNode(nodeAddress)
 
 	// Register the node
-	err = db.RegisterNodeAccount(userEmail, nodeAddress)
-	if err != nil {
-		t.Fatalf("Error registering node [%s] with user [%s]: %v", nodeAddress.Hex(), userEmail, err)
-	}
+	err := node.RegisterWithoutSignature()
+	require.NoError(t, err)
 
 	// Create a new session for it
-	session := db.CreateSession()
-	err = db.Login(nodeAddress, session.Nonce)
+	session := db.Core.CreateSession()
+	err = db.Core.LoginWithoutSignature(nodeAddress, session.Nonce)
 	if err != nil {
 		t.Fatalf("Error logging in node [%s]: %v", nodeAddress.Hex(), err)
 	}
-	return nodeAddress
+	return node
 }
 
 // Generate a validator private key and deposit data for the given index

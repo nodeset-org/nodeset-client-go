@@ -34,7 +34,8 @@ func (s *V2CoreServer) login(w http.ResponseWriter, r *http.Request) {
 		common.HandleInputError(w, s.logger, fmt.Errorf("invalid signature"))
 		return
 	}
-	err = s.manager.Login(request.Nonce, address, signature)
+	database := s.manager.GetDatabase()
+	err = database.Core.Login(address, request.Nonce, signature)
 	if err != nil {
 		if errors.Is(err, db.ErrUnregisteredNode) {
 			common.HandleUnregisteredNode(w, s.logger, address)

@@ -159,7 +159,8 @@ func TestUnregisteredNode(t *testing.T) {
 	}()
 
 	// Create a session
-	session := mgr.CreateSession()
+	db := mgr.GetDatabase()
+	session := db.Core.CreateSession()
 	node0Key, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)
@@ -186,7 +187,7 @@ func TestUnregisteredNode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting private key: %v", err)
 	}
-	auth.AddAuthorizationHeader(request, session)
+	auth.AddAuthorizationHeader(request, session.Token)
 	if err != nil {
 		t.Fatalf("error adding auth header: %v", err)
 	}
