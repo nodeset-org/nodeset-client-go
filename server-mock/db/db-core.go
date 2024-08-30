@@ -13,7 +13,7 @@ type Database_Core struct {
 	users []*User
 
 	// Collection of sessions
-	Sessions []*Session
+	sessions []*Session
 
 	// Internal fields
 	logger *slog.Logger
@@ -24,20 +24,20 @@ type Database_Core struct {
 func newDatabase_Core(db *Database, logger *slog.Logger) *Database_Core {
 	return &Database_Core{
 		users:    []*User{},
-		Sessions: []*Session{},
+		sessions: []*Session{},
 		logger:   logger,
 		db:       db,
 	}
 }
 
-// Clone the database
-func (d *Database_Core) Clone(dbClone *Database) *Database_Core {
+// clone the database
+func (d *Database_Core) clone(dbClone *Database) *Database_Core {
 	clone := newDatabase_Core(dbClone, d.logger)
 	for _, user := range d.users {
-		clone.users = append(clone.users, user.Clone(dbClone))
+		clone.users = append(clone.users, user.clone(dbClone))
 	}
-	for _, session := range d.Sessions {
-		clone.Sessions = append(clone.Sessions, session.Clone())
+	for _, session := range d.sessions {
+		clone.sessions = append(clone.sessions, session.clone())
 	}
 	return clone
 }
@@ -92,13 +92,13 @@ func (d *Database_Core) GetNode(address ethcommon.Address) (*Node, bool) {
 // Creates a new session
 func (d *Database_Core) CreateSession() *Session {
 	session := newSession()
-	d.Sessions = append(d.Sessions, session)
+	d.sessions = append(d.sessions, session)
 	return session
 }
 
 // Gets a session by its nonce
 func (d *Database_Core) GetSessionByNonce(nonce string) *Session {
-	for _, session := range d.Sessions {
+	for _, session := range d.sessions {
 		if session.Nonce == nonce {
 			return session
 		}
@@ -108,12 +108,17 @@ func (d *Database_Core) GetSessionByNonce(nonce string) *Session {
 
 // Gets a session by its token
 func (d *Database_Core) GetSessionByToken(token string) *Session {
-	for _, session := range d.Sessions {
+	for _, session := range d.sessions {
 		if session.Token == token {
 			return session
 		}
 	}
 	return nil
+}
+
+// Gets all sessions
+func (d *Database_Core) GetSessions() []*Session {
+	return d.sessions
 }
 
 // Attempts to log an existing session in with the provided node address and nonce
@@ -134,7 +139,7 @@ func (d *Database_Core) loginImpl(nodeAddress ethcommon.Address, nonce string, s
 		return fmt.Errorf("no session with provided nonce")
 	}
 
-	if session.IsLoggedIn {
+	if session.IsLoggedIn() {
 		return fmt.Errorf("session already logged in")
 	}
 

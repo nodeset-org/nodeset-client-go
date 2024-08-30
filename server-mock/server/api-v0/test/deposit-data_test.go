@@ -30,7 +30,7 @@ func TestGetDepositData(t *testing.T) {
 	mgr.SetDatabase(db)
 
 	// Run a get deposit data request
-	data := runGetDepositDataRequest(t, db.Core.Sessions[0])
+	data := runGetDepositDataRequest(t, db.Core.GetSessions()[0])
 
 	// Make sure the response is correct
 	vault := db.StakeWise.GetDeployment(test.Network).GetStakeWiseVault(test.StakeWiseVaultAddress)
@@ -54,7 +54,7 @@ func TestUploadDepositData(t *testing.T) {
 	// Provision the database
 	db := idb.ProvisionFullDatabase(t, logger, false)
 	mgr.SetDatabase(db)
-	session := db.Core.Sessions[0]
+	session := db.Core.GetSessions()[0]
 
 	// Run a get deposit data request to make sure it's empty
 	data := runGetDepositDataRequest(t, session)
@@ -73,7 +73,7 @@ func TestUploadDepositData(t *testing.T) {
 	runUploadDepositDataRequest(t, session, depositData)
 
 	// Run a get deposit data request to make sure it's uploaded
-	validatorsData := runGetValidatorsRequest(t, db.Core.Sessions[0])
+	validatorsData := runGetValidatorsRequest(t, db.Core.GetSessions()[0])
 	expectedData := []stakewise.ValidatorStatus{
 		{
 			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),

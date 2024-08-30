@@ -30,8 +30,8 @@ func (d *Database) Clone() *Database {
 	dbClone := &Database{
 		logger: d.logger,
 	}
-	dbClone.Core = d.Core.Clone(dbClone)
-	dbClone.Constellation = d.Constellation.Clone()
-	dbClone.StakeWise = d.StakeWise.Clone(dbClone)
+	dbClone.Core = d.Core.clone(dbClone)
+	dbClone.Constellation = d.Constellation.clone()
+	dbClone.StakeWise = d.StakeWise.clone(dbClone)
 	return dbClone
 }

@@ -14,11 +14,11 @@ var (
 
 // A node
 type Node struct {
-	Address             common.Address
-	stakeWiseValidators map[string]map[common.Address][]*StakeWiseValidatorInfo
+	Address common.Address
 
-	isRegistered bool
-	user         *User
+	stakeWiseValidators map[string]map[common.Address][]*StakeWiseValidatorInfo
+	isRegistered        bool
+	user                *User
 }
 
 // Create a new node
@@ -30,8 +30,8 @@ func newNode(user *User, address common.Address) *Node {
 	}
 }
 
-// Clone the node
-func (n *Node) Clone(userClone *User) *Node {
+// clone the node
+func (n *Node) clone(userClone *User) *Node {
 	clone := newNode(userClone, n.Address)
 	clone.isRegistered = n.isRegistered
 
@@ -39,7 +39,7 @@ func (n *Node) Clone(userClone *User) *Node {
 		for vaultAddress, validators := range deployment {
 			cloneSlice := make([]*StakeWiseValidatorInfo, len(validators))
 			for i, validator := range validators {
-				cloneSlice[i] = validator.Clone()
+				cloneSlice[i] = validator.clone()
 			}
 			cloneDeploymentMap := clone.stakeWiseValidators[deploymentID]
 			if cloneDeploymentMap == nil {

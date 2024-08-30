@@ -29,11 +29,11 @@ func newStakeWiseDeployment(db *Database, id string, chainID *big.Int) *StakeWis
 	}
 }
 
-// Clone the deployment
-func (d *StakeWiseDeployment) Clone(dbClone *Database) *StakeWiseDeployment {
+// clone the deployment
+func (d *StakeWiseDeployment) clone(dbClone *Database) *StakeWiseDeployment {
 	clone := newStakeWiseDeployment(dbClone, d.ID, d.ChainID)
 	for address, vault := range d.vaults {
-		clone.vaults[address] = vault.Clone(clone)
+		clone.vaults[address] = vault.clone(clone)
 	}
 	return clone
 }
@@ -44,7 +44,7 @@ func (d *StakeWiseDeployment) AddStakeWiseVault(address ethcommon.Address) *Stak
 	if exists {
 		return vault
 	}
-	vault = NewStakeWiseVault(d, address)
+	vault = newStakeWiseVault(d, address)
 	d.vaults[address] = vault
 	return vault
 }

@@ -25,10 +25,10 @@ func newUser(db *Database, email string) *User {
 	}
 }
 
-func (u *User) Clone(dbClone *Database) *User {
+func (u *User) clone(dbClone *Database) *User {
 	userClone := newUser(dbClone, u.Email)
 	for address, node := range u.nodes {
-		userClone.nodes[address] = node.Clone(userClone)
+		userClone.nodes[address] = node.clone(userClone)
 	}
 	return userClone
 }

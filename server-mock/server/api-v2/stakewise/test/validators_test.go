@@ -72,7 +72,7 @@ func TestUploadSignedExits(t *testing.T) {
 	// Provision the database
 	db := idb.ProvisionFullDatabase(t, logger, false)
 	mgr.SetDatabase(db)
-	session := db.Core.Sessions[0]
+	session := db.Core.GetSessions()[0]
 
 	// Run a get deposit data request to make sure it's empty
 	data := runGetDepositDataRequest(t, session)

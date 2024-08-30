@@ -26,8 +26,8 @@ func newStakeWiseValidatorInfo(depositData beacon.ExtendedDepositData, vault *St
 	}
 }
 
-// Clone the StakeWise validator info
-func (v *StakeWiseValidatorInfo) Clone() *StakeWiseValidatorInfo {
+// clone the StakeWise validator info
+func (v *StakeWiseValidatorInfo) clone() *StakeWiseValidatorInfo {
 	return &StakeWiseValidatorInfo{
 		Pubkey:              v.Pubkey,
 		Vault:               v.Vault,

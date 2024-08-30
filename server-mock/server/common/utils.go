@@ -96,7 +96,7 @@ func GetNodeForSession(serverImpl IServerImpl, w http.ResponseWriter, session *d
 	}
 
 	// Make sure it's logged in
-	if !session.IsLoggedIn {
+	if !session.IsLoggedIn() {
 		HandleInvalidSessionError(w, logger, fmt.Errorf("session is not logged in"))
 		return nil
 	}

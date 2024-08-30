@@ -44,8 +44,8 @@ func newConstellationDeployment(id string, chainID *big.Int, whitelistAddress et
 	}
 }
 
-// Clone the deployment
-func (d *ConstellationDeployment) Clone() *ConstellationDeployment {
+// clone the deployment
+func (d *ConstellationDeployment) clone() *ConstellationDeployment {
 	clone := newConstellationDeployment(d.ID, d.ChainID, d.WhitelistAddress, d.SuperNodeAddress)
 	for address, nonce := range d.whitelistNonces {
 		clone.whitelistNonces[address] = nonce
