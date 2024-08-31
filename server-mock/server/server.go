@@ -2,23 +2,18 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net"
 	"net/http"
-	"net/url"
 	"sync"
 
 	"github.com/gorilla/mux"
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
-	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/manager"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/server/admin"
+	v0server "github.com/nodeset-org/nodeset-client-go/server-mock/server/api-v0"
+	v2server "github.com/nodeset-org/nodeset-client-go/server-mock/server/api-v2"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
@@ -30,6 +25,11 @@ type NodeSetMockServer struct {
 	server  http.Server
 	router  *mux.Router
 	manager *manager.NodeSetMockManager
+
+	// Route handlers
+	adminServer *admin.AdminServer
+	apiv0Server *v0server.V0Server
+	apiv2Server *v2server.V2Server
 }
 
 func NewNodeSetMockServer(logger *slog.Logger, ip string, port uint16) (*NodeSetMockServer, error) {
@@ -47,12 +47,19 @@ func NewNodeSetMockServer(logger *slog.Logger, ip string, port uint16) (*NodeSet
 		},
 		manager: manager.NewNodeSetMockManager(logger),
 	}
+	server.adminServer = admin.NewAdminServer(logger, server.manager)
+	server.apiv0Server = v0server.NewV0Server(logger, server.manager)
+	server.apiv2Server = v2server.NewV2Server(logger, server.manager)
 
-	// Register each route
-	apiRouter := router.PathPrefix("/api").Subrouter()
-	server.registerApiRoutes(apiRouter)
+	// Register admin routes
 	adminRouter := router.PathPrefix("/admin").Subrouter()
-	server.registerAdminRoutes(adminRouter)
+	server.adminServer.RegisterRoutes(adminRouter)
+
+	// Register API routes
+	apiRouter := router.PathPrefix("/api").Subrouter()
+	server.apiv0Server.RegisterRoutes(apiRouter)
+	server.apiv2Server.RegisterRoutes(apiRouter)
+
 	return server, nil
 }
 
@@ -100,168 +107,4 @@ func (s *NodeSetMockServer) GetPort() uint16 {
 // Get the mock manager for direct access
 func (s *NodeSetMockServer) GetManager() *manager.NodeSetMockManager {
 	return s.manager
-}
-
-// API routes
-func (s *NodeSetMockServer) registerApiRoutes(apiRouter *mux.Router) {
-	// deposit-data/meta
-	depositDataMeta := func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			s.depositDataMeta(w, r)
-		default:
-			handleInvalidMethod(w, s.logger)
-		}
-	}
-	// v1
-	apiRouter.HandleFunc("/"+apiv1.DepositDataMetaPath, depositDataMeta)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.DepositDataMetaPath, depositDataMeta)
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+apiv1.DepositDataMetaPath, depositDataMeta)
-
-	// deposit-data
-	depositData := func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			s.getDepositData(w, r)
-		case http.MethodPost:
-			s.uploadDepositData(w, r)
-		default:
-			handleInvalidMethod(w, s.logger)
-		}
-	}
-	// v1
-	apiRouter.HandleFunc("/"+apiv1.DepositDataPath, depositData)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.DepositDataPath, depositData)
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+apiv1.DepositDataPath, depositData)
-
-	// validators
-	validators := func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			s.getValidators(w, r)
-		case http.MethodPatch:
-			s.uploadSignedExits(w, r)
-		default:
-			handleInvalidMethod(w, s.logger)
-		}
-	}
-	// v1
-	apiRouter.HandleFunc("/"+apiv1.ValidatorsPath, validators)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.ValidatorsPath, validators)
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.StakeWisePath+apiv1.ValidatorsPath, validators)
-
-	// node-address
-	// v1
-	apiRouter.HandleFunc("/"+apiv1.NodeAddressPath, s.registerNode)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.NodeAddressPath, s.registerNode)
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+apiv1.NodeAddressPath, s.registerNode)
-
-	// nonce
-	// v1
-	apiRouter.HandleFunc("/"+apiv1.NoncePath, s.getNonce)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.NoncePath, s.getNonce)
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+apiv1.NoncePath, s.getNonce)
-
-	// login
-	// v1
-	apiRouter.HandleFunc("/"+apiv1.LoginPath, s.login)
-	apiRouter.HandleFunc("/"+api.DevPath+apiv1.LoginPath, s.login)
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.CorePath+apiv1.LoginPath, s.login)
-
-	// constellation
-	// v1 - constellation introduced in later version
-	// v2
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.ConstellationPath+apiv2.WhitelistPath, s.getWhitelistSignature)
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.ConstellationPath+apiv2.MinipoolAvailablePath, s.getMinipoolAvailable)
-	apiRouter.HandleFunc("/"+apiv2.ApiVersion+"/"+apiv2.ConstellationPath+apiv2.MinipoolDepositSignaturePath, s.minipoolDepositSignature)
-
-}
-
-// Admin routes
-func (s *NodeSetMockServer) registerAdminRoutes(adminRouter *mux.Router) {
-	adminRouter.HandleFunc("/"+api.AdminSnapshotPath, s.snapshot)
-	adminRouter.HandleFunc("/"+api.AdminRevertPath, s.revert)
-	adminRouter.HandleFunc("/"+api.AdminCycleSetPath, s.cycleSet)
-	adminRouter.HandleFunc("/"+api.AdminAddUserPath, s.addUser)
-	adminRouter.HandleFunc("/"+api.AdminWhitelistNodePath, s.whitelistNode)
-	adminRouter.HandleFunc("/"+api.AdminAddVaultPath, s.addStakeWiseVault)
-	adminRouter.HandleFunc("/"+api.AdminSetConstellationPrivateKeyPath, s.setConstellationAdminPrivateKey)
-	//adminRouter.HandleFunc("/"+api.AdminSetManualSignatureTimestampPath, s.setManualSignatureTimestamp)
-	adminRouter.HandleFunc("/"+api.AdminSetAvailableConstellationMinipoolCountPath, s.setAvailableConstellationMinipoolCount)
-}
-
-// =============
-// === Utils ===
-// =============
-
-func (s *NodeSetMockServer) processApiRequest(w http.ResponseWriter, r *http.Request, requestBody any) url.Values {
-	args := r.URL.Query()
-	s.logger.Info("New request", slog.String(log.MethodKey, r.Method), slog.String(log.PathKey, r.URL.Path))
-	s.logger.Debug("Request params:", slog.String(log.QueryKey, r.URL.RawQuery))
-
-	if requestBody != nil {
-		// Read the body
-		bodyBytes, err := io.ReadAll(r.Body)
-		if err != nil {
-			handleInputError(w, s.logger, fmt.Errorf("error reading request body: %w", err))
-			return nil
-		}
-		s.logger.Debug("Request body:", slog.String(log.BodyKey, string(bodyBytes)))
-
-		// Deserialize the body
-		err = json.Unmarshal(bodyBytes, &requestBody)
-		if err != nil {
-			handleInputError(w, s.logger, fmt.Errorf("error deserializing request body: %w", err))
-			return nil
-		}
-	}
-
-	return args
-}
-
-func (s *NodeSetMockServer) processAuthHeader(w http.ResponseWriter, r *http.Request) *db.Session {
-	// Get the auth header
-	session, err := s.manager.VerifyRequest(r)
-	if err != nil {
-		if errors.Is(err, manager.ErrInvalidSession) {
-			handleInvalidSessionError(w, s.logger, err)
-			return nil
-		}
-		if errors.Is(err, auth.ErrAuthHeader) {
-			handleAuthHeaderError(w, s.logger, err)
-			return nil
-		}
-		if errors.Is(err, auth.ErrMissingAuthHeader) {
-			handleMissingAuthHeader(w, s.logger)
-			return nil
-		}
-
-		// Catch-all
-		handleServerError(w, s.logger, err)
-		return nil
-	}
-
-	return session
-}
-
-func (s *NodeSetMockServer) getNodeForSession(w http.ResponseWriter, session *db.Session) *db.Node {
-	// Get the node
-	node, isRegistered := s.manager.GetNode(session.NodeAddress)
-	if node == nil || !isRegistered {
-		handleUnregisteredNode(w, s.logger, session.NodeAddress)
-		return nil
-	}
-
-	// Make sure it's logged in
-	if !session.IsLoggedIn {
-		handleInvalidSessionError(w, s.logger, fmt.Errorf("session is not logged in"))
-		return nil
-	}
-	return node
 }

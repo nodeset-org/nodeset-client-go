@@ -25,7 +25,7 @@ type Session struct {
 	NodeAddress common.Address
 
 	// Whether or not the user for the session has logged in
-	IsLoggedIn bool
+	isLoggedIn bool
 }
 
 // Creates a new session
@@ -39,20 +39,23 @@ func newSession() *Session {
 	return &Session{
 		Nonce:      utils.EncodeHexWithPrefix(nonce[:]),
 		Token:      token.String(),
-		IsLoggedIn: false,
+		isLoggedIn: false,
 	}
 }
-
-func (s *Session) login(nodeAddress common.Address) {
-	s.NodeAddress = nodeAddress
-	s.IsLoggedIn = true
-}
-
-func (s *Session) Clone() *Session {
+func (s *Session) clone() *Session {
 	return &Session{
 		Nonce:       s.Nonce,
 		Token:       s.Token,
 		NodeAddress: s.NodeAddress,
-		IsLoggedIn:  s.IsLoggedIn,
+		isLoggedIn:  s.isLoggedIn,
 	}
+}
+
+func (s *Session) IsLoggedIn() bool {
+	return s.isLoggedIn
+}
+
+func (s *Session) login(nodeAddress common.Address) {
+	s.NodeAddress = nodeAddress
+	s.isLoggedIn = true
 }

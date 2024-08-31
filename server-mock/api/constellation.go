@@ -1,6 +1,9 @@
 package api
 
 type AdminSetConstellationPrivateKeyRequest struct {
+	// ID of the deployment to set the private key for
+	Deployment string `json:"deploymentID"`
+
 	// Private key in 0x-prefixed hex format
 	PrivateKey string `json:"privateKey"`
 }

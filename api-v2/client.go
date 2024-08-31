@@ -4,50 +4,40 @@ import (
 	"net/url"
 	"time"
 
-	apiv1 "github.com/nodeset-org/nodeset-client-go/api-v1"
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
+	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
+	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
+	"github.com/nodeset-org/nodeset-client-go/common"
 )
 
 const (
 	// API version to use
 	ApiVersion string = "v2"
-
-	CorePath          string = "core/"
-	StakeWisePath     string = "modules/stakewise/"
-	ConstellationPath string = "modules/constellation/"
 )
-
-// List of routes for v2 API functions
-type V2Routes struct {
-	MinipoolAvailable        string
-	MinipoolDepositSignature string
-	Whitelist                string
-}
 
 // Client for interacting with the NodeSet server
 type NodeSetClient struct {
-	*apiv1.NodeSetClient
-	routes V2Routes
+	*common.CommonNodeSetClient
+
+	// Core routes
+	Core *v2core.V2CoreClient
+
+	// StakeWise routes
+	StakeWise *v2stakewise.V2StakeWiseClient
+
+	// Constellation routes
+	Constellation *v2constellation.V2ConstellationClient
 }
 
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
 func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
 	expandedUrl, _ := url.JoinPath(baseUrl, ApiVersion) // becomes [https://nodeset.io/api/v2]
-	client := &NodeSetClient{
-		NodeSetClient: apiv1.NewNodeSetClient(expandedUrl, timeout),
-		routes: V2Routes{
-			MinipoolAvailable:        ConstellationPath + MinipoolAvailablePath,
-			MinipoolDepositSignature: ConstellationPath + MinipoolDepositSignaturePath,
-			Whitelist:                ConstellationPath + WhitelistPath,
-		},
+	commonClient := common.NewCommonNodeSetClient(expandedUrl, timeout)
+	return &NodeSetClient{
+		CommonNodeSetClient: commonClient,
+		Core:                v2core.NewV2CoreClient(commonClient),
+		StakeWise:           v2stakewise.NewV2StakeWiseClient(commonClient),
+		Constellation:       v2constellation.NewV2ConstellationClient(commonClient),
 	}
-	client.SetRoutes(apiv1.V1Routes{
-		Login:           CorePath + apiv1.LoginPath,
-		Nonce:           CorePath + apiv1.NoncePath,
-		NodeAddress:     CorePath + apiv1.NodeAddressPath,
-		DepositData:     StakeWisePath + apiv1.DepositDataPath,
-		DepositDataMeta: StakeWisePath + apiv1.DepositDataMetaPath,
-		Validators:      StakeWisePath + apiv1.ValidatorsPath,
-	})
-	return client
 }
