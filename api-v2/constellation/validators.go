@@ -19,7 +19,7 @@ const (
 // Validator status info
 type ValidatorStatus struct {
 	Pubkey              beacon.ValidatorPubkey `json:"pubkey"`
-	ExitMessageUploaded bool                   `json:"exitMessage"`
+	RequiresExitMessage bool                   `json:"requiresExitMessage"`
 }
 
 // Response to a validators request
