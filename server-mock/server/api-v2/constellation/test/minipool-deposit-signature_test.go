@@ -59,6 +59,9 @@ func TestConstellationDeposit(t *testing.T) {
 	require.NoError(t, err)
 	deployment.SetAdminPrivateKey(adminKey)
 
+	// Whitelist the node
+	runWhitelistRequest(t, session)
+
 	// Run the request
 	salt, _ := big.NewInt(0).SetString(mds_salt, 16)
 	data := runMinipoolDepositSignatureRequest(t, session, ethcommon.HexToAddress(mds_mpAddress), salt)

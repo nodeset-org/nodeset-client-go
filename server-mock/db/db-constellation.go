@@ -14,28 +14,30 @@ type Database_Constellation struct {
 
 	// Internal fields
 	logger *slog.Logger
+	db     *Database
 }
 
 // Create a new Constellation database
-func newDatabase_Constellation(logger *slog.Logger) *Database_Constellation {
+func newDatabase_Constellation(db *Database, logger *slog.Logger) *Database_Constellation {
 	return &Database_Constellation{
 		deployments: map[string]*ConstellationDeployment{},
 		logger:      logger,
+		db:          db,
 	}
 }
 
-// clone the database
-func (d *Database_Constellation) clone() *Database_Constellation {
-	clone := newDatabase_Constellation(d.logger)
+// Clone the database
+func (d *Database_Constellation) clone(dbClone *Database) *Database_Constellation {
+	clone := newDatabase_Constellation(dbClone, d.logger)
 	for id, deployment := range d.deployments {
-		clone.deployments[id] = deployment.clone()
+		clone.deployments[id] = deployment.clone(dbClone)
 	}
 	return clone
 }
 
 // Adds a deployment - if there is an existing one with the same ID, it will be overwritten to allow for testing changes
 func (d *Database_Constellation) AddDeployment(id string, chainID *big.Int, whitelistAddress ethcommon.Address, superNodeAddress ethcommon.Address) *ConstellationDeployment {
-	d.deployments[id] = newConstellationDeployment(id, chainID, whitelistAddress, superNodeAddress)
+	d.deployments[id] = newConstellationDeployment(d.db, id, chainID, whitelistAddress, superNodeAddress)
 	return d.deployments[id]
 }
 

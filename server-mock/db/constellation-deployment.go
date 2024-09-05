@@ -7,7 +7,9 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/utils"
+	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
 // Deployment for Constellation info
@@ -27,31 +29,58 @@ type ConstellationDeployment struct {
 	// Private key for the ADMIN_ROLE account
 	adminPrivateKey *ecdsa.PrivateKey
 
+	// Map of the whitelisted nodes for each user account
+	whitelistedNodeMap map[string]ethcommon.Address
+
+	// Map of nodes to minipools
+	minipools map[ethcommon.Address][]ethcommon.Address
+
+	// Map of minipools to validators - TEMP until proper reading from an EL
+	validators map[ethcommon.Address]*ConstellationValidatorInfo
+
 	// Maps for signature nonces - TEMP until proper reading from an EL
 	whitelistNonces map[ethcommon.Address]uint64
 	superNodeNonces map[ethcommon.Address]uint64
+
+	// Database handle
+	db *Database
 }
 
 // Create a new Constellation deployment
-func newConstellationDeployment(id string, chainID *big.Int, whitelistAddress ethcommon.Address, superNodeAddress ethcommon.Address) *ConstellationDeployment {
+func newConstellationDeployment(db *Database, id string, chainID *big.Int, whitelistAddress ethcommon.Address, superNodeAddress ethcommon.Address) *ConstellationDeployment {
 	return &ConstellationDeployment{
-		ID:               id,
-		ChainID:          chainID,
-		WhitelistAddress: whitelistAddress,
-		SuperNodeAddress: superNodeAddress,
-		whitelistNonces:  map[ethcommon.Address]uint64{},
-		superNodeNonces:  map[ethcommon.Address]uint64{},
+		ID:                 id,
+		ChainID:            chainID,
+		WhitelistAddress:   whitelistAddress,
+		SuperNodeAddress:   superNodeAddress,
+		whitelistedNodeMap: map[string]ethcommon.Address{},
+		minipools:          map[ethcommon.Address][]ethcommon.Address{},
+		validators:         map[ethcommon.Address]*ConstellationValidatorInfo{},
+		whitelistNonces:    map[ethcommon.Address]uint64{},
+		superNodeNonces:    map[ethcommon.Address]uint64{},
+		db:                 db,
 	}
 }
 
-// clone the deployment
-func (d *ConstellationDeployment) clone() *ConstellationDeployment {
-	clone := newConstellationDeployment(d.ID, d.ChainID, d.WhitelistAddress, d.SuperNodeAddress)
+// Clone the deployment
+func (d *ConstellationDeployment) clone(dbClone *Database) *ConstellationDeployment {
+	clone := newConstellationDeployment(dbClone, d.ID, d.ChainID, d.WhitelistAddress, d.SuperNodeAddress)
 	for address, nonce := range d.whitelistNonces {
 		clone.whitelistNonces[address] = nonce
 	}
 	for address, nonce := range d.superNodeNonces {
 		clone.superNodeNonces[address] = nonce
+	}
+	for email, address := range d.whitelistedNodeMap {
+		clone.whitelistedNodeMap[email] = address
+	}
+	for nodeAddress, minipools := range d.minipools {
+		cloneMinipools := make([]ethcommon.Address, len(minipools))
+		copy(cloneMinipools, minipools)
+		clone.minipools[nodeAddress] = cloneMinipools
+	}
+	for minipoolAddress, validator := range d.validators {
+		clone.validators[minipoolAddress] = validator.clone()
 	}
 	clone.adminPrivateKey = d.adminPrivateKey
 	return clone
@@ -93,6 +122,16 @@ func (d *ConstellationDeployment) GetWhitelistSignature(nodeAddress ethcommon.Ad
 		return nil, fmt.Errorf("constellation admin private key not set")
 	}
 
+	node, isRegistered := d.db.Core.GetNode(nodeAddress)
+	if node == nil || !isRegistered {
+		return nil, fmt.Errorf("node %s not registered", nodeAddress.Hex())
+	}
+
+	whitelistedAddress, exists := d.whitelistedNodeMap[node.user.Email]
+	if exists && whitelistedAddress != nodeAddress {
+		return nil, fmt.Errorf("node %s already whitelisted for user %s", whitelistedAddress.Hex(), node.user.Email)
+	}
+
 	chainIdBytes := [32]byte{}
 	d.ChainID.FillBytes(chainIdBytes[:])
 
@@ -115,6 +154,7 @@ func (d *ConstellationDeployment) GetWhitelistSignature(nodeAddress ethcommon.Ad
 	if err != nil {
 		return nil, fmt.Errorf("error creating signature: %w", err)
 	}
+	d.whitelistedNodeMap[node.user.Email] = nodeAddress
 	return signature, nil
 }
 
@@ -122,6 +162,16 @@ func (d *ConstellationDeployment) GetWhitelistSignature(nodeAddress ethcommon.Ad
 func (d *ConstellationDeployment) GetMinipoolDepositSignature(nodeAddress ethcommon.Address, minipoolAddress ethcommon.Address, salt *big.Int) ([]byte, error) {
 	if d.adminPrivateKey == nil {
 		return nil, fmt.Errorf("constellation admin private key not set")
+	}
+
+	node, isRegistered := d.db.Core.GetNode(nodeAddress)
+	if node == nil || !isRegistered {
+		return nil, fmt.Errorf("node %s not registered", nodeAddress.Hex())
+	}
+
+	whitelistedAddress, exists := d.whitelistedNodeMap[node.user.Email]
+	if !exists || whitelistedAddress != nodeAddress {
+		return nil, fmt.Errorf("node %s not set as Constellation node for %s", nodeAddress.Hex(), node.user.Email)
 	}
 
 	chainIdBytes := [32]byte{}
@@ -133,8 +183,9 @@ func (d *ConstellationDeployment) GetMinipoolDepositSignature(nodeAddress ethcom
 	saltKeccak := crypto.Keccak256(saltBytes[:], nodeAddress[:])
 
 	nonceBytes := [32]byte{}
-	nonce := big.NewInt(int64(d.superNodeNonces[nodeAddress]))
-	nonce.FillBytes(nonceBytes[:])
+	nonce := d.superNodeNonces[nodeAddress]
+	nonceBig := big.NewInt(int64(nonce))
+	nonceBig.FillBytes(nonceBytes[:])
 
 	sigTypeBytes := [32]byte{} // Always 0 for the mock
 
@@ -152,5 +203,78 @@ func (d *ConstellationDeployment) GetMinipoolDepositSignature(nodeAddress ethcom
 	if err != nil {
 		return nil, fmt.Errorf("error creating signature: %w", err)
 	}
+
+	// Set the minipool
+	nodeMinipools := d.minipools[nodeAddress]
+	if nonce >= uint64(len(nodeMinipools)) {
+		nodeMinipools = append(nodeMinipools, minipoolAddress)
+	} else {
+		nodeMinipools[nonce] = minipoolAddress
+	}
+	d.minipools[nodeAddress] = nodeMinipools
+
 	return signature, nil
+}
+
+// Set the validator pubkey for the minipool - TEMP until reading from an EL
+func (d *ConstellationDeployment) SetValidatorInfoForMinipool(minipoolAddress ethcommon.Address, pubkey beacon.ValidatorPubkey) {
+	d.validators[minipoolAddress] = newConstellationValidatorInfo(pubkey)
+}
+
+// Get the validators for the node
+func (d *ConstellationDeployment) GetValidatorsForNode(node *Node) []*ConstellationValidatorInfo {
+	minipools := d.minipools[node.Address]
+	validatorInfos := []*ConstellationValidatorInfo{}
+	for _, minipool := range minipools {
+		validator, exists := d.validators[minipool]
+		if !exists {
+			continue
+		}
+		validatorInfos = append(validatorInfos, validator)
+	}
+	return validatorInfos
+}
+
+// Get the validator for a node with the given pubkey
+func (d *ConstellationDeployment) GetValidator(node *Node, pubkey beacon.ValidatorPubkey) *ConstellationValidatorInfo {
+	minipools := d.minipools[node.Address]
+	for _, minipool := range minipools {
+		validator, exists := d.validators[minipool]
+		if !exists {
+			continue
+		}
+		if validator.Pubkey == pubkey {
+			return validator
+		}
+	}
+	return nil
+}
+
+// Handle a new collection of signed exits from a node for Constellation
+func (d *ConstellationDeployment) HandleSignedExitUpload(node *Node, data []common.ExitData) error {
+	// Add the signed exits
+	minipools := d.minipools[node.Address]
+	for _, signedExit := range data {
+		pubkey, err := beacon.HexToValidatorPubkey(signedExit.Pubkey)
+		if err != nil {
+			return fmt.Errorf("error parsing validator pubkey [%s]: %w", signedExit.Pubkey, err)
+		}
+
+		// Get the validator
+		found := false
+		for _, minipoolAddress := range minipools {
+			validator := d.validators[minipoolAddress]
+			if validator == nil || validator.Pubkey != pubkey {
+				continue
+			}
+			found = true
+			validator.SetExitMessage(&signedExit.ExitMessage)
+			break
+		}
+		if !found {
+			return fmt.Errorf("node [%s] doesn't have validator [%s]", node.Address.Hex(), pubkey.Hex())
+		}
+
+	}
+	return nil
 }

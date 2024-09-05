@@ -30,7 +30,7 @@ func newDatabase_Core(db *Database, logger *slog.Logger) *Database_Core {
 	}
 }
 
-// clone the database
+// Clone the database
 func (d *Database_Core) clone(dbClone *Database) *Database_Core {
 	clone := newDatabase_Core(dbClone, d.logger)
 	for _, user := range d.users {

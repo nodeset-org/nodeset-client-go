@@ -90,20 +90,28 @@ func TestUploadSignedExits(t *testing.T) {
 	runUploadDepositDataRequest(t, session, depositData)
 
 	// Run a get deposit data request to make sure it's uploaded
-	validatorsData := runGetValidatorsRequest(t, session)
-	expectedData := []stakewise.ValidatorStatus{
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),
+	pubkeys := make([]beacon.ValidatorPubkey, len(depositData))
+	for i, data := range depositData {
+		pubkeys[i] = beacon.ValidatorPubkey(data.PublicKey)
+	}
+	expectedData := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{
+		pubkeys[0]: {
+			Pubkey:              pubkeys[0],
 			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[1].PublicKey),
+		pubkeys[1]: {
+			Pubkey:              pubkeys[1],
 			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}
-	require.Equal(t, expectedData, validatorsData.Validators)
+	validatorsData := runGetValidatorsRequest(t, session)
+	validatorMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
+	for _, validator := range validatorsData.Validators {
+		validatorMap[validator.Pubkey] = validator
+	}
+	require.Equal(t, expectedData, validatorMap)
 	t.Logf("Received matching response")
 
 	// Generate a signed exit for validator 1
@@ -115,20 +123,15 @@ func TestUploadSignedExits(t *testing.T) {
 	t.Logf("Uploaded signed exit")
 
 	// Get the validator status again
+	validator := expectedData[pubkeys[1]]
+	validator.ExitMessageUploaded = true
+	expectedData[pubkeys[1]] = validator
 	validatorsData = runGetValidatorsRequest(t, session)
-	expectedData = []stakewise.ValidatorStatus{
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),
-			Status:              stakewise.StakeWiseStatus_Pending,
-			ExitMessageUploaded: false,
-		},
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[1].PublicKey),
-			Status:              stakewise.StakeWiseStatus_Pending,
-			ExitMessageUploaded: true, // This should be true now
-		},
+	validatorMap = map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
+	for _, validator := range validatorsData.Validators {
+		validatorMap[validator.Pubkey] = validator
 	}
-	require.Equal(t, expectedData, validatorsData.Validators)
+	require.Equal(t, expectedData, validatorMap)
 	t.Logf("Received matching response")
 }
 

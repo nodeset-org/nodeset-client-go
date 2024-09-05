@@ -20,7 +20,7 @@ func NewDatabase(logger *slog.Logger) *Database {
 		logger: logger,
 	}
 	db.Core = newDatabase_Core(db, logger)
-	db.Constellation = newDatabase_Constellation(logger)
+	db.Constellation = newDatabase_Constellation(db, logger)
 	db.StakeWise = newDatabase_StakeWise(db, logger)
 	return db
 }
@@ -31,7 +31,7 @@ func (d *Database) Clone() *Database {
 		logger: d.logger,
 	}
 	dbClone.Core = d.Core.clone(dbClone)
-	dbClone.Constellation = d.Constellation.clone()
+	dbClone.Constellation = d.Constellation.clone(dbClone)
 	dbClone.StakeWise = d.StakeWise.clone(dbClone)
 	return dbClone
 }

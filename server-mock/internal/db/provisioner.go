@@ -72,8 +72,30 @@ func ProvisionFullDatabase(t *testing.T, logger *slog.Logger, includeDepositData
 	}
 
 	// Create a new set with 1 DD per user and verify
+	pubkeys := []beacon.ValidatorPubkey{
+		beacon.ValidatorPubkey(depositData0.PublicKey),
+		beacon.ValidatorPubkey(depositData1.PublicKey),
+		beacon.ValidatorPubkey(depositData2.PublicKey),
+		beacon.ValidatorPubkey(depositData3.PublicKey),
+		beacon.ValidatorPubkey(depositData4.PublicKey),
+	}
+	expectedMap := map[beacon.ValidatorPubkey]beacon.ExtendedDepositData{
+		pubkeys[0]: depositData0,
+		pubkeys[1]: depositData1,
+		pubkeys[2]: depositData2,
+		pubkeys[3]: depositData3,
+		pubkeys[4]: depositData4,
+	}
 	depositDataSet := vault.CreateNewDepositDataSet(1)
-	require.Equal(t, []beacon.ExtendedDepositData{depositData0, depositData1, depositData3}, depositDataSet)
+	seenPubkeys := map[beacon.ValidatorPubkey]bool{}
+	for _, dd := range depositDataSet {
+		pubkey := beacon.ValidatorPubkey(dd.PublicKey)
+		seenPubkeys[pubkey] = true
+		require.Equal(t, expectedMap[pubkey], dd)
+	}
+	require.True(t, seenPubkeys[pubkeys[0]])
+	require.True(t, seenPubkeys[pubkeys[1]] != seenPubkeys[pubkeys[2]]) // One from node 1
+	require.True(t, seenPubkeys[pubkeys[3]] != seenPubkeys[pubkeys[4]]) // One from node 2
 
 	// Handle the deposit data upload
 	vault.UploadDepositDataToStakeWise(depositDataSet)

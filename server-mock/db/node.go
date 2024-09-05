@@ -5,7 +5,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
-	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
 var (
@@ -30,7 +29,7 @@ func newNode(user *User, address common.Address) *Node {
 	}
 }
 
-// clone the node
+// Clone the node
 func (n *Node) clone(userClone *User) *Node {
 	clone := newNode(userClone, n.Address)
 	clone.isRegistered = n.isRegistered
@@ -65,47 +64,6 @@ func (n *Node) Register(signature []byte) error {
 // Register the node with the NodeSet server, bypassing the signature requirement for testing
 func (n *Node) RegisterWithoutSignature() error {
 	return n.registerImpl(nil, true)
-}
-
-// Add a new StakeWise validator to the node
-func (n *Node) AddStakeWiseDepositData(vault *StakeWiseVault, depositData beacon.ExtendedDepositData) {
-	validatorsForDeployment, exists := n.stakeWiseValidators[vault.deployment.ID]
-	if !exists {
-		validatorsForDeployment = map[common.Address][]*StakeWiseValidatorInfo{}
-		n.stakeWiseValidators[vault.deployment.ID] = validatorsForDeployment
-	}
-
-	validatorsForVault, exists := validatorsForDeployment[vault.Address]
-	if !exists {
-		validatorsForVault = []*StakeWiseValidatorInfo{}
-		validatorsForDeployment[vault.Address] = validatorsForVault
-	}
-
-	pubkey := beacon.ValidatorPubkey(depositData.PublicKey)
-	for _, validator := range validatorsForVault {
-		if validator.Pubkey == pubkey {
-			// Already present
-			return
-		}
-	}
-
-	validator := newStakeWiseValidatorInfo(depositData, vault)
-	validatorsForVault = append(validatorsForVault, validator)
-	n.stakeWiseValidators[vault.deployment.ID][vault.Address] = validatorsForVault
-}
-
-// Get the StakeWise validators for the node
-func (n *Node) GetStakeWiseValidatorsForVault(vault *StakeWiseVault) []*StakeWiseValidatorInfo {
-	validatorsForDeployment := n.stakeWiseValidators[vault.deployment.ID]
-	if validatorsForDeployment == nil {
-		return nil
-	}
-	return validatorsForDeployment[vault.Address]
-}
-
-// Get all StakeWise validators
-func (n *Node) GetAllStakeWiseValidators(deployment *StakeWiseDeployment) map[common.Address][]*StakeWiseValidatorInfo {
-	return n.stakeWiseValidators[deployment.ID]
 }
 
 // Implementation for registering the node

@@ -24,7 +24,7 @@ func newDatabase_StakeWise(db *Database, logger *slog.Logger) *Database_StakeWis
 	}
 }
 
-// clone the database
+// Clone the database
 func (d *Database_StakeWise) clone(dbClone *Database) *Database_StakeWise {
 	clone := newDatabase_StakeWise(dbClone, d.logger)
 	for id, deployment := range d.deployments {

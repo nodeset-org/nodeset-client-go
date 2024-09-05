@@ -74,24 +74,32 @@ func TestUploadDepositData(t *testing.T) {
 
 	// Run a get deposit data request to make sure it's uploaded
 	validatorsData := runGetValidatorsRequest(t, db.Core.GetSessions()[0])
-	expectedData := []stakewise.ValidatorStatus{
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[0].PublicKey),
+	validatorMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
+	for _, validator := range validatorsData.Validators {
+		validatorMap[validator.Pubkey] = validator
+	}
+
+	pubkey0 := beacon.ValidatorPubkey(depositData[0].PublicKey)
+	pubkey1 := beacon.ValidatorPubkey(depositData[1].PublicKey)
+	pubkey2 := beacon.ValidatorPubkey(depositData[2].PublicKey)
+	expectedMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{
+		pubkey0: {
+			Pubkey:              pubkey0,
 			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[1].PublicKey),
+		pubkey1: {
+			Pubkey:              pubkey1,
 			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
-		{
-			Pubkey:              beacon.ValidatorPubkey(depositData[2].PublicKey),
+		pubkey2: {
+			Pubkey:              pubkey2,
 			Status:              stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}
-	require.Equal(t, expectedData, validatorsData.Validators)
+	require.Equal(t, expectedMap, validatorMap)
 	t.Logf("Received matching response")
 }
 

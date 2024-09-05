@@ -43,7 +43,7 @@ func (s *V0Server) getValidators(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	validatorStatuses := []stakewise.ValidatorStatus{}
-	validatorsForDeployment := node.GetAllStakeWiseValidators(deployment)
+	validatorsForDeployment := deployment.GetAllStakeWiseValidators(node)
 
 	// Iterate the validators
 	for _, validatorsForVault := range validatorsForDeployment {

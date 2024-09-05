@@ -22,6 +22,9 @@ type StakeWiseVault struct {
 	// Latest deposit data set uploaded to StakeWise
 	LatestDepositDataSet []beacon.ExtendedDepositData
 
+	// Map of nodes to validators for StakeWise vaults
+	validators map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo
+
 	deployment *StakeWiseDeployment
 	db         *Database
 }
@@ -33,51 +36,63 @@ func newStakeWiseVault(deployment *StakeWiseDeployment, address ethcommon.Addres
 		UploadedData:              map[beacon.ValidatorPubkey]bool{},
 		LatestDepositDataSet:      []beacon.ExtendedDepositData{},
 		LatestDepositDataSetIndex: 0,
+		validators:                map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo{},
 		deployment:                deployment,
 		db:                        deployment.db,
 	}
 }
 
-// clone the StakeWise vault
+// Clone the StakeWise vault
 func (v *StakeWiseVault) clone(deploymentClone *StakeWiseDeployment) *StakeWiseVault {
 	clone := newStakeWiseVault(deploymentClone, v.Address)
 	clone.LatestDepositDataSetIndex = v.LatestDepositDataSetIndex
 	clone.LatestDepositDataSet = make([]beacon.ExtendedDepositData, len(v.LatestDepositDataSet))
 	copy(clone.LatestDepositDataSet, v.LatestDepositDataSet)
+	for node, validators := range v.validators {
+		cloneValidators := map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo{}
+		for pubkey, validator := range validators {
+			cloneValidators[pubkey] = validator.clone()
+		}
+		clone.validators[node] = cloneValidators
+	}
 	for pubkey, uploaded := range v.UploadedData {
 		clone.UploadedData[pubkey] = uploaded
 	}
 	return clone
 }
 
+// Add a new StakeWise validator to the node
+func (v *StakeWiseVault) AddStakeWiseDepositData(node *Node, depositData beacon.ExtendedDepositData) {
+	pubkey := beacon.ValidatorPubkey(depositData.PublicKey)
+	nodeValidators, nodeExists := v.validators[node.Address]
+	if !nodeExists {
+		nodeValidators = map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo{}
+		v.validators[node.Address] = nodeValidators
+	}
+	_, exists := nodeValidators[pubkey]
+	if exists {
+		// Already present
+		return
+	}
+
+	validator := newStakeWiseValidatorInfo(depositData)
+	nodeValidators[pubkey] = validator
+}
+
+// Get the StakeWise validators for a node
+func (v *StakeWiseVault) GetStakeWiseValidatorsForNode(node *Node) map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo {
+	return v.validators[node.Address]
+}
+
 // Handle a new collection of deposit data uploads from a node
 func (v *StakeWiseVault) HandleDepositDataUpload(node *Node, data []beacon.ExtendedDepositData) error {
-	/*
-		// Get the node
-		var node *Node
-		for _, user := range v.db.Core.Users {
-			for _, candidate := range user.RegisteredNodes {
-				if candidate.Address == nodeAddress {
-					node = candidate
-					break
-				}
-			}
-			if node != nil {
-				break
-			}
-		}
-		if node == nil {
-			return fmt.Errorf("registered node with address [%s] not found", nodeAddress.Hex())
-		}
-	*/
-
 	// Add the deposit data
 	for _, depositData := range data {
 		wcAddress := ethcommon.BytesToAddress(depositData.WithdrawalCredentials)
 		if wcAddress != v.Address {
 			return fmt.Errorf("deposit data withdrawal credentials [%s] don't match vault address [%s]", wcAddress.Hex(), v.Address.Hex())
 		}
-		node.AddStakeWiseDepositData(v, depositData)
+		v.AddStakeWiseDepositData(node, depositData)
 	}
 
 	return nil
@@ -85,25 +100,6 @@ func (v *StakeWiseVault) HandleDepositDataUpload(node *Node, data []beacon.Exten
 
 // Handle a new collection of signed exits from a node for StakeWise
 func (v *StakeWiseVault) HandleSignedExitUpload(node *Node, data []common.ExitData) error {
-	/*
-		// Get the node
-		var node *Node
-		for _, user := range v.db.Core.Users {
-			for _, candidate := range user.RegisteredNodes {
-				if candidate.Address == nodeAddress {
-					node = candidate
-					break
-				}
-			}
-			if node != nil {
-				break
-			}
-		}
-		if node == nil {
-			return fmt.Errorf("registered node with address [%s] not found", nodeAddress.Hex())
-		}
-	*/
-
 	// Add the signed exits
 	for _, signedExit := range data {
 		pubkey, err := beacon.HexToValidatorPubkey(signedExit.Pubkey)
@@ -112,7 +108,7 @@ func (v *StakeWiseVault) HandleSignedExitUpload(node *Node, data []common.ExitDa
 		}
 
 		// Get the validator
-		validators := node.GetStakeWiseValidatorsForVault(v)
+		validators := v.validators[node.Address]
 		if len(validators) == 0 {
 			return fmt.Errorf("vault [%s] is not used by node [%s]", v.Address.Hex(), node.Address.Hex())
 		}
@@ -142,7 +138,7 @@ func (v *StakeWiseVault) CreateNewDepositDataSet(validatorsPerUser int) []beacon
 			if !node.isRegistered {
 				continue
 			}
-			validators := node.GetStakeWiseValidatorsForVault(v)
+			validators := v.validators[node.Address]
 			if len(validators) == 0 {
 				continue
 			}
@@ -187,7 +183,7 @@ func (v *StakeWiseVault) MarkDepositDataSetUploaded(data []beacon.ExtendedDeposi
 				if !node.isRegistered {
 					continue
 				}
-				validators := node.GetStakeWiseValidatorsForVault(v)
+				validators := v.validators[node.Address]
 				if len(validators) == 0 {
 					continue
 				}
@@ -215,7 +211,7 @@ func (v *StakeWiseVault) MarkValidatorsRegistered(data []beacon.ExtendedDepositD
 				if !node.isRegistered {
 					continue
 				}
-				validators := node.GetStakeWiseValidatorsForVault(v)
+				validators := v.validators[node.Address]
 				if len(validators) == 0 {
 					continue
 				}

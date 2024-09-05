@@ -29,7 +29,7 @@ func newStakeWiseDeployment(db *Database, id string, chainID *big.Int) *StakeWis
 	}
 }
 
-// clone the deployment
+// Clone the deployment
 func (d *StakeWiseDeployment) clone(dbClone *Database) *StakeWiseDeployment {
 	clone := newStakeWiseDeployment(dbClone, d.ID, d.ChainID)
 	for address, vault := range d.vaults {
@@ -57,4 +57,18 @@ func (d *StakeWiseDeployment) GetVault(address ethcommon.Address) *StakeWiseVaul
 // Get all vaults
 func (d *StakeWiseDeployment) GetVaults() map[ethcommon.Address]*StakeWiseVault {
 	return d.vaults
+}
+
+// Get all StakeWise validators
+func (d *StakeWiseDeployment) GetAllStakeWiseValidators(node *Node) map[ethcommon.Address][]*StakeWiseValidatorInfo {
+	vaultInfos := map[ethcommon.Address][]*StakeWiseValidatorInfo{}
+	for vaultAddress, vault := range d.vaults {
+		vaultInfo := []*StakeWiseValidatorInfo{}
+		nodeValidators := vault.validators[node.Address]
+		for _, validator := range nodeValidators {
+			vaultInfo = append(vaultInfo, validator)
+		}
+		vaultInfos[vaultAddress] = vaultInfo
+	}
+	return vaultInfos
 }

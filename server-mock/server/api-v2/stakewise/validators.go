@@ -52,7 +52,7 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 
 	// Find the validator
 	validatorStatuses := []stakewise.ValidatorStatus{}
-	validators := node.GetStakeWiseValidatorsForVault(vault)
+	validators := vault.GetStakeWiseValidatorsForNode(node)
 	for _, validator := range validators {
 		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
 			Pubkey:              validator.Pubkey,

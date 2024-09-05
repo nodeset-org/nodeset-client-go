@@ -9,7 +9,6 @@ import (
 // Info about a validator that's part of a StakeWise vault
 type StakeWiseValidatorInfo struct {
 	Pubkey              beacon.ValidatorPubkey
-	Vault               *StakeWiseVault
 	DepositData         beacon.ExtendedDepositData
 	SignedExit          common.ExitMessage
 	ExitMessageUploaded bool
@@ -18,19 +17,17 @@ type StakeWiseValidatorInfo struct {
 }
 
 // Create a new StakeWise validator info
-func newStakeWiseValidatorInfo(depositData beacon.ExtendedDepositData, vault *StakeWiseVault) *StakeWiseValidatorInfo {
+func newStakeWiseValidatorInfo(depositData beacon.ExtendedDepositData) *StakeWiseValidatorInfo {
 	return &StakeWiseValidatorInfo{
 		Pubkey:      beacon.ValidatorPubkey(depositData.PublicKey),
-		Vault:       vault,
 		DepositData: depositData,
 	}
 }
 
-// clone the StakeWise validator info
+// Clone the StakeWise validator info
 func (v *StakeWiseValidatorInfo) clone() *StakeWiseValidatorInfo {
 	return &StakeWiseValidatorInfo{
 		Pubkey:              v.Pubkey,
-		Vault:               v.Vault,
 		DepositData:         v.DepositData,
 		SignedExit:          v.SignedExit,
 		ExitMessageUploaded: v.ExitMessageUploaded,
