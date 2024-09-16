@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/utils"
@@ -40,7 +41,7 @@ func (s *V0Server) nodeAddress(w http.ResponseWriter, r *http.Request) {
 		common.HandleInputError(w, s.logger, fmt.Errorf("invalid signature"))
 		return
 	}
-	err = node.Register(sig)
+	err = node.Register(sig, apiv0.NodeAddressMessageFormat)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

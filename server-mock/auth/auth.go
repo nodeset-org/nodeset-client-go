@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/nodeset-org/nodeset-client-go/common/core"
 	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -20,12 +21,6 @@ const (
 
 	// Format for the authorization header
 	authHeaderFormat string = "Bearer %s"
-
-	// Format for signing node registration messages
-	nodeRegistrationMessageFormat string = `{"email":"%s","node_address":"%s"}`
-
-	// Format for signing login messages
-	loginMessageFormat string = `{"nonce":"%s","address":"%s"}`
 )
 
 var (
@@ -34,19 +29,19 @@ var (
 )
 
 // Creates a signature for node registration
-func GetSignatureForRegistration(email string, nodeAddress common.Address, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+func GetSignatureForRegistration(email string, nodeAddress common.Address, privateKey *ecdsa.PrivateKey, nodeRegistrationMessageFormat string) ([]byte, error) {
 	message := fmt.Sprintf(nodeRegistrationMessageFormat, email, nodeAddress.Hex())
 	return nsutil.CreateSignature([]byte(message), privateKey)
 }
 
 // Creates a signature for node registration
 func GetSignatureForLogin(nonce string, nodeAddress common.Address, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	message := fmt.Sprintf(loginMessageFormat, nonce, nodeAddress.Hex())
+	message := fmt.Sprintf(core.LoginMessageFormat, nonce, nodeAddress.Hex())
 	return nsutil.CreateSignature([]byte(message), privateKey)
 }
 
 // Verifies a signature for node registration
-func VerifyRegistrationSignature(email string, nodeAddress common.Address, signature []byte) error {
+func VerifyRegistrationSignature(email string, nodeAddress common.Address, signature []byte, nodeRegistrationMessageFormat string) error {
 	message := fmt.Sprintf(nodeRegistrationMessageFormat, email, nodeAddress.Hex())
 	address, err := getAddressFromSignature([]byte(message), signature)
 	if err != nil {
@@ -60,7 +55,7 @@ func VerifyRegistrationSignature(email string, nodeAddress common.Address, signa
 
 // Verifies a signature for logging in
 func VerifyLoginSignature(nonce string, nodeAddress common.Address, signature []byte) error {
-	message := fmt.Sprintf(loginMessageFormat, nonce, nodeAddress.Hex())
+	message := fmt.Sprintf(core.LoginMessageFormat, nonce, nodeAddress.Hex())
 	address, err := getAddressFromSignature([]byte(message), signature)
 	if err != nil {
 		return fmt.Errorf("error verifying signature: %w", err)

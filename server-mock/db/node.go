@@ -57,24 +57,24 @@ func (n *Node) IsRegistered() bool {
 }
 
 // Register the node with the NodeSet server
-func (n *Node) Register(signature []byte) error {
-	return n.registerImpl(signature, false)
+func (n *Node) Register(signature []byte, signatureFormat string) error {
+	return n.registerImpl(signature, false, signatureFormat)
 }
 
 // Register the node with the NodeSet server, bypassing the signature requirement for testing
 func (n *Node) RegisterWithoutSignature() error {
-	return n.registerImpl(nil, true)
+	return n.registerImpl(nil, true, "")
 }
 
 // Implementation for registering the node
-func (n *Node) registerImpl(signature []byte, skipVerification bool) error {
+func (n *Node) registerImpl(signature []byte, skipVerification bool, signatureFormat string) error {
 	if n.isRegistered {
 		return ErrAlreadyRegistered
 	}
 
 	// Verify the signature
 	if !skipVerification {
-		err := auth.VerifyRegistrationSignature(n.user.Email, n.Address, signature)
+		err := auth.VerifyRegistrationSignature(n.user.Email, n.Address, signature, signatureFormat)
 		if err != nil {
 			return err
 		}

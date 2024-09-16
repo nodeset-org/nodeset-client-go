@@ -36,9 +36,9 @@ func TestDepositDataMeta(t *testing.T) {
 	user, err := db.Core.AddUser(test.User0Email)
 	require.NoError(t, err)
 	node := user.WhitelistNode(node0Pubkey)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key, apiv0.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig)
+	err = node.Register(regSig, apiv0.NodeAddressMessageFormat)
 	require.NoError(t, err)
 	vault := deployment.AddVault(test.StakeWiseVaultAddress)
 	vault.LatestDepositDataSetIndex = depositDataSet

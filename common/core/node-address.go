@@ -13,9 +13,6 @@ import (
 )
 
 const (
-	// Format for signing node address messages
-	NodeAddressMessageFormat string = `{"email":"%s","node_address":"%s"}`
-
 	// Route for registering a node address with the NodeSet server
 	NodeAddressPath string = "node-address"
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -36,9 +37,9 @@ func TestDepositDataMeta(t *testing.T) {
 	user, err := db.Core.AddUser(test.User0Email)
 	require.NoError(t, err)
 	node := user.WhitelistNode(node0Pubkey)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key, v2core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig)
+	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 	vault := deployment.AddVault(test.StakeWiseVaultAddress)
 	vault.LatestDepositDataSetIndex = depositDataSet

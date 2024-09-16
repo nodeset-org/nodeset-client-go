@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"testing"
 
+	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -89,12 +90,12 @@ func TestRegistration(t *testing.T) {
 
 	// Sign a registration message
 	email := test.User0Email
-	signature, err := GetSignatureForRegistration(email, pubkey, privateKey)
+	signature, err := GetSignatureForRegistration(email, pubkey, privateKey, apiv0.NodeAddressMessageFormat)
 	require.NoError(t, err)
 	t.Logf("Signed registration message, signature = %x", signature)
 
 	// Verify the signature
-	err = VerifyRegistrationSignature(email, pubkey, signature)
+	err = VerifyRegistrationSignature(email, pubkey, signature, apiv0.NodeAddressMessageFormat)
 	require.NoError(t, err)
 	t.Log("Verified registration signature")
 }

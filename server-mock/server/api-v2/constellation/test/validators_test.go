@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
+	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -38,9 +39,9 @@ func TestGetValidators_Empty(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig)
+	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -84,9 +85,9 @@ func TestPatchValidators(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig)
+	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session

@@ -40,7 +40,7 @@ func (s *V2CoreServer) nodeAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Register the node
-	err = node.Register(sig)
+	err = node.Register(sig, v2core.NodeAddressMessageFormat)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return
