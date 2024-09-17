@@ -13,6 +13,7 @@ import (
 )
 
 const (
+
 	// Route for requesting the signature to create a minipool
 	MinipoolDepositSignaturePath string = "minipool/deposit-signature"
 )
@@ -63,6 +64,19 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, de
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
 			return MinipoolDepositSignatureData{}, common.ErrInvalidDeployment
+
+		case MissingWhitelistedNodeAddressKey:
+			// Node address not whitelisted for deployment
+			return MinipoolDepositSignatureData{}, ErrMissingWhitelistedNodeAddress
+
+		case IncorrectNodeAddressKey:
+			// Incorrect node address
+			return MinipoolDepositSignatureData{}, ErrIncorrectNodeAddress
+
+		case ValidatorRequiresExitMessageKey:
+			// Address has been given access to Constellation, but the NodeSet service does not have
+			// a signed exit message stored for the minipool that user account previously created.
+			return MinipoolDepositSignatureData{}, ErrValidatorRequiresExitMessage
 		}
 
 	case http.StatusUnauthorized:
@@ -81,11 +95,6 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, de
 		case MinipoolLimitReachedKey:
 			// Address has been given access to Constellation, but cannot create any more minipools.
 			return MinipoolDepositSignatureData{}, ErrMinipoolLimitReached
-
-		case MissingExitMessageKey:
-			// Address has been given access to Constellation, but the NodeSet service does not have
-			// a signed exit message stored for the minipool that user account previously created.
-			return MinipoolDepositSignatureData{}, ErrMissingExitMessage
 		}
 	}
 

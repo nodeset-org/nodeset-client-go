@@ -51,6 +51,11 @@ func (n *Node) clone(userClone *User) *Node {
 	return clone
 }
 
+// Get the user the node belongs to
+func (n *Node) GetUser() *User {
+	return n.user
+}
+
 // Check if the node is registered or not
 func (n *Node) IsRegistered() bool {
 	return n.isRegistered

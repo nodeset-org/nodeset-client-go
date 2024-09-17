@@ -61,7 +61,7 @@ func TestConstellationDeposit(t *testing.T) {
 	deployment.SetAdminPrivateKey(adminKey)
 
 	// Whitelist the node
-	runWhitelistRequest(t, session)
+	runPostWhitelistRequest(t, session)
 
 	// Run the request
 	salt, _ := big.NewInt(0).SetString(mds_salt, 16)

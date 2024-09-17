@@ -116,6 +116,15 @@ func (d *ConstellationDeployment) IncrementSuperNodeNonce(address ethcommon.Addr
 	d.superNodeNonces[address]++
 }
 
+// Get the whitelisted address for the given user
+func (d *ConstellationDeployment) GetWhitelistedAddressForUser(userEmail string) *ethcommon.Address {
+	address, exists := d.whitelistedNodeMap[userEmail]
+	if !exists {
+		return nil
+	}
+	return &address
+}
+
 // Call this to get a signature for adding the node to the Constellation whitelist
 func (d *ConstellationDeployment) GetWhitelistSignature(nodeAddress ethcommon.Address) ([]byte, error) {
 	if d.adminPrivateKey == nil {

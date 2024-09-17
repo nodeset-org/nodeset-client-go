@@ -36,7 +36,7 @@ func (s *V2ConstellationServer) GetManager() *manager.NodeSetMockManager {
 // Registers the routes for the server
 func (s *V2ConstellationServer) RegisterRoutes(versionRouter *mux.Router) {
 	constellationPrefix := "/" + v2constellation.ConstellationPrefix + "{deployment}/"
-	versionRouter.HandleFunc(constellationPrefix+v2constellation.WhitelistPath, s.getWhitelist)
+	versionRouter.HandleFunc(constellationPrefix+v2constellation.WhitelistPath, s.handleWhitelist)
 	versionRouter.HandleFunc(constellationPrefix+v2constellation.MinipoolDepositSignaturePath, s.minipoolDepositSignature)
 	versionRouter.HandleFunc(constellationPrefix+v2constellation.ValidatorsPath, s.handleValidators)
 }

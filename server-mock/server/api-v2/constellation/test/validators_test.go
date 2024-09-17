@@ -57,7 +57,7 @@ func TestGetValidators_Empty(t *testing.T) {
 	deployment.SetAdminPrivateKey(adminKey)
 
 	// Whitelist the node
-	runWhitelistRequest(t, session)
+	runPostWhitelistRequest(t, session)
 
 	// Run the get request
 	data := runGetValidatorsRequest(t, session)
@@ -103,7 +103,7 @@ func TestPatchValidators(t *testing.T) {
 	deployment.SetAdminPrivateKey(adminKey)
 
 	// Whitelist the node
-	runWhitelistRequest(t, session)
+	runPostWhitelistRequest(t, session)
 
 	// More provisioning
 	numValidators := 3

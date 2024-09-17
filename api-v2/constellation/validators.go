@@ -3,6 +3,7 @@ package v2constellation
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -12,8 +13,16 @@ import (
 )
 
 const (
+	// Key for the error code when an exit message already exists for the pubkey being submitted
+	ExitMessageExistsKey string = "exit_message_exists"
+
 	// Route for interacting with the list of validators
 	ValidatorsPath string = "validators"
+)
+
+var (
+	// Exit message already exists for the pubkey being submitted
+	ErrExitMessageExists error = errors.New("exit message already exists for the pubkey")
 )
 
 // Validator status info
@@ -69,6 +78,14 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, deployment s
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
 			return ValidatorsData{}, common.ErrInvalidDeployment
+
+		case MissingWhitelistedNodeAddressKey:
+			// Node address not whitelisted for deployment
+			return ValidatorsData{}, ErrMissingWhitelistedNodeAddress
+
+		case IncorrectNodeAddressKey:
+			// Incorrect node address
+			return ValidatorsData{}, ErrIncorrectNodeAddress
 		}
 
 	case http.StatusUnauthorized:
@@ -130,6 +147,18 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment
 		case common.InvalidExitMessage:
 			// Invalid exit message
 			return common.ErrInvalidExitMessage
+
+		case MissingWhitelistedNodeAddressKey:
+			// Node address not whitelisted for deployment
+			return ErrMissingWhitelistedNodeAddress
+
+		case IncorrectNodeAddressKey:
+			// Incorrect node address
+			return ErrIncorrectNodeAddress
+
+		case ExitMessageExistsKey:
+			// Exit message already exists for the pubkey being submitted
+			return ErrExitMessageExists
 		}
 
 	case http.StatusUnauthorized:
