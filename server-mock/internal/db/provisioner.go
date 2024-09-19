@@ -162,6 +162,7 @@ func GenerateDepositData(t *testing.T, index uint, withdrawalAddress ethcommon.A
 		BeaconKeys[index] = validatorKey
 	}
 	depositData, err := validator.GetDepositData(
+		nil,
 		validatorKey,
 		validator.GetWithdrawalCredsFromAddress(withdrawalAddress),
 		test.GenesisForkVersion,
