@@ -185,7 +185,7 @@ func TestPatchValidators(t *testing.T) {
 // Run a GET api/v2/modules/constellation/{deployment}/validators request
 func runGetValidatorsRequest(t *testing.T, session *db.Session) v2constellation.ValidatorsData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
@@ -198,7 +198,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) v2constellation.
 // Run a PATCH api/v2/modules/constellation/{deployment}/validators request
 func runPatchValidatorsRequest(t *testing.T, session *db.Session, exitData []common.ExitData) {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

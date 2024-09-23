@@ -106,7 +106,7 @@ func TestUploadDepositData(t *testing.T) {
 // Run a GET api/deposit-data request
 func runGetDepositDataRequest(t *testing.T, session *db.Session) stakewise.DepositDataData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
@@ -119,7 +119,7 @@ func runGetDepositDataRequest(t *testing.T, session *db.Session) stakewise.Depos
 // Run a POST api/deposit-data request
 func runUploadDepositDataRequest(t *testing.T, session *db.Session, depositData []beacon.ExtendedDepositData) {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

@@ -75,7 +75,7 @@ func TestConstellationDeposit(t *testing.T) {
 // Run a GET api/v2/modules/constellation/{deployment}/minipool/deposit-signature request
 func runMinipoolDepositSignatureRequest(t *testing.T, session *db.Session, minipoolAddress ethcommon.Address, salt *big.Int) v2constellation.MinipoolDepositSignatureData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

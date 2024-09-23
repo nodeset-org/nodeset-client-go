@@ -56,7 +56,7 @@ func TestLogin(t *testing.T) {
 // Run a POST api/login request
 func runLoginRequest(t *testing.T, session *db.Session, nodeAddress ethcommon.Address, key *ecdsa.PrivateKey) core.LoginData {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv0.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

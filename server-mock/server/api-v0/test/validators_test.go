@@ -139,7 +139,7 @@ func TestUploadSignedExits(t *testing.T) {
 // Run a GET api/validators request
 func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.ValidatorsData {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv0.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
@@ -152,7 +152,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.Valida
 // Run a PATCH api/validators request
 func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []clientcommon.ExitData) {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv0.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

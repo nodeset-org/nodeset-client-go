@@ -69,6 +69,12 @@ func Login(c *common.CommonNodeSetClient, ctx context.Context, nonce string, add
 	}
 
 	// Submit the request
+	logger := c.GetLogger()
+	logger.Debug("Preparing login request",
+		"nonce", nonce,
+		"address", addressString,
+		"signature", signatureString,
+	)
 	code, response, err := common.SubmitRequest[LoginData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, loginPath)
 	if err != nil {
 		return LoginData{}, fmt.Errorf("error submitting login request: %w", err)

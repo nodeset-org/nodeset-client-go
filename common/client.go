@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -23,17 +24,24 @@ type CommonNodeSetClient struct {
 	baseUrl      string
 	sessionToken string
 	httpClient   *http.Client
+	logger       *slog.Logger
 }
 
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
-func NewCommonNodeSetClient(baseUrl string, timeout time.Duration) *CommonNodeSetClient {
+func NewCommonNodeSetClient(logger *slog.Logger, baseUrl string, timeout time.Duration) *CommonNodeSetClient {
 	return &CommonNodeSetClient{
 		baseUrl: baseUrl,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
+		logger: logger,
 	}
+}
+
+// Get the logger for the client
+func (c *CommonNodeSetClient) GetLogger() *slog.Logger {
+	return c.logger
 }
 
 // Set the session token for the client after logging in
@@ -74,6 +82,11 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 		query.Add(name, value)
 	}
 	request.URL.RawQuery = query.Encode()
+	c.logger.Debug("Submitting request to NodeSet server",
+		"method", method,
+		"path", path,
+		"query", request.URL.RawQuery,
+	)
 
 	// Set the headers
 	if requireAuth {
@@ -105,5 +118,9 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 	}
 
 	// Debug log
+	c.logger.Debug("Received response from NodeSet server",
+		"status", resp.Status,
+		"response", response,
+	)
 	return resp.StatusCode, response, nil
 }

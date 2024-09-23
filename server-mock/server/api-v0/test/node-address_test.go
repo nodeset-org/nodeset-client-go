@@ -44,7 +44,7 @@ func TestRegisterNode(t *testing.T) {
 // Run a POST api/node-address request
 func runNodeAddressRequest(t *testing.T, email string, nodeAddress common.Address, key *ecdsa.PrivateKey) {
 	// Create the client
-	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv0.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
 
 	// Run the request
 	signer := func(message []byte) ([]byte, error) {
