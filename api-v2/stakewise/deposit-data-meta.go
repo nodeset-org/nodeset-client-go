@@ -3,6 +3,7 @@ package v2stakewise
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -11,10 +12,10 @@ import (
 )
 
 // Get the current version of the aggregated deposit data on the server
-func (c *V2StakeWiseClient) DepositDataMeta(ctx context.Context, deployment string, vault ethcommon.Address) (stakewise.DepositDataMetaData, error) {
+func (c *V2StakeWiseClient) DepositDataMeta(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.DepositDataMetaData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataMetaPath
-	code, response, err := stakewise.DepositDataMeta(c.commonClient, ctx, nil, path)
+	code, response, err := stakewise.DepositDataMeta(c.commonClient, ctx, logger, nil, path)
 	if err != nil {
 		return stakewise.DepositDataMetaData{}, err
 	}

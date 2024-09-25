@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/goccy/go-json"
@@ -48,9 +49,9 @@ type ValidatorsData struct {
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
+func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
 	// Send the request
-	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, true, http.MethodGet, nil, params, validatorsPath)
+	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
 	if err != nil {
 		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
 	}
@@ -68,7 +69,7 @@ func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, params m
 }
 
 // Submit signed exit data to Nodeset
-func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, exitData any, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
+func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, exitData any, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
 	// Create the request body
 	jsonData, err := json.Marshal(exitData)
 	if err != nil {
@@ -76,7 +77,7 @@ func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, exitDa
 	}
 
 	// Submit the request
-	code, response, err := common.SubmitRequest[struct{}](c, ctx, true, http.MethodPatch, bytes.NewBuffer(jsonData), params, validatorsPath)
+	code, response, err := common.SubmitRequest[struct{}](c, ctx, logger, true, http.MethodPatch, bytes.NewBuffer(jsonData), params, validatorsPath)
 	if err != nil {
 		return code, nil, fmt.Errorf("error submitting exit data: %w", err)
 	}

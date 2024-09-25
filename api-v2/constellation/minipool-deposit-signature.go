@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"net/http"
 
@@ -35,7 +36,7 @@ type MinipoolDepositSignatureData struct {
 	Signature string `json:"signature"`
 }
 
-func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, deployment string, minipoolAddress ethcommon.Address, salt *big.Int) (MinipoolDepositSignatureData, error) {
+func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, logger *slog.Logger, deployment string, minipoolAddress ethcommon.Address, salt *big.Int) (MinipoolDepositSignatureData, error) {
 	// Create the request body
 	request := MinipoolDepositSignatureRequest{
 		MinipoolAddress: minipoolAddress,
@@ -45,10 +46,13 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, de
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error marshalling minipool deposit signature request: %w", err)
 	}
+	common.SafeDebugLog(logger, "Prepared minipool deposit signature body",
+		"body", request,
+	)
 
 	// Send the request
 	path := ConstellationPrefix + deployment + "/" + MinipoolDepositSignaturePath
-	code, response, err := common.SubmitRequest[MinipoolDepositSignatureData](c.commonClient, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
+	code, response, err := common.SubmitRequest[MinipoolDepositSignatureData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
 	}

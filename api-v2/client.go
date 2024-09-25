@@ -1,7 +1,6 @@
 package apiv2
 
 import (
-	"log/slog"
 	"net/url"
 	"time"
 
@@ -32,9 +31,9 @@ type NodeSetClient struct {
 
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
-func NewNodeSetClient(logger *slog.Logger, baseUrl string, timeout time.Duration) *NodeSetClient {
+func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
 	expandedUrl, _ := url.JoinPath(baseUrl, ApiVersion) // becomes [https://nodeset.io/api/v2]
-	commonClient := common.NewCommonNodeSetClient(logger, expandedUrl, timeout)
+	commonClient := common.NewCommonNodeSetClient(expandedUrl, timeout)
 	return &NodeSetClient{
 		CommonNodeSetClient: commonClient,
 		Core:                v2core.NewV2CoreClient(commonClient),

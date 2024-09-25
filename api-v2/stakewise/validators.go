@@ -3,6 +3,7 @@ package v2stakewise
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -34,10 +35,10 @@ type Validators_PatchBody struct {
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
-func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, deployment string, vault ethcommon.Address) (stakewise.ValidatorsData, error) {
+func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.ValidatorsData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Get(c.commonClient, ctx, nil, path)
+	code, response, err := stakewise.Validators_Get(c.commonClient, ctx, logger, nil, path)
 	if err != nil {
 		return stakewise.ValidatorsData{}, err
 	}
@@ -62,7 +63,7 @@ func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, deployment strin
 }
 
 // Submit signed exit data to NodeSet
-func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, deployment string, vault ethcommon.Address, exitData []common.ExitData) error {
+func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address, exitData []common.ExitData) error {
 	// Create the request body
 	body := Validators_PatchBody{
 		ExitData: make([]ExitData, len(exitData)),
@@ -78,8 +79,11 @@ func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, deployment str
 	}
 
 	// Send the request
+	common.SafeDebugLog(logger, "Preparing validators PATCH body",
+		"body", body,
+	)
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Patch(c.commonClient, ctx, body, nil, path)
+	code, response, err := stakewise.Validators_Patch(c.commonClient, ctx, logger, body, nil, path)
 	if err != nil {
 		return err
 	}

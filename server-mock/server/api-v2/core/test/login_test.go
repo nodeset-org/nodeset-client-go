@@ -56,14 +56,14 @@ func TestLogin(t *testing.T) {
 // Run a POST api/login request
 func runLoginRequest(t *testing.T, session *db.Session, nodeAddress ethcommon.Address, key *ecdsa.PrivateKey) core.LoginData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
 	signer := func(message []byte) ([]byte, error) {
 		return nsutil.CreateSignature(message, key)
 	}
-	data, err := client.Core.Login(context.Background(), session.Nonce, nodeAddress, signer)
+	data, err := client.Core.Login(context.Background(), logger, session.Nonce, nodeAddress, signer)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

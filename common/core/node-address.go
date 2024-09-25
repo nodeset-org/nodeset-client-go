@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -45,7 +46,7 @@ type NodeAddressRequest struct {
 
 // Registers the node with the NodeSet server. Assumes wallet validation has already been done and the actual wallet address
 // is provided here; if it's not, the signature won't come from the node being registered so it will fail validation.
-func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, email string, nodeWallet ethcommon.Address, signature []byte, nodeAddressPath string, request any) error {
+func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, email string, nodeWallet ethcommon.Address, signature []byte, nodeAddressPath string, request any) error {
 	// Create the request body
 	jsonData, err := json.Marshal(request)
 	if err != nil {
@@ -53,7 +54,7 @@ func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, email strin
 	}
 
 	// Submit the request
-	code, response, err := common.SubmitRequest[struct{}](c, ctx, false, http.MethodPost, bytes.NewBuffer(jsonData), nil, nodeAddressPath)
+	code, response, err := common.SubmitRequest[struct{}](c, ctx, logger, false, http.MethodPost, bytes.NewBuffer(jsonData), nil, nodeAddressPath)
 	if err != nil {
 		return fmt.Errorf("error registering node: %w", err)
 	}

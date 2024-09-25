@@ -24,24 +24,17 @@ type CommonNodeSetClient struct {
 	baseUrl      string
 	sessionToken string
 	httpClient   *http.Client
-	logger       *slog.Logger
 }
 
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
-func NewCommonNodeSetClient(logger *slog.Logger, baseUrl string, timeout time.Duration) *CommonNodeSetClient {
+func NewCommonNodeSetClient(baseUrl string, timeout time.Duration) *CommonNodeSetClient {
 	return &CommonNodeSetClient{
 		baseUrl: baseUrl,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-		logger: logger,
 	}
-}
-
-// Get the logger for the client
-func (c *CommonNodeSetClient) GetLogger() *slog.Logger {
-	return c.logger
 }
 
 // Set the session token for the client after logging in
@@ -65,7 +58,7 @@ type NodeSetResponse[DataType any] struct {
 
 // Send a request to the server and read the response
 // NOTE: this is better suited to be a method of c but Go doesn't allow for generic methods yet
-func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
+func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, logger *slog.Logger, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
 	var defaultVal NodeSetResponse[DataType]
 
 	// Make the request
@@ -82,7 +75,7 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 		query.Add(name, value)
 	}
 	request.URL.RawQuery = query.Encode()
-	c.logger.Debug("Submitting request to NodeSet server",
+	SafeDebugLog(logger, "Submitting request to NodeSet server",
 		"method", method,
 		"path", path,
 		"query", request.URL.RawQuery,
@@ -118,7 +111,7 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 	}
 
 	// Debug log
-	c.logger.Debug("Received response from NodeSet server",
+	SafeDebugLog(logger, "Received response from NodeSet server",
 		"status", resp.Status,
 		"response", response,
 	)

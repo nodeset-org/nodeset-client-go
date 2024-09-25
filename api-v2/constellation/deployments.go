@@ -3,15 +3,16 @@ package v2constellation
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/nodeset-org/nodeset-client-go/common"
 )
 
 // Gets the list of deployments available on the server
-func (c *V2ConstellationClient) Deployments(ctx context.Context) (common.DeploymentsData, error) {
+func (c *V2ConstellationClient) Deployments(ctx context.Context, logger *slog.Logger) (common.DeploymentsData, error) {
 	// Submit the request
-	code, response, err := common.SubmitRequest[common.DeploymentsData](c.commonClient, ctx, true, http.MethodGet, nil, nil, ConstellationPrefix+common.DeploymentsPath)
+	code, response, err := common.SubmitRequest[common.DeploymentsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, ConstellationPrefix+common.DeploymentsPath)
 	if err != nil {
 		return common.DeploymentsData{}, fmt.Errorf("error submitting deployments request: %w", err)
 	}

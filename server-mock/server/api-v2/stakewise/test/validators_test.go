@@ -139,11 +139,11 @@ func TestUploadSignedExits(t *testing.T) {
 // Run a GET api/validators request
 func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.ValidatorsData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.StakeWise.Validators_Get(context.Background(), test.Network, test.StakeWiseVaultAddress)
+	data, err := client.StakeWise.Validators_Get(context.Background(), logger, test.Network, test.StakeWiseVaultAddress)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -152,11 +152,11 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.Valida
 // Run a PATCH api/validators request
 func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.ExitData) {
 	// Create the client
-	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	err := client.StakeWise.Validators_Patch(context.Background(), test.Network, test.StakeWiseVaultAddress, signedExits)
+	err := client.StakeWise.Validators_Patch(context.Background(), logger, test.Network, test.StakeWiseVaultAddress, signedExits)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -23,9 +24,9 @@ type NonceData struct {
 }
 
 // Get a nonce from the NodeSet server for a new session
-func Nonce(c *common.CommonNodeSetClient, ctx context.Context, noncePath string) (NonceData, error) {
+func Nonce(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, noncePath string) (NonceData, error) {
 	// Get the nonce
-	code, nonceResponse, err := common.SubmitRequest[NonceData](c, ctx, false, http.MethodGet, nil, nil, noncePath)
+	code, nonceResponse, err := common.SubmitRequest[NonceData](c, ctx, logger, false, http.MethodGet, nil, nil, noncePath)
 	if err != nil {
 		return NonceData{}, fmt.Errorf("error getting nonce: %w", err)
 	}

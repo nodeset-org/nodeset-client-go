@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/goccy/go-json"
@@ -40,9 +41,9 @@ type DepositDataMetaData struct {
 }
 
 // Get the aggregated deposit data from the server
-func DepositData_Get[DataType any](c *common.CommonNodeSetClient, ctx context.Context, params map[string]string, depositDataPath string) (int, *common.NodeSetResponse[DataType], error) {
+func DepositData_Get[DataType any](c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, depositDataPath string) (int, *common.NodeSetResponse[DataType], error) {
 	// Send the request
-	code, response, err := common.SubmitRequest[DataType](c, ctx, true, http.MethodGet, nil, params, depositDataPath)
+	code, response, err := common.SubmitRequest[DataType](c, ctx, logger, true, http.MethodGet, nil, params, depositDataPath)
 	if err != nil {
 		return code, nil, fmt.Errorf("error getting deposit data: %w", err)
 	}
@@ -61,9 +62,9 @@ func DepositData_Get[DataType any](c *common.CommonNodeSetClient, ctx context.Co
 }
 
 // Get the current version of the aggregated deposit data on the server
-func DepositDataMeta(c *common.CommonNodeSetClient, ctx context.Context, params map[string]string, depositDataMetaPath string) (int, *common.NodeSetResponse[DepositDataMetaData], error) {
+func DepositDataMeta(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, depositDataMetaPath string) (int, *common.NodeSetResponse[DepositDataMetaData], error) {
 	// Send the request
-	code, response, err := common.SubmitRequest[DepositDataMetaData](c, ctx, true, http.MethodGet, nil, params, depositDataMetaPath)
+	code, response, err := common.SubmitRequest[DepositDataMetaData](c, ctx, logger, true, http.MethodGet, nil, params, depositDataMetaPath)
 	if err != nil {
 		return code, nil, fmt.Errorf("error getting deposit data version: %w", err)
 	}
@@ -81,7 +82,7 @@ func DepositDataMeta(c *common.CommonNodeSetClient, ctx context.Context, params 
 }
 
 // Uploads deposit data to Nodeset
-func DepositData_Post(c *common.CommonNodeSetClient, ctx context.Context, depositData any, depositDataPath string) (int, *common.NodeSetResponse[struct{}], error) {
+func DepositData_Post(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, depositData any, depositDataPath string) (int, *common.NodeSetResponse[struct{}], error) {
 	// Create the request body
 	serializedData, err := json.Marshal(depositData)
 	if err != nil {
@@ -89,7 +90,7 @@ func DepositData_Post(c *common.CommonNodeSetClient, ctx context.Context, deposi
 	}
 
 	// Send it
-	code, response, err := common.SubmitRequest[struct{}](c, ctx, true, http.MethodPost, bytes.NewBuffer(serializedData), nil, depositDataPath)
+	code, response, err := common.SubmitRequest[struct{}](c, ctx, logger, true, http.MethodPost, bytes.NewBuffer(serializedData), nil, depositDataPath)
 	if err != nil {
 		return code, nil, fmt.Errorf("error uploading deposit data: %w", err)
 	}

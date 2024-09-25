@@ -61,11 +61,11 @@ func TestDepositDataMeta(t *testing.T) {
 // Run a GET api/deposit-data/meta request
 func runDepositDataMetaRequest(t *testing.T, session *db.Session) stakewise.DepositDataMetaData {
 	// Create the client
-	client := apiv0.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.DepositDataMeta(context.Background(), test.StakeWiseVaultAddress, test.Network)
+	data, err := client.DepositDataMeta(context.Background(), logger, test.StakeWiseVaultAddress, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

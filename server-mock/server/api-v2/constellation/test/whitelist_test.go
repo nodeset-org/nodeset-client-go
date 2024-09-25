@@ -119,11 +119,11 @@ func TestConstellationWhitelist(t *testing.T) {
 // Run a GET api/v2/modules/constellation/{deployment}/whitelist request
 func runGetWhitelistRequest(t *testing.T, session *db.Session) v2constellation.Whitelist_GetData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.Whitelist_Get(context.Background(), test.Network)
+	data, err := client.Constellation.Whitelist_Get(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -132,11 +132,11 @@ func runGetWhitelistRequest(t *testing.T, session *db.Session) v2constellation.W
 // Run a POST api/v2/modules/constellation/{deployment}/whitelist request
 func runPostWhitelistRequest(t *testing.T, session *db.Session) v2constellation.Whitelist_PostData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(logger, fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.Whitelist_Post(context.Background(), test.Network)
+	data, err := client.Constellation.Whitelist_Post(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

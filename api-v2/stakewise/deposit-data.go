@@ -3,6 +3,7 @@ package v2stakewise
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -45,10 +46,10 @@ type DepositData_PostBody struct {
 }
 
 // Get the aggregated deposit data from the server
-func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, deployment string, vault ethcommon.Address) (stakewise.DepositDataData, error) {
+func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.DepositDataData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Get[DepositDataData](c.commonClient, ctx, nil, path)
+	code, response, err := stakewise.DepositData_Get[DepositDataData](c.commonClient, ctx, logger, nil, path)
 	if err != nil {
 		return stakewise.DepositDataData{}, err
 	}
@@ -81,7 +82,7 @@ func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, deployment stri
 }
 
 // Uploads deposit data to NodeSet
-func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, deployment string, vault ethcommon.Address, depositData []beacon.ExtendedDepositData) error {
+func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address, depositData []beacon.ExtendedDepositData) error {
 	// Convert the deposit data to the NS form
 	body := DepositData_PostBody{}
 	body.Validators = make([]ExtendedDepositData, len(depositData))
@@ -90,8 +91,11 @@ func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, deployment str
 	}
 
 	// Send the request
+	common.SafeDebugLog(logger, "Prepared deposit data POST body",
+		"body", body,
+	)
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Post(c.commonClient, ctx, body, path)
+	code, response, err := stakewise.DepositData_Post(c.commonClient, ctx, logger, body, path)
 	if err != nil {
 		return err
 	}
