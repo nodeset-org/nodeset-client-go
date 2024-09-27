@@ -29,6 +29,13 @@ func (c *V2ConstellationClient) Deployments(ctx context.Context, logger *slog.Lo
 			// Invalid or expired session
 			return common.DeploymentsData{}, common.ErrInvalidSession
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return common.DeploymentsData{}, common.ErrInvalidPermissions
+		}
 	}
 	return common.DeploymentsData{}, fmt.Errorf("nodeset server responded to deployments request with code %d: [%s]", code, response.Message)
 }

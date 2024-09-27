@@ -58,6 +58,13 @@ func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 			// Invalid vault
 			return stakewise.ValidatorsData{}, stakewise.ErrInvalidVault
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return stakewise.ValidatorsData{}, common.ErrInvalidPermissions
+		}
 	}
 	return stakewise.ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
 }
@@ -79,7 +86,7 @@ func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.L
 	}
 
 	// Send the request
-	common.SafeDebugLog(logger, "Preparing validators PATCH body",
+	common.SafeDebugLog(logger, "Prepared validators PATCH body",
 		"body", body,
 	)
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
@@ -102,6 +109,13 @@ func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.L
 		case stakewise.InvalidVaultKey:
 			// Invalid vault
 			return stakewise.ErrInvalidVault
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return common.ErrInvalidPermissions
 		}
 	}
 	return fmt.Errorf("nodeset server responded to validators-patch request with code %d: [%s]", code, response.Message)

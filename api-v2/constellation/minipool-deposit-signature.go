@@ -99,6 +99,10 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 		case MinipoolLimitReachedKey:
 			// Address has been given access to Constellation, but cannot create any more minipools.
 			return MinipoolDepositSignatureData{}, ErrMinipoolLimitReached
+
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return MinipoolDepositSignatureData{}, common.ErrInvalidPermissions
 		}
 	}
 

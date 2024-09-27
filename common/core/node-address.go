@@ -83,6 +83,13 @@ func NodeAddress(c *common.CommonNodeSetClient, ctx context.Context, logger *slo
 			// Malformed input
 			return common.ErrMalformedInput
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return common.ErrInvalidPermissions
+		}
 	}
 	return fmt.Errorf("nodeset server responded to node-address request with code %d: [%s]", code, response.Message)
 }

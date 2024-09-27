@@ -35,6 +35,13 @@ func (c *V2StakeWiseClient) DepositDataMeta(ctx context.Context, logger *slog.Lo
 			// Invalid vault
 			return stakewise.DepositDataMetaData{}, stakewise.ErrInvalidVault
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return stakewise.DepositDataMetaData{}, common.ErrInvalidPermissions
+		}
 	}
 	return stakewise.DepositDataMetaData{}, fmt.Errorf("nodeset server responded to deposit-data-meta request with code %d: [%s]", code, response.Message)
 }

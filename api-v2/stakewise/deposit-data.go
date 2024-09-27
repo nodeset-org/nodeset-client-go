@@ -77,6 +77,13 @@ func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, logger *slog.Lo
 			// Invalid vault
 			return stakewise.DepositDataData{}, stakewise.ErrInvalidVault
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return stakewise.DepositDataData{}, common.ErrInvalidPermissions
+		}
 	}
 	return stakewise.DepositDataData{}, fmt.Errorf("nodeset server responded to deposit-data-get request with code %d: [%s]", code, response.Message)
 }
@@ -122,6 +129,13 @@ func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, logger *slog.L
 		case DepositDataMismatchKey:
 			// Deposit data mismatch
 			return ErrDepositDataMismatch
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return common.ErrInvalidPermissions
 		}
 	}
 	return fmt.Errorf("nodeset server responded to deposit-data-post request with code %d: [%s]", code, response.Message)

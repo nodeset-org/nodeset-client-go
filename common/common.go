@@ -29,6 +29,9 @@ const (
 
 	// The exit message provided was invalid
 	InvalidExitMessage string = "invalid_exit_message"
+
+	// The user doesn't have permission to do this
+	InvalidPermissionsKey string = "invalid_permissions"
 )
 
 // Errors
@@ -50,6 +53,9 @@ var (
 
 	// The exit message provided was invalid
 	ErrInvalidExitMessage error = errors.New("the provided exit message was invalid")
+
+	// The user doesn't have permission to do this
+	ErrInvalidPermissions error = errors.New("the user doesn't have permission from the nodeset.io service to do this yet")
 )
 
 // =======================

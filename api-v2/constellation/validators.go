@@ -95,6 +95,13 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, logger *slog
 			// Invalid or expird session
 			return ValidatorsData{}, common.ErrInvalidSession
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return ValidatorsData{}, common.ErrInvalidPermissions
+		}
 	}
 	return ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
 }
@@ -170,6 +177,13 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, logger *sl
 		case common.InvalidSessionKey:
 			// Invalid or expird session
 			return common.ErrInvalidSession
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return common.ErrInvalidPermissions
 		}
 	}
 	return fmt.Errorf("nodeset server responded to validators-patch request with code %d: [%s]", code, response.Message)

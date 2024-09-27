@@ -2,6 +2,7 @@ package v2constellation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,8 +12,16 @@ import (
 )
 
 const (
+	// The node isn't authorized to register with Constellation
+	NodeUnauthorizedKey string = "node_unauthorized"
+
 	// Route for requesting whitelist signature
 	WhitelistPath string = "whitelist"
+)
+
+var (
+	// The node isn't authorized to register with Constellation
+	ErrNodeUnauthorized error = errors.New("node isn't authorized to register with Constellation")
 )
 
 // Response to a whitelist GET request
@@ -49,6 +58,13 @@ func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, logger *slog.
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
 			return Whitelist_GetData{}, common.ErrInvalidDeployment
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return Whitelist_GetData{}, common.ErrInvalidPermissions
 		}
 	}
 
@@ -89,6 +105,17 @@ func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, logger *slog
 		case common.InvalidSessionKey:
 			// Invalid session
 			return Whitelist_PostData{}, common.ErrInvalidSession
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return Whitelist_PostData{}, common.ErrInvalidPermissions
+
+		case NodeUnauthorizedKey:
+			// Node isn't authorized to register with Constellation
+			return Whitelist_PostData{}, ErrNodeUnauthorized
 		}
 	}
 

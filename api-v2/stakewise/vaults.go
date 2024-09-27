@@ -46,6 +46,13 @@ func (c *V2StakeWiseClient) Vaults(ctx context.Context, logger *slog.Logger, dep
 			// Invalid or expired session
 			return VaultsData{}, common.ErrInvalidSession
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return VaultsData{}, common.ErrInvalidPermissions
+		}
 	}
 	return VaultsData{}, fmt.Errorf("nodeset server responded to vaults request with code %d: [%s]", code, response.Message)
 }
