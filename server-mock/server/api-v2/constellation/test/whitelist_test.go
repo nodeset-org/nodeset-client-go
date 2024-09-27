@@ -123,7 +123,7 @@ func runGetWhitelistRequest(t *testing.T, session *db.Session) v2constellation.W
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.Whitelist_Get(context.Background(), test.Network)
+	data, err := client.Constellation.Whitelist_Get(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -136,7 +136,7 @@ func runPostWhitelistRequest(t *testing.T, session *db.Session) v2constellation.
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.Whitelist_Post(context.Background(), test.Network)
+	data, err := client.Constellation.Whitelist_Post(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

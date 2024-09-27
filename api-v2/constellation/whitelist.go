@@ -2,7 +2,9 @@ package v2constellation
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -10,8 +12,16 @@ import (
 )
 
 const (
+	// The node isn't authorized to register with Constellation
+	NodeUnauthorizedKey string = "node_unauthorized"
+
 	// Route for requesting whitelist signature
 	WhitelistPath string = "whitelist"
+)
+
+var (
+	// The node isn't authorized to register with Constellation
+	ErrNodeUnauthorized error = errors.New("node isn't authorized to register with Constellation")
 )
 
 // Response to a whitelist GET request
@@ -29,10 +39,10 @@ type Whitelist_PostData struct {
 	Signature string `json:"signature"`
 }
 
-func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, deployment string) (Whitelist_GetData, error) {
+func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, logger *slog.Logger, deployment string) (Whitelist_GetData, error) {
 	// Send the request
 	path := ConstellationPrefix + deployment + "/" + WhitelistPath
-	code, response, err := common.SubmitRequest[Whitelist_GetData](c.commonClient, ctx, true, http.MethodGet, nil, nil, path)
+	code, response, err := common.SubmitRequest[Whitelist_GetData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
 	if err != nil {
 		return Whitelist_GetData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}
@@ -49,15 +59,22 @@ func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, deployment st
 			// Invalid deployment
 			return Whitelist_GetData{}, common.ErrInvalidDeployment
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return Whitelist_GetData{}, common.ErrInvalidPermissions
+		}
 	}
 
 	return Whitelist_GetData{}, fmt.Errorf("nodeset server responded to whitelist-get request with code %d: [%s]", code, response.Message)
 }
 
-func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, deployment string) (Whitelist_PostData, error) {
+func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, logger *slog.Logger, deployment string) (Whitelist_PostData, error) {
 	// Send the request
 	path := ConstellationPrefix + deployment + "/" + WhitelistPath
-	code, response, err := common.SubmitRequest[Whitelist_PostData](c.commonClient, ctx, true, http.MethodPost, nil, nil, path)
+	code, response, err := common.SubmitRequest[Whitelist_PostData](c.commonClient, ctx, logger, true, http.MethodPost, nil, nil, path)
 	if err != nil {
 		return Whitelist_PostData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}
@@ -88,6 +105,17 @@ func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, deployment s
 		case common.InvalidSessionKey:
 			// Invalid session
 			return Whitelist_PostData{}, common.ErrInvalidSession
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return Whitelist_PostData{}, common.ErrInvalidPermissions
+
+		case NodeUnauthorizedKey:
+			// Node isn't authorized to register with Constellation
+			return Whitelist_PostData{}, ErrNodeUnauthorized
 		}
 	}
 

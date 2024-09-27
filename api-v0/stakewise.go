@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -25,7 +26,7 @@ var (
 )
 
 // Get the current version of the aggregated deposit data on the server
-func (c *NodeSetClient) DepositDataMeta(ctx context.Context, vault ethcommon.Address, network string) (stakewise.DepositDataMetaData, error) {
+func (c *NodeSetClient) DepositDataMeta(ctx context.Context, logger *slog.Logger, vault ethcommon.Address, network string) (stakewise.DepositDataMetaData, error) {
 	// Create the request params
 	vaultString := utils.RemovePrefix(strings.ToLower(vault.Hex()))
 	params := map[string]string{
@@ -34,7 +35,7 @@ func (c *NodeSetClient) DepositDataMeta(ctx context.Context, vault ethcommon.Add
 	}
 
 	// Send it
-	code, response, err := stakewise.DepositDataMeta(c.CommonNodeSetClient, ctx, params, stakewise.DepositDataMetaPath)
+	code, response, err := stakewise.DepositDataMeta(c.CommonNodeSetClient, ctx, logger, params, stakewise.DepositDataMetaPath)
 	if err != nil {
 		return stakewise.DepositDataMetaData{}, err
 	}
@@ -55,7 +56,7 @@ func (c *NodeSetClient) DepositDataMeta(ctx context.Context, vault ethcommon.Add
 }
 
 // Get the aggregated deposit data from the server
-func (c *NodeSetClient) DepositData_Get(ctx context.Context, vault ethcommon.Address, network string) (stakewise.DepositDataData, error) {
+func (c *NodeSetClient) DepositData_Get(ctx context.Context, logger *slog.Logger, vault ethcommon.Address, network string) (stakewise.DepositDataData, error) {
 	// Create the request params
 	vaultString := utils.RemovePrefix(strings.ToLower(vault.Hex()))
 	params := map[string]string{
@@ -64,7 +65,7 @@ func (c *NodeSetClient) DepositData_Get(ctx context.Context, vault ethcommon.Add
 	}
 
 	// Send it
-	code, response, err := stakewise.DepositData_Get[stakewise.DepositDataData](c.CommonNodeSetClient, ctx, params, stakewise.DepositDataPath)
+	code, response, err := stakewise.DepositData_Get[stakewise.DepositDataData](c.CommonNodeSetClient, ctx, logger, params, stakewise.DepositDataPath)
 	if err != nil {
 		return stakewise.DepositDataData{}, err
 	}
@@ -85,9 +86,12 @@ func (c *NodeSetClient) DepositData_Get(ctx context.Context, vault ethcommon.Add
 }
 
 // Uploads deposit data to NodeSet
-func (c *NodeSetClient) DepositData_Post(ctx context.Context, depositData []beacon.ExtendedDepositData) error {
+func (c *NodeSetClient) DepositData_Post(ctx context.Context, logger *slog.Logger, depositData []beacon.ExtendedDepositData) error {
 	// Send the request
-	code, response, err := stakewise.DepositData_Post(c.CommonNodeSetClient, ctx, depositData, stakewise.DepositDataPath)
+	common.SafeDebugLog(logger, "Prepared deposit data POST body",
+		"body", depositData,
+	)
+	code, response, err := stakewise.DepositData_Post(c.CommonNodeSetClient, ctx, logger, depositData, stakewise.DepositDataPath)
 	if err != nil {
 		return err
 	}
@@ -108,14 +112,14 @@ func (c *NodeSetClient) DepositData_Post(ctx context.Context, depositData []beac
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func (c *NodeSetClient) Validators_Get(ctx context.Context, network string) (stakewise.ValidatorsData, error) {
+func (c *NodeSetClient) Validators_Get(ctx context.Context, logger *slog.Logger, network string) (stakewise.ValidatorsData, error) {
 	// Create the request params
 	queryParams := map[string]string{
 		"network": network,
 	}
 
 	// Send the request
-	code, response, err := stakewise.Validators_Get(c.CommonNodeSetClient, ctx, queryParams, stakewise.ValidatorsPath)
+	code, response, err := stakewise.Validators_Get(c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
 	if err != nil {
 		return stakewise.ValidatorsData{}, err
 	}
@@ -136,14 +140,17 @@ func (c *NodeSetClient) Validators_Get(ctx context.Context, network string) (sta
 }
 
 // Submit signed exit data to NodeSet
-func (c *NodeSetClient) Validators_Patch(ctx context.Context, exitData []common.ExitData, network string) error {
+func (c *NodeSetClient) Validators_Patch(ctx context.Context, logger *slog.Logger, exitData []common.ExitData, network string) error {
 	// Create the request params
 	params := map[string]string{
 		"network": network,
 	}
 
 	// Submit the request
-	code, response, err := stakewise.Validators_Patch(c.CommonNodeSetClient, ctx, exitData, params, stakewise.ValidatorsPath)
+	common.SafeDebugLog(logger, "Prepared validators PATCH body",
+		"body", exitData,
+	)
+	code, response, err := stakewise.Validators_Patch(c.CommonNodeSetClient, ctx, logger, exitData, params, stakewise.ValidatorsPath)
 	if err != nil {
 		return err
 	}

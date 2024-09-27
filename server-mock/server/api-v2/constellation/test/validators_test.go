@@ -189,7 +189,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) v2constellation.
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.Validators_Get(context.Background(), test.Network)
+	data, err := client.Constellation.Validators_Get(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -202,7 +202,7 @@ func runPatchValidatorsRequest(t *testing.T, session *db.Session, exitData []com
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	err := client.Constellation.Validators_Patch(context.Background(), test.Network, exitData)
+	err := client.Constellation.Validators_Patch(context.Background(), logger, test.Network, exitData)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

@@ -50,7 +50,7 @@ func runNodeAddressRequest(t *testing.T, email string, nodeAddress common.Addres
 	signer := func(message []byte) ([]byte, error) {
 		return nsutil.CreateSignature(message, key)
 	}
-	err := client.NodeAddress(context.Background(), email, nodeAddress, signer)
+	err := client.NodeAddress(context.Background(), logger, email, nodeAddress, signer)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

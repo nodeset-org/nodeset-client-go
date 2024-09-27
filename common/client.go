@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -57,7 +58,7 @@ type NodeSetResponse[DataType any] struct {
 
 // Send a request to the server and read the response
 // NOTE: this is better suited to be a method of c but Go doesn't allow for generic methods yet
-func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
+func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, logger *slog.Logger, requireAuth bool, method string, body io.Reader, queryParams map[string]string, subroutes ...string) (int, NodeSetResponse[DataType], error) {
 	var defaultVal NodeSetResponse[DataType]
 
 	// Make the request
@@ -74,6 +75,11 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 		query.Add(name, value)
 	}
 	request.URL.RawQuery = query.Encode()
+	SafeDebugLog(logger, "Submitting request to NodeSet server",
+		"method", method,
+		"path", path,
+		"query", request.URL.RawQuery,
+	)
 
 	// Set the headers
 	if requireAuth {
@@ -105,5 +111,9 @@ func SubmitRequest[DataType any](c *CommonNodeSetClient, ctx context.Context, re
 	}
 
 	// Debug log
+	SafeDebugLog(logger, "Received response from NodeSet server",
+		"status", resp.Status,
+		"response", response,
+	)
 	return resp.StatusCode, response, nil
 }

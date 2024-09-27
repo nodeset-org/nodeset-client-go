@@ -63,7 +63,7 @@ func runLoginRequest(t *testing.T, session *db.Session, nodeAddress ethcommon.Ad
 	signer := func(message []byte) ([]byte, error) {
 		return nsutil.CreateSignature(message, key)
 	}
-	data, err := client.Login(context.Background(), session.Nonce, nodeAddress, signer)
+	data, err := client.Login(context.Background(), logger, session.Nonce, nodeAddress, signer)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

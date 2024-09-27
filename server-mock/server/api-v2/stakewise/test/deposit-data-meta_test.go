@@ -66,7 +66,7 @@ func runDepositDataMetaRequest(t *testing.T, session *db.Session) stakewise.Depo
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.StakeWise.DepositDataMeta(context.Background(), test.Network, test.StakeWiseVaultAddress)
+	data, err := client.StakeWise.DepositDataMeta(context.Background(), logger, test.Network, test.StakeWiseVaultAddress)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/goccy/go-json"
@@ -60,10 +61,10 @@ type Validators_PatchBody struct {
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
-func (c *V2ConstellationClient) Validators_Get(ctx context.Context, deployment string) (ValidatorsData, error) {
+func (c *V2ConstellationClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string) (ValidatorsData, error) {
 	// Send the request
 	path := ConstellationPrefix + deployment + "/" + ValidatorsPath
-	code, response, err := common.SubmitRequest[ValidatorsData](c.commonClient, ctx, true, http.MethodGet, nil, nil, path)
+	code, response, err := common.SubmitRequest[ValidatorsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
 	if err != nil {
 		return ValidatorsData{}, fmt.Errorf("error getting registered validators: %w", err)
 	}
@@ -94,12 +95,19 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, deployment s
 			// Invalid or expird session
 			return ValidatorsData{}, common.ErrInvalidSession
 		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return ValidatorsData{}, common.ErrInvalidPermissions
+		}
 	}
 	return ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
 }
 
 // Submit signed exit data to NodeSet
-func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment string, exitData []common.ExitData) error {
+func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, logger *slog.Logger, deployment string, exitData []common.ExitData) error {
 	// Create the request body
 	body := Validators_PatchBody{
 		ExitData: make([]ExitData, len(exitData)),
@@ -117,10 +125,13 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment
 	if err != nil {
 		return fmt.Errorf("error marshalling exit data to JSON: %w", err)
 	}
+	common.SafeDebugLog(logger, "Prepared validators PATCH body",
+		"body", body,
+	)
 
 	// Send the request
 	path := ConstellationPrefix + deployment + "/" + ValidatorsPath
-	code, response, err := common.SubmitRequest[struct{}](c.commonClient, ctx, true, http.MethodPatch, bytes.NewBuffer(jsonData), nil, path)
+	code, response, err := common.SubmitRequest[struct{}](c.commonClient, ctx, logger, true, http.MethodPatch, bytes.NewBuffer(jsonData), nil, path)
 	if err != nil {
 		return fmt.Errorf("error submitting exit data: %w", err)
 	}
@@ -166,6 +177,13 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, deployment
 		case common.InvalidSessionKey:
 			// Invalid or expird session
 			return common.ErrInvalidSession
+		}
+
+	case http.StatusForbidden:
+		switch response.Error {
+		case common.InvalidPermissionsKey:
+			// The user doesn't have permission to do this
+			return common.ErrInvalidPermissions
 		}
 	}
 	return fmt.Errorf("nodeset server responded to validators-patch request with code %d: [%s]", code, response.Message)

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -54,7 +55,7 @@ type LoginData struct {
 }
 
 // Logs into the NodeSet server, starting a new session
-func Login(c *common.CommonNodeSetClient, ctx context.Context, nonce string, address ethcommon.Address, signature []byte, loginPath string) (LoginData, error) {
+func Login(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, nonce string, address ethcommon.Address, signature []byte, loginPath string) (LoginData, error) {
 	// Create the request body
 	addressString := address.Hex()
 	signatureString := utils.EncodeHexWithPrefix(signature)
@@ -67,9 +68,12 @@ func Login(c *common.CommonNodeSetClient, ctx context.Context, nonce string, add
 	if err != nil {
 		return LoginData{}, fmt.Errorf("error marshalling login request: %w", err)
 	}
+	common.SafeDebugLog(logger, "Prepared login body",
+		"body", request,
+	)
 
 	// Submit the request
-	code, response, err := common.SubmitRequest[LoginData](c, ctx, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, loginPath)
+	code, response, err := common.SubmitRequest[LoginData](c, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, loginPath)
 	if err != nil {
 		return LoginData{}, fmt.Errorf("error submitting login request: %w", err)
 	}

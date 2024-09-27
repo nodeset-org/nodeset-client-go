@@ -143,7 +143,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.Valida
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Validators_Get(context.Background(), test.Network)
+	data, err := client.Validators_Get(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -156,7 +156,7 @@ func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits 
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	err := client.Validators_Patch(context.Background(), signedExits, test.Network)
+	err := client.Validators_Patch(context.Background(), logger, signedExits, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

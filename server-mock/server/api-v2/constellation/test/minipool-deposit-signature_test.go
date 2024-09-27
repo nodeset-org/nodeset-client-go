@@ -79,7 +79,7 @@ func runMinipoolDepositSignatureRequest(t *testing.T, session *db.Session, minip
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.Constellation.MinipoolDepositSignature(context.Background(), test.Network, minipoolAddress, salt)
+	data, err := client.Constellation.MinipoolDepositSignature(context.Background(), logger, test.Network, minipoolAddress, salt)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data

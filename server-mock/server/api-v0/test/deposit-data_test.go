@@ -110,7 +110,7 @@ func runGetDepositDataRequest(t *testing.T, session *db.Session) stakewise.Depos
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.DepositData_Get(context.Background(), test.StakeWiseVaultAddress, test.Network)
+	data, err := client.DepositData_Get(context.Background(), logger, test.StakeWiseVaultAddress, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
@@ -123,7 +123,7 @@ func runUploadDepositDataRequest(t *testing.T, session *db.Session, depositData 
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	err := client.DepositData_Post(context.Background(), depositData)
+	err := client.DepositData_Post(context.Background(), logger, depositData)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 }

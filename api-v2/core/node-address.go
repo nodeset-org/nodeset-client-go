@@ -3,8 +3,10 @@ package v2core
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
@@ -28,7 +30,7 @@ type NodeAddressRequest struct {
 
 // Registers the node with the NodeSet server. Assumes wallet validation has already been done and the actual wallet address
 // is provided here; if it's not, the signature won't come from the node being registered so it will fail validation.
-func (c *V2CoreClient) NodeAddress(ctx context.Context, email string, nodeWallet ethcommon.Address, signer func([]byte) ([]byte, error)) error {
+func (c *V2CoreClient) NodeAddress(ctx context.Context, logger *slog.Logger, email string, nodeWallet ethcommon.Address, signer func([]byte) ([]byte, error)) error {
 	// Create the signature
 	message := fmt.Sprintf(NodeAddressMessageFormat, email, nodeWallet)
 	signature, err := signer([]byte(message))
@@ -43,7 +45,10 @@ func (c *V2CoreClient) NodeAddress(ctx context.Context, email string, nodeWallet
 		NodeAddress: nodeWallet.Hex(),
 		Signature:   signatureString,
 	}
+	common.SafeDebugLog(logger, "Prepared node-address request",
+		"request", request,
+	)
 
 	// Send the request
-	return core.NodeAddress(c.commonClient, ctx, email, nodeWallet, signature, CorePrefix+core.NodeAddressPath, request)
+	return core.NodeAddress(c.commonClient, ctx, logger, email, nodeWallet, signature, CorePrefix+core.NodeAddressPath, request)
 }
