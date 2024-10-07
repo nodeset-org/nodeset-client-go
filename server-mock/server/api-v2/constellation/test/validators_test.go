@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"testing"
 
+	"filippo.io/age"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
@@ -102,6 +103,11 @@ func TestPatchValidators(t *testing.T) {
 	require.NoError(t, err)
 	deployment.SetAdminPrivateKey(adminKey)
 
+	// Set the encryption identity
+	id, err := age.GenerateX25519Identity()
+	require.NoError(t, err)
+	db.SetSecretEncryptionIdentity(id)
+
 	// Whitelist the node
 	runPostWhitelistRequest(t, session)
 
@@ -147,20 +153,27 @@ func TestPatchValidators(t *testing.T) {
 	// Upload signed exits and verify round trip
 	epoch := 12
 	for i := 0; i < numValidators; i++ {
-		// Run the patch request for each validator
-		exitData := []common.ExitData{
-			{
-				Pubkey: pubkeys[i].Hex(),
-				ExitMessage: common.ExitMessage{
-					Message: common.ExitMessageDetails{
-						Epoch:          fmt.Sprintf("%d", epoch),
-						ValidatorIndex: fmt.Sprintf("%d", i),
-					},
-					Signature: fmt.Sprintf("0x%x", i),
-				},
+		// Create the exit message
+		exitMessage := common.ExitMessage{
+			Message: common.ExitMessageDetails{
+				Epoch:          fmt.Sprintf("%d", epoch),
+				ValidatorIndex: fmt.Sprintf("%d", i),
 			},
+			Signature: fmt.Sprintf("0x%x", i),
 		}
-		runPatchValidatorsRequest(t, session, exitData)
+
+		// Encrypt it
+		pubkey := id.Recipient().String()
+		encryptedMessage, err := common.EncryptSignedExitMessage(exitMessage, pubkey)
+		require.NoError(t, err)
+
+		// Run the patch request for each validator
+		runPatchValidatorsRequest(t, session, []common.EncryptedExitData{
+			{
+				Pubkey:      pubkeys[i].Hex(),
+				ExitMessage: encryptedMessage,
+			},
+		})
 
 		// Make sure the
 		data := runGetValidatorsRequest(t, session)
@@ -196,7 +209,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) v2constellation.
 }
 
 // Run a PATCH api/v2/modules/constellation/{deployment}/validators request
-func runPatchValidatorsRequest(t *testing.T, session *db.Session, exitData []common.ExitData) {
+func runPatchValidatorsRequest(t *testing.T, session *db.Session, exitData []common.EncryptedExitData) {
 	// Create the client
 	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)

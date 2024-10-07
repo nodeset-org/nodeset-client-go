@@ -97,3 +97,9 @@ type ExitData struct {
 	Pubkey      string      `json:"pubkey"`
 	ExitMessage ExitMessage `json:"exit_message"`
 }
+
+// Data for a pubkey's voluntary exit message
+type EncryptedExitData struct {
+	Pubkey      string `json:"pubkey"`
+	ExitMessage string `json:"exit_message"`
+}

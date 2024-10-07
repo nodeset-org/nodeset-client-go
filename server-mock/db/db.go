@@ -2,6 +2,8 @@ package db
 
 import (
 	"log/slog"
+
+	"filippo.io/age"
 )
 
 // Mock database for storing nodeset.io info
@@ -10,7 +12,10 @@ type Database struct {
 	Constellation *Database_Constellation
 	StakeWise     *Database_StakeWise
 
-	// Internal fields
+	// Age identity for the secret key used to encrypt the exit data
+	secretEncryptionIdentity *age.X25519Identity
+
+	// Logger
 	logger *slog.Logger
 }
 
@@ -33,5 +38,16 @@ func (d *Database) Clone() *Database {
 	dbClone.Core = d.Core.clone(dbClone)
 	dbClone.Constellation = d.Constellation.clone(dbClone)
 	dbClone.StakeWise = d.StakeWise.clone(dbClone)
+	dbClone.secretEncryptionIdentity = d.secretEncryptionIdentity
 	return dbClone
+}
+
+// Get the secret encryption identity
+func (d *Database) GetSecretEncryptionIdentity() *age.X25519Identity {
+	return d.secretEncryptionIdentity
+}
+
+// Set the secret encryption identity
+func (d *Database) SetSecretEncryptionIdentity(identity *age.X25519Identity) {
+	d.secretEncryptionIdentity = identity
 }

@@ -29,9 +29,15 @@ type ExitData struct {
 	ExitMessage ExitMessage `json:"exitMessage"`
 }
 
+// Data for a pubkey's encrypted voluntary exit message
+type EncryptedExitData struct {
+	Pubkey      string `json:"pubkey"`
+	ExitMessage string `json:"exitMessage"`
+}
+
 // Request body for submitting exit data
 type Validators_PatchBody struct {
-	ExitData []ExitData `json:"exitData"`
+	ExitData []EncryptedExitData `json:"exitData"`
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
@@ -70,18 +76,15 @@ func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 }
 
 // Submit signed exit data to NodeSet
-func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address, exitData []common.ExitData) error {
+func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address, exitData []common.EncryptedExitData) error {
 	// Create the request body
 	body := Validators_PatchBody{
-		ExitData: make([]ExitData, len(exitData)),
+		ExitData: make([]EncryptedExitData, len(exitData)),
 	}
 	for i, data := range exitData {
-		body.ExitData[i] = ExitData{
-			Pubkey: data.Pubkey,
-			ExitMessage: ExitMessage{
-				Message:   ExitMessageDetails(data.ExitMessage.Message),
-				Signature: data.ExitMessage.Signature,
-			},
+		body.ExitData[i] = EncryptedExitData{
+			Pubkey:      data.Pubkey,
+			ExitMessage: data.ExitMessage,
 		}
 	}
 
