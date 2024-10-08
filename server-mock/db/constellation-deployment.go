@@ -1,15 +1,20 @@
 package db
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"fmt"
+	"io"
 	"math/big"
 
+	"filippo.io/age"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/goccy/go-json"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/utils"
 	"github.com/rocket-pool/node-manager-core/beacon"
+	nsutils "github.com/rocket-pool/node-manager-core/utils"
 )
 
 // Deployment for Constellation info
@@ -278,6 +283,61 @@ func (d *ConstellationDeployment) HandleSignedExitUpload(node *Node, data []comm
 			}
 			found = true
 			validator.SetExitMessage(&signedExit.ExitMessage)
+			break
+		}
+		if !found {
+			return fmt.Errorf("node [%s] doesn't have validator [%s]", node.Address.Hex(), pubkey.Hex())
+		}
+
+	}
+	return nil
+}
+
+// Handle a new collection of encrypted signed exits from a node for Constellation
+func (d *ConstellationDeployment) HandleEncryptedSignedExitUpload(node *Node, data []common.EncryptedExitData) error {
+	// Add the signed exits
+	minipools := d.minipools[node.Address]
+	for _, signedExit := range data {
+		pubkey, err := beacon.HexToValidatorPubkey(signedExit.Pubkey)
+		if err != nil {
+			return fmt.Errorf("error parsing validator pubkey [%s]: %w", signedExit.Pubkey, err)
+		}
+
+		// Decrypt the exit data
+		if d.db.secretEncryptionIdentity == nil {
+			return fmt.Errorf("secret encryption identity not set yet")
+		}
+		decodedHex, err := nsutils.DecodeHex(signedExit.ExitMessage)
+		if err != nil {
+			return fmt.Errorf("error decoding exit message hex: %w", err)
+		}
+		encReader := bytes.NewReader(decodedHex)
+		decReader, err := age.Decrypt(encReader, d.db.secretEncryptionIdentity)
+		if err != nil {
+			return fmt.Errorf("error decrypting exit message: %w", err)
+		}
+		buffer := &bytes.Buffer{}
+		_, err = io.Copy(buffer, decReader)
+		if err != nil {
+			return fmt.Errorf("error reading decrypted exit message: %w", err)
+		}
+
+		// Parse the exit message
+		var exitMessage common.ExitMessage
+		err = json.Unmarshal(buffer.Bytes(), &exitMessage)
+		if err != nil {
+			return fmt.Errorf("error parsing decrypted exit message: %w", err)
+		}
+
+		// Get the validator
+		found := false
+		for _, minipoolAddress := range minipools {
+			validator := d.validators[minipoolAddress]
+			if validator == nil || validator.Pubkey != pubkey {
+				continue
+			}
+			found = true
+			validator.SetExitMessage(&exitMessage)
 			break
 		}
 		if !found {

@@ -98,17 +98,14 @@ func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Handle the upload
-	castedExitData := make([]clientcommon.ExitData, len(body.ExitData))
+	castedExitData := make([]clientcommon.EncryptedExitData, len(body.ExitData))
 	for i, data := range body.ExitData {
-		castedExitData[i] = clientcommon.ExitData{
-			Pubkey: data.Pubkey,
-			ExitMessage: clientcommon.ExitMessage{
-				Message:   clientcommon.ExitMessageDetails(data.ExitMessage.Message),
-				Signature: data.ExitMessage.Signature,
-			},
+		castedExitData[i] = clientcommon.EncryptedExitData{
+			Pubkey:      data.Pubkey,
+			ExitMessage: data.ExitMessage,
 		}
 	}
-	err := vault.HandleSignedExitUpload(node, castedExitData)
+	err := vault.HandleEncryptedSignedExitUpload(node, castedExitData)
 	if err != nil {
 		common.HandleServerError(w, s.logger, err)
 		return

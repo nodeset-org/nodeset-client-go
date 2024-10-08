@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"filippo.io/age"
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
 	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
@@ -75,6 +76,11 @@ func TestUploadSignedExits(t *testing.T) {
 	mgr.SetDatabase(db)
 	session := db.Core.GetSessions()[0]
 
+	// Set the encryption identity
+	id, err := age.GenerateX25519Identity()
+	require.NoError(t, err)
+	db.SetSecretEncryptionIdentity(id)
+
 	// Run a get deposit data request to make sure it's empty
 	data := runGetDepositDataRequest(t, session)
 	require.Equal(t, 0, data.Version)
@@ -119,8 +125,18 @@ func TestUploadSignedExits(t *testing.T) {
 	signedExit1 := idb.GenerateSignedExit(t, 1)
 	t.Log("Generated signed exit")
 
+	// Encrypt it
+	pubkey := id.Recipient().String()
+	encryptedMessage, err := common.EncryptSignedExitMessage(signedExit1.ExitMessage, pubkey)
+	require.NoError(t, err)
+
 	// Upload it
-	runUploadSignedExitsRequest(t, session, []common.ExitData{signedExit1})
+	runUploadSignedExitsRequest(t, session, []common.EncryptedExitData{
+		{
+			Pubkey:      signedExit1.Pubkey,
+			ExitMessage: encryptedMessage,
+		},
+	})
 	t.Logf("Uploaded signed exit")
 
 	// Get the validator status again
@@ -150,7 +166,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.Valida
 }
 
 // Run a PATCH api/validators request
-func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.ExitData) {
+func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.EncryptedExitData) {
 	// Create the client
 	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)

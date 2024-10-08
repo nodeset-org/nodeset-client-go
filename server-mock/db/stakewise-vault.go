@@ -1,11 +1,16 @@
 package db
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 
+	"filippo.io/age"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/goccy/go-json"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
+	nsutils "github.com/rocket-pool/node-manager-core/utils"
 )
 
 // Info for StakeWise vaults
@@ -116,6 +121,62 @@ func (v *StakeWiseVault) HandleSignedExitUpload(node *Node, data []common.ExitDa
 		for _, validator := range validators {
 			if validator.Pubkey == pubkey {
 				validator.SetExitMessage(signedExit.ExitMessage)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("node [%s] doesn't have validator [%s]", node.Address.Hex(), pubkey.Hex())
+		}
+
+	}
+	return nil
+}
+
+// Handle a new collection of encrypted signed exits from a node for StakeWise
+func (v *StakeWiseVault) HandleEncryptedSignedExitUpload(node *Node, data []common.EncryptedExitData) error {
+	// Add the signed exits
+	for _, signedExit := range data {
+		pubkey, err := beacon.HexToValidatorPubkey(signedExit.Pubkey)
+		if err != nil {
+			return fmt.Errorf("error parsing validator pubkey [%s]: %w", signedExit.Pubkey, err)
+		}
+
+		// Decrypt the exit data
+		if v.db.secretEncryptionIdentity == nil {
+			return fmt.Errorf("secret encryption identity not set")
+		}
+		decodedHex, err := nsutils.DecodeHex(signedExit.ExitMessage)
+		if err != nil {
+			return fmt.Errorf("error decoding exit message hex: %w", err)
+		}
+		encReader := bytes.NewReader(decodedHex)
+		decReader, err := age.Decrypt(encReader, v.db.secretEncryptionIdentity)
+		if err != nil {
+			return fmt.Errorf("error decrypting exit message: %w", err)
+		}
+		buffer := &bytes.Buffer{}
+		_, err = io.Copy(buffer, decReader)
+		if err != nil {
+			return fmt.Errorf("error reading decrypted exit message: %w", err)
+		}
+
+		// Parse the exit message
+		var exitMessage common.ExitMessage
+		err = json.Unmarshal(buffer.Bytes(), &exitMessage)
+		if err != nil {
+			return fmt.Errorf("error parsing decrypted exit message: %w", err)
+		}
+
+		// Get the validator
+		validators := v.validators[node.Address]
+		if len(validators) == 0 {
+			return fmt.Errorf("vault [%s] is not used by node [%s]", v.Address.Hex(), node.Address.Hex())
+		}
+		found := false
+		for _, validator := range validators {
+			if validator.Pubkey == pubkey {
+				validator.SetExitMessage(exitMessage)
 				found = true
 				break
 			}
