@@ -98,7 +98,7 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, logger *slog
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
-			// Invalid or expird session
+			// Invalid or expired session
 			return ValidatorsData{}, common.ErrInvalidSession
 		}
 
@@ -178,7 +178,7 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, logger *sl
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
-			// Invalid or expird session
+			// Invalid or expired session
 			return common.ErrInvalidSession
 		}
 

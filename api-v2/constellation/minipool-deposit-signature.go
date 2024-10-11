@@ -76,19 +76,10 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 		case IncorrectNodeAddressKey:
 			// Incorrect node address
 			return MinipoolDepositSignatureData{}, ErrIncorrectNodeAddress
-
-		case ValidatorRequiresExitMessageKey:
-			// Address has been given access to Constellation, but the NodeSet service does not have
-			// a signed exit message stored for the minipool that user account previously created.
-			return MinipoolDepositSignatureData{}, ErrValidatorRequiresExitMessage
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case UserNotAuthorizedKey:
-			// Address not authorized to get minipool deposit signature
-			return MinipoolDepositSignatureData{}, ErrNotAuthorized
-
 		case common.InvalidSessionKey:
 			// Invalid session
 			return MinipoolDepositSignatureData{}, common.ErrInvalidSession
@@ -99,6 +90,14 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 		case MinipoolLimitReachedKey:
 			// Address has been given access to Constellation, but cannot create any more minipools.
 			return MinipoolDepositSignatureData{}, ErrMinipoolLimitReached
+
+		case MissingExitMessageKey:
+			// Nodeset.io is missing a signed exit message for a previous minipool
+			return MinipoolDepositSignatureData{}, ErrMissingExitMessage
+
+		case AddressAlreadyRegisteredKey:
+			// A minipool with this address already exists
+			return MinipoolDepositSignatureData{}, ErrAddressAlreadyRegistered
 
 		case common.InvalidPermissionsKey:
 			// The user doesn't have permission to do this

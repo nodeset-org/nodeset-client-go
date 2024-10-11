@@ -60,6 +60,13 @@ func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, logger *slog.
 			return Whitelist_GetData{}, common.ErrInvalidDeployment
 		}
 
+	case http.StatusUnauthorized:
+		switch response.Error {
+		case common.InvalidSessionKey:
+			// Invalid or expired session
+			return Whitelist_GetData{}, common.ErrInvalidSession
+		}
+
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:
@@ -98,10 +105,6 @@ func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, logger *slog
 
 	case http.StatusUnauthorized:
 		switch response.Error {
-		case UserNotAuthorizedKey:
-			// User not authorized to whitelist for Constellation
-			return Whitelist_PostData{}, ErrNotAuthorized
-
 		case common.InvalidSessionKey:
 			// Invalid session
 			return Whitelist_PostData{}, common.ErrInvalidSession
