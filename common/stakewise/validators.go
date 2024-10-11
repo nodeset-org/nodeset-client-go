@@ -61,7 +61,7 @@ func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
-			// Invalid or expird session
+			// Invalid or expired session
 			return code, nil, common.ErrInvalidSession
 		}
 	}
@@ -102,7 +102,7 @@ func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
-			// Invalid or expird session
+			// Invalid or expired session
 			return code, nil, common.ErrInvalidSession
 		}
 	}
