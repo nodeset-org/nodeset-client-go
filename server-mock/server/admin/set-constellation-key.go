@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/api"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
@@ -36,7 +35,7 @@ func (s *AdminServer) setConstellationAdminPrivateKey(w http.ResponseWriter, r *
 		return
 	}
 	deployment.SetAdminPrivateKey(privateKey)
-	pubkey := ethcommon.BytesToAddress(crypto.FromECDSAPub(&privateKey.PublicKey))
-	s.logger.Info("Set Constellation private key", "address", pubkey.Hex())
+	pubkey := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+	s.logger.Info("Set Constellation private key", "address", pubkey)
 	common.HandleSuccess(w, s.logger, "")
 }
