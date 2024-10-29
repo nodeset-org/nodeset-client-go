@@ -17,6 +17,11 @@ import (
 	nsutils "github.com/rocket-pool/node-manager-core/utils"
 )
 
+var (
+	// Signed exit was already uploaded
+	ErrSignedExitAlreadyUploaded error = fmt.Errorf("exit already uploaded")
+)
+
 // Deployment for Constellation info
 type ConstellationDeployment struct {
 	// The deployment's name / ID
@@ -282,6 +287,10 @@ func (d *ConstellationDeployment) HandleSignedExitUpload(node *Node, data []comm
 				continue
 			}
 			found = true
+			exitMsg := validator.GetExitMessage()
+			if exitMsg != nil {
+				return ErrSignedExitAlreadyUploaded
+			}
 			validator.SetExitMessage(&signedExit.ExitMessage)
 			break
 		}
@@ -337,6 +346,10 @@ func (d *ConstellationDeployment) HandleEncryptedSignedExitUpload(node *Node, da
 				continue
 			}
 			found = true
+			exitMsg := validator.GetExitMessage()
+			if exitMsg != nil {
+				return ErrSignedExitAlreadyUploaded
+			}
 			validator.SetExitMessage(&exitMessage)
 			break
 		}

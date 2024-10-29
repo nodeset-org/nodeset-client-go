@@ -7,6 +7,7 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/goccy/go-json"
+	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
@@ -78,6 +79,13 @@ func HandleInvalidDeployment(w http.ResponseWriter, logger *slog.Logger, deploym
 func HandleInvalidVault(w http.ResponseWriter, logger *slog.Logger, deployment string, vault ethcommon.Address) {
 	msg := fmt.Sprintf("vault with address [%s] on deployment [%s] not found", vault.Hex(), deployment)
 	bytes := formatError(msg, stakewise.InvalidVaultKey)
+	writeResponse(w, logger, http.StatusBadRequest, bytes)
+}
+
+// Handles a signed exit upload with an already existing message
+func HandleExitAlreadyExists(w http.ResponseWriter, logger *slog.Logger) {
+	msg := "at least one signed exit message already exists"
+	bytes := formatError(msg, v2constellation.ExitMessageExistsKey)
 	writeResponse(w, logger, http.StatusBadRequest, bytes)
 }
 

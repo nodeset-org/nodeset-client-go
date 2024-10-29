@@ -1,10 +1,12 @@
 package v2server_constellation
 
 import (
+	"errors"
 	"net/http"
 
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
+	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -74,9 +76,9 @@ func (s *V2ConstellationServer) patchValidators(w http.ResponseWriter, r *http.R
 	}
 
 	// Input validation
-	db := s.manager.GetDatabase()
+	nsDB := s.manager.GetDatabase()
 	deploymentID := pathArgs["deployment"]
-	deployment := db.Constellation.GetDeployment(deploymentID)
+	deployment := nsDB.Constellation.GetDeployment(deploymentID)
 	if deployment == nil {
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
@@ -102,6 +104,10 @@ func (s *V2ConstellationServer) patchValidators(w http.ResponseWriter, r *http.R
 	}
 	err := deployment.HandleEncryptedSignedExitUpload(node, castedExitData)
 	if err != nil {
+		if errors.Is(err, db.ErrSignedExitAlreadyUploaded) {
+			common.HandleExitAlreadyExists(w, s.logger)
+			return
+		}
 		common.HandleServerError(w, s.logger, err)
 		return
 	}
