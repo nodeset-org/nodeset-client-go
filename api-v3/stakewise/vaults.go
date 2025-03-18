@@ -37,12 +37,24 @@ type PostVaultsValidatorData struct {
 	Signature string `json:"signature"`
 }
 
+type DepositDataDetails struct {
+	PublicKey             string `json:"pubkey"`
+	WithdrawalCredentials string `json:"withdrawalCredentials"`
+	Amount                uint   `json:"amount"`
+	Signature             string `json:"signature"`
+	DepositMessageRoot    string `json:"depositMessageRoot"`
+	DepositDataRoot       string `json:"depositDataRoot"`
+	ForkVersion           string `json:"forkVersion"`
+	NetworkName           string `json:"networkName"`
+}
+
+type ValidatorRegistrationDetails struct {
+	DepositData DepositDataDetails `json:"depositData"`
+	ExitMessage string             `json:"exitMessage"`
+}
+
 type VaultsValidatorPostRequest struct {
-	ValidatorsRegistryRoot string `json:"validatorsRegistryRoot"`
-	Deadline               uint64 `json:"deadline"`
-	Validators             string `json:"validators"`
-	Signature              string `json:"signature"`
-	ExitSignatureIpsfHash  string `json:"exitSignatureIpsfHash"`
+	Validators []ValidatorRegistrationDetails `json:"validators"`
 }
 
 // Gets the list of vaults available on the server for the provided deployment
