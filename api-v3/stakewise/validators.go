@@ -65,6 +65,13 @@ func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 			return stakewise.ValidatorsData{}, stakewise.ErrInvalidVault
 		}
 
+	case http.StatusUnauthorized:
+		switch response.Error {
+		case common.InvalidSessionKey:
+			// Invalid or expired session
+			return stakewise.ValidatorsData{}, common.ErrInvalidSession
+		}
+
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:
@@ -105,15 +112,26 @@ func (c *V3StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.L
 
 	case http.StatusBadRequest:
 		switch response.Error {
+		case common.MalformedInputKey:
+			// Invalid input
+			return common.ErrMalformedInput
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
 			return common.ErrInvalidDeployment
-
 		case stakewise.InvalidVaultKey:
 			// Invalid vault
 			return stakewise.ErrInvalidVault
-		}
-
+		case common.InvalidValidatorOwnerKey:
+			// Invalid validator owner
+			return common.ErrInvalidValidatorOwner
+		case common.InvalidExitMessageKey:
+			// Invalid exit message
+			return common.ErrInvalidExitMessage
+	case http.StatusUnauthorized:
+		switch response.Error {
+		case common.InvalidSessionKey:
+			// Invalid or expired session
+			return common.ErrInvalidSession
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:
