@@ -28,10 +28,16 @@ const (
 	InvalidValidatorOwnerKey string = "invalid_validator_owner"
 
 	// The exit message provided was invalid
-	InvalidExitMessage string = "invalid_exit_message"
+	InvalidExitMessageKey string = "invalid_exit_message"
 
 	// The user doesn't have permission to do this
 	InvalidPermissionsKey string = "invalid_permissions"
+
+	// The vault doesn't correspond to a StakeWise vault recognized by the service
+	InvalidVaultKey string = "invalid_vault"
+
+	// The vault does not have enough ETH deposits in it to support the number of validators being registered.
+	InsufficientVaultBalanceKey string = "insufficient_vault_balance"
 )
 
 // Errors
@@ -56,6 +62,12 @@ var (
 
 	// The user doesn't have permission to do this
 	ErrInvalidPermissions error = errors.New("the user doesn't have permission from the nodeset.io service to do this yet")
+
+	// The vault doesn't correspond to a StakeWise vault recognized by the service
+	ErrInvalidVault error = errors.New("the provided vault doesn't correspond to a StakeWise vault recognized by the service")
+
+	// The vault does not have enough ETH deposits in it to support the number of validators being registered.
+	ErrInsufficientVaultBalance error = errors.New("the vault does not have enough ETH deposits in it to support the number of validators being registered")
 )
 
 // =======================

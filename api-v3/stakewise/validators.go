@@ -127,11 +127,13 @@ func (c *V3StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.L
 		case common.InvalidExitMessageKey:
 			// Invalid exit message
 			return common.ErrInvalidExitMessage
+		}
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
 			// Invalid or expired session
 			return common.ErrInvalidSession
+		}
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:

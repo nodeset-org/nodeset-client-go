@@ -158,7 +158,7 @@ func (c *V3ConstellationClient) Validators_Patch(ctx context.Context, logger *sl
 			// Invalid validator owner
 			return common.ErrInvalidValidatorOwner
 
-		case common.InvalidExitMessage:
+		case common.InvalidExitMessageKey:
 			// Invalid exit message
 			return common.ErrInvalidExitMessage
 

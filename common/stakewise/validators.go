@@ -94,7 +94,7 @@ func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger
 			// Invalid validator owner
 			return code, nil, common.ErrInvalidValidatorOwner
 
-		case common.InvalidExitMessage:
+		case common.InvalidExitMessageKey:
 			// Invalid exit message
 			return code, nil, common.ErrInvalidExitMessage
 		}
