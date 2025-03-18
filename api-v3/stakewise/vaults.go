@@ -190,5 +190,5 @@ func (c *V3StakeWiseClient) VaultsValidatorMeta_Get(ctx context.Context, logger 
 		}
 	}
 
-	return VaultsMetaData{}, fmt.Errorf("nodeset server responded to vaults validatora meta request with code %d: [%s]", code, response.Message)
+	return VaultsMetaData{}, fmt.Errorf("nodeset server responded to vaults validator meta request with code %d: [%s]", code, response.Message)
 }
