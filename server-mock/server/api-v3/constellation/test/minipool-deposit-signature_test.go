@@ -8,9 +8,9 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
-	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
+	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
+	v3constellation "github.com/nodeset-org/nodeset-client-go/api-v3/constellation"
+	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
@@ -43,9 +43,9 @@ func TestConstellationDeposit(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -73,9 +73,9 @@ func TestConstellationDeposit(t *testing.T) {
 }
 
 // Run a GET api/v2/modules/constellation/{deployment}/minipool/deposit-signature request
-func runMinipoolDepositSignatureRequest(t *testing.T, session *db.Session, minipoolAddress ethcommon.Address, salt *big.Int) v2constellation.MinipoolDepositSignatureData {
+func runMinipoolDepositSignatureRequest(t *testing.T, session *db.Session, minipoolAddress ethcommon.Address, salt *big.Int) v3constellation.MinipoolDepositSignatureData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

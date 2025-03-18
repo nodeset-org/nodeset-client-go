@@ -12,8 +12,8 @@ import (
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
-// POST api/v2/core/login
-func (s *V2CoreServer) login(w http.ResponseWriter, r *http.Request) {
+// POST api/v3/core/login
+func (s *V3CoreServer) login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		common.HandleInvalidMethod(w, s.logger)
 		return

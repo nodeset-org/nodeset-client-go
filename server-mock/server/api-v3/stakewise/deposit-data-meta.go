@@ -8,8 +8,8 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
-// GET api/v2/modules/stakewise/{deployment}/{vault}/deposit-data/meta
-func (s *V2StakeWiseServer) depositDataMeta(w http.ResponseWriter, r *http.Request) {
+// GET api/v3/modules/stakewise/{deployment}/{vault}/deposit-data/meta
+func (s *V3StakeWiseServer) depositDataMeta(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		common.HandleInvalidMethod(w, s.logger)
 		return

@@ -10,9 +10,9 @@ import (
 	"filippo.io/age"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
-	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
+	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
+	v3constellation "github.com/nodeset-org/nodeset-client-go/api-v3/constellation"
+	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -41,9 +41,9 @@ func TestGetValidators_Empty(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -87,9 +87,9 @@ func TestPatchValidators(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -115,7 +115,7 @@ func TestPatchValidators(t *testing.T) {
 	// More provisioning
 	numValidators := 3
 	pubkeys := make([]beacon.ValidatorPubkey, numValidators)
-	expectedValidators := map[beacon.ValidatorPubkey]v2constellation.ValidatorStatus{}
+	expectedValidators := map[beacon.ValidatorPubkey]v3constellation.ValidatorStatus{}
 	for i := 0; i < numValidators; i++ {
 		mpAddress := ethcommon.HexToAddress(fmt.Sprintf("0x90de%d", i))
 		pubkey := pubkeys[i]
@@ -127,7 +127,7 @@ func TestPatchValidators(t *testing.T) {
 		salt := big.NewInt(int64(i))
 		runMinipoolDepositSignatureRequest(t, session, mpAddress, salt)
 		deployment.SetValidatorInfoForMinipool(mpAddress, pubkey)
-		expectedValidators[pubkey] = v2constellation.ValidatorStatus{
+		expectedValidators[pubkey] = v3constellation.ValidatorStatus{
 			Pubkey:              pubkey,
 			RequiresExitMessage: true,
 		}
@@ -136,12 +136,12 @@ func TestPatchValidators(t *testing.T) {
 
 	// Run the get request
 	data := runGetValidatorsRequest(t, session)
-	validatorsMap := map[beacon.ValidatorPubkey]v2constellation.ValidatorStatus{}
+	validatorsMap := map[beacon.ValidatorPubkey]v3constellation.ValidatorStatus{}
 	for _, validator := range data.Validators {
 		validatorsMap[validator.Pubkey] = validator
 	}
 	for _, validator := range data.Validators {
-		validatorsMap[validator.Pubkey] = v2constellation.ValidatorStatus{
+		validatorsMap[validator.Pubkey] = v3constellation.ValidatorStatus{
 			Pubkey:              validator.Pubkey,
 			RequiresExitMessage: true,
 		}
@@ -178,7 +178,7 @@ func TestPatchValidators(t *testing.T) {
 
 		// Make sure the response is correct
 		data := runGetValidatorsRequest(t, session)
-		validatorsMap := map[beacon.ValidatorPubkey]v2constellation.ValidatorStatus{}
+		validatorsMap := map[beacon.ValidatorPubkey]v3constellation.ValidatorStatus{}
 		for _, validator := range data.Validators {
 			validatorsMap[validator.Pubkey] = validator
 		}
@@ -216,9 +216,9 @@ func TestSignedExitAlreadyExists(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -242,7 +242,7 @@ func TestSignedExitAlreadyExists(t *testing.T) {
 	runPostWhitelistRequest(t, session)
 
 	// More provisioning
-	expectedValidators := map[beacon.ValidatorPubkey]v2constellation.ValidatorStatus{}
+	expectedValidators := map[beacon.ValidatorPubkey]v3constellation.ValidatorStatus{}
 	mpAddress := ethcommon.HexToAddress("0x90de00")
 	pubkey := beacon.ValidatorPubkey{}
 	pubkey[0] = byte(0xbe)
@@ -252,7 +252,7 @@ func TestSignedExitAlreadyExists(t *testing.T) {
 	salt := big.NewInt(0)
 	runMinipoolDepositSignatureRequest(t, session, mpAddress, salt)
 	deployment.SetValidatorInfoForMinipool(mpAddress, pubkey)
-	expectedValidators[pubkey] = v2constellation.ValidatorStatus{
+	expectedValidators[pubkey] = v3constellation.ValidatorStatus{
 		Pubkey:              pubkey,
 		RequiresExitMessage: true,
 	}
@@ -285,20 +285,20 @@ func TestSignedExitAlreadyExists(t *testing.T) {
 	t.Logf("Initial validator exit uploaded successfully")
 
 	// Run the patch request again and check the error code
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
 	err = client.Constellation.Validators_Patch(context.Background(), logger, test.Network, exitData)
 	require.Error(t, err)
-	require.True(t, errors.Is(err, v2constellation.ErrExitMessageExists))
+	require.True(t, errors.Is(err, v3constellation.ErrExitMessageExists))
 	t.Logf("Received correct exit-message-exists error code")
 }
 
 // Run a GET api/v2/modules/constellation/{deployment}/validators request
-func runGetValidatorsRequest(t *testing.T, session *db.Session) v2constellation.ValidatorsData {
+func runGetValidatorsRequest(t *testing.T, session *db.Session) v3constellation.ValidatorsData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
@@ -311,7 +311,7 @@ func runGetValidatorsRequest(t *testing.T, session *db.Session) v2constellation.
 // Run a PATCH api/v2/modules/constellation/{deployment}/validators request
 func runPatchValidatorsRequest(t *testing.T, session *db.Session, exitData []common.EncryptedExitData) {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

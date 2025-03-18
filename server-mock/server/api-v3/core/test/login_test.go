@@ -8,8 +8,8 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
+	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
+	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
 	"github.com/nodeset-org/nodeset-client-go/common/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -37,9 +37,9 @@ func TestLogin(t *testing.T) {
 	user, err := db.Core.AddUser(test.User0Email)
 	require.NoError(t, err)
 	node := user.WhitelistNode(node0Pubkey)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node0Pubkey, node0Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -56,7 +56,7 @@ func TestLogin(t *testing.T) {
 // Run a POST api/login request
 func runLoginRequest(t *testing.T, session *db.Session, nodeAddress ethcommon.Address, key *ecdsa.PrivateKey) core.LoginData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request

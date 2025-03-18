@@ -6,20 +6,20 @@ import (
 	"math/big"
 	"net/http"
 
-	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
+	v3constellation "github.com/nodeset-org/nodeset-client-go/api-v3/constellation"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
 // POST api/v2/modules/constellation/{deployment}/minipool/deposit-signature
-func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, r *http.Request) {
+func (s *V3ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		common.HandleInvalidMethod(w, s.logger)
 		return
 	}
 
 	// Parse the request
-	request := v2constellation.MinipoolDepositSignatureRequest{}
+	request := v3constellation.MinipoolDepositSignatureRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
@@ -60,7 +60,7 @@ func (s *V2ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, 
 	}
 
 	// Write the data
-	data := v2constellation.MinipoolDepositSignatureData{
+	data := v3constellation.MinipoolDepositSignatureData{
 		Signature: utils.EncodeHexWithPrefix(signature),
 	}
 	s.logger.Info("Fetched minipool deposit signature")

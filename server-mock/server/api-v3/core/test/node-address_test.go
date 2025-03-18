@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
+	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
 	nsutil "github.com/nodeset-org/nodeset-client-go/utils"
 	"github.com/stretchr/testify/require"
@@ -43,7 +43,7 @@ func TestRegisterNode(t *testing.T) {
 // Run a POST api/node-address request
 func runNodeAddressRequest(t *testing.T, email string, nodeAddress common.Address, key *ecdsa.PrivateKey) {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 
 	// Run the request
 	signer := func(message []byte) ([]byte, error) {

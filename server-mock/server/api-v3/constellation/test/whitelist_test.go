@@ -7,9 +7,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	apiv2 "github.com/nodeset-org/nodeset-client-go/api-v2"
-	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
-	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
+	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
+	v3constellation "github.com/nodeset-org/nodeset-client-go/api-v3/constellation"
+	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
@@ -40,9 +40,9 @@ func TestGetWhitelist_Unregistered(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -85,9 +85,9 @@ func TestConstellationWhitelist(t *testing.T) {
 	require.NoError(t, err)
 	node := user.WhitelistNode(node4Pubkey)
 	require.NoError(t, err)
-	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v2core.NodeAddressMessageFormat)
+	regSig, err := auth.GetSignatureForRegistration(test.User0Email, node4Pubkey, node4Key, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	err = node.Register(regSig, v2core.NodeAddressMessageFormat)
+	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
 	// Create a session
@@ -117,12 +117,12 @@ func TestConstellationWhitelist(t *testing.T) {
 }
 
 // Run a GET api/v2/modules/constellation/{deployment}/whitelist request
-func runGetWhitelistRequest(t *testing.T, session *db.Session) v2constellation.Whitelist_GetData {
+func runGetWhitelistRequest(t *testing.T, session *db.Session) v3constellation.Whitelist_GetData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:3d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
-	// Run the request
+	// Run3the request
 	data, err := client.Constellation.Whitelist_Get(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")
@@ -130,12 +130,12 @@ func runGetWhitelistRequest(t *testing.T, session *db.Session) v2constellation.W
 }
 
 // Run a POST api/v2/modules/constellation/{deployment}/whitelist request
-func runPostWhitelistRequest(t *testing.T, session *db.Session) v2constellation.Whitelist_PostData {
+func runPostWhitelistRequest(t *testing.T, session *db.Session) v3constellation.Whitelist_PostData {
 	// Create the client
-	client := apiv2.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:3d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
-	// Run the request
+	// Run3the request
 	data, err := client.Constellation.Whitelist_Post(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	t.Logf("Ran request")

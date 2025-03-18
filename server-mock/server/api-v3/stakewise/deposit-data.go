@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
+	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
-// Handler for api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
-func (s *V2StakeWiseServer) handleDepositData(w http.ResponseWriter, r *http.Request) {
+// Handler for api/v3/modules/stakewise/{deployment}/{vault}/deposit-data
+func (s *V3StakeWiseServer) handleDepositData(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.getDepositData(w, r)
@@ -21,8 +21,8 @@ func (s *V2StakeWiseServer) handleDepositData(w http.ResponseWriter, r *http.Req
 	}
 }
 
-// GET api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
-func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Request) {
+// GET api/v3/modules/stakewise/{deployment}/{vault}/deposit-data
+func (s *V3StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 	session := common.ProcessAuthHeader(s, w, r)
@@ -50,21 +50,21 @@ func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Write the data
-	data := v2stakewise.DepositDataData{
+	data := v3stakewise.DepositDataData{
 		Version:     vault.LatestDepositDataSetIndex,
-		DepositData: make([]v2stakewise.ExtendedDepositData, len(vault.LatestDepositDataSet)),
+		DepositData: make([]v3stakewise.ExtendedDepositData, len(vault.LatestDepositDataSet)),
 	}
 	for i, deposit := range vault.LatestDepositDataSet {
-		data.DepositData[i] = v2stakewise.ExtendedDepositData(deposit)
+		data.DepositData[i] = v3stakewise.ExtendedDepositData(deposit)
 	}
 
 	common.HandleSuccess(w, s.logger, data)
 }
 
-// POST api/v2/modules/stakewise/{deployment}/{vault}/deposit-data
-func (s *V2StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Request) {
+// POST api/v3/modules/stakewise/{deployment}/{vault}/deposit-data
+func (s *V3StakeWiseServer) uploadDepositData(w http.ResponseWriter, r *http.Request) {
 	// Get the params
-	var body v2stakewise.DepositData_PostBody
+	var body v3stakewise.DepositData_PostBody
 	_, pathArgs := common.ProcessApiRequest(s, w, r, &body)
 	session := common.ProcessAuthHeader(s, w, r)
 	if session == nil {

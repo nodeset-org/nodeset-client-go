@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
+	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
 // Handler for api/v2/modules/stakewise/{deployment}/{vault}/validators
-func (s *V2StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Request) {
+func (s *V3StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.getValidators(w, r)
@@ -23,7 +23,7 @@ func (s *V2StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Requ
 }
 
 // GET api/v2/modules/stakewise/{deployment}/{vault}/validators
-func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request) {
+func (s *V3StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 	session := common.ProcessAuthHeader(s, w, r)
@@ -69,9 +69,9 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 }
 
 // PATCH api/v2/modules/stakewise/{deployment}/{vault}/validators
-func (s *V2StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Request) {
+func (s *V3StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
-	var body v2stakewise.Validators_PatchBody
+	var body v3stakewise.Validators_PatchBody
 	_, pathArgs := common.ProcessApiRequest(s, w, r, &body)
 	session := common.ProcessAuthHeader(s, w, r)
 	if session == nil {

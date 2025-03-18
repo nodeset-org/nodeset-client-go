@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
+	v3constellation "github.com/nodeset-org/nodeset-client-go/api-v3/constellation"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
-// Handler for api/v2/modules/constellation/{deployment}/whitelist
-func (s *V2ConstellationServer) handleWhitelist(w http.ResponseWriter, r *http.Request) {
+// Handler for api/v3/modules/constellation/{deployment}/whitelist
+func (s *V3ConstellationServer) handleWhitelist(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.getWhitelist(w, r)
@@ -21,8 +21,8 @@ func (s *V2ConstellationServer) handleWhitelist(w http.ResponseWriter, r *http.R
 	}
 }
 
-// GET api/v2/modules/constellation/{deployment}/whitelist
-func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Request) {
+// GET api/v3/modules/constellation/{deployment}/whitelist
+func (s *V3ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 	session := common.ProcessAuthHeader(s, w, r)
@@ -48,7 +48,7 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	registeredAddress := deployment.GetWhitelistedAddressForUser(email)
 
 	// Write the data
-	data := v2constellation.Whitelist_GetData{
+	data := v3constellation.Whitelist_GetData{
 		Whitelisted: registeredAddress != nil,
 	}
 	if data.Whitelisted {
@@ -57,8 +57,8 @@ func (s *V2ConstellationServer) getWhitelist(w http.ResponseWriter, r *http.Requ
 	common.HandleSuccess(w, s.logger, data)
 }
 
-// POST api/v2/modules/constellation/{deployment}/whitelist
-func (s *V2ConstellationServer) postWhitelist(w http.ResponseWriter, r *http.Request) {
+// POST api/v3/modules/constellation/{deployment}/whitelist
+func (s *V3ConstellationServer) postWhitelist(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
 	session := common.ProcessAuthHeader(s, w, r)
@@ -88,7 +88,7 @@ func (s *V2ConstellationServer) postWhitelist(w http.ResponseWriter, r *http.Req
 	s.logger.Info("Created Constellation whitelist signature")
 
 	// Write the data
-	data := v2constellation.Whitelist_PostData{
+	data := v3constellation.Whitelist_PostData{
 		Signature: utils.EncodeHexWithPrefix(signature),
 	}
 	common.HandleSuccess(w, s.logger, data)

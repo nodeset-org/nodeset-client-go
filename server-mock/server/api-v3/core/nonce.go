@@ -7,8 +7,8 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
-// GET api/v2/core/nonce
-func (s *V2CoreServer) getNonce(w http.ResponseWriter, r *http.Request) {
+// GET api/v3/core/nonce
+func (s *V3CoreServer) getNonce(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		common.HandleInvalidMethod(w, s.logger)
 		return
