@@ -37,7 +37,14 @@ func (s *V3StakeWiseServer) GetManager() *manager.NodeSetMockManager {
 // Registers the routes for the server
 func (s *V3StakeWiseServer) RegisterRoutes(versionRouter *mux.Router) {
 	stakeWisePrefix := "/" + v3stakewise.StakeWisePrefix + "{deployment}/{vault}/"
+
+	// Deposit Data Endpoints
 	versionRouter.HandleFunc(stakeWisePrefix+stakewise.DepositDataMetaPath, s.depositDataMeta)
 	versionRouter.HandleFunc(stakeWisePrefix+stakewise.DepositDataPath, s.handleDepositData)
+
+	// Validators Endpoints
+	versionRouter.HandleFunc(stakeWisePrefix+stakewise.ValidatorsMetaPath, s.handleValidatorsMeta)
 	versionRouter.HandleFunc(stakeWisePrefix+stakewise.ValidatorsPath, s.handleValidators)
+	// versionRouter.HandleFunc(stakeWisePrefix+stakewise.ValidatorsPath, s.handlePostValidators)
+
 }

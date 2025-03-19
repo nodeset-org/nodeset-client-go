@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	VaultsPath     string = "vaults"
-	ValidatorsPath string = "validators"
-	MetaPath       string = "meta"
+	VaultsPath         string = "vaults"
+	ValidatorsPath     string = "validators"
+	ValidatorsMetaPath string = "meta"
 )
 
 type VaultsData struct {
@@ -165,7 +165,7 @@ func (c *V3StakeWiseClient) VaultsValidator_Post(
 
 // Returns information about the requesting user's node account with respect to the number of validators the user has deployed and can deploy on this vault.
 func (c *V3StakeWiseClient) VaultsValidatorMeta_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (VaultsMetaData, error) {
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath + "/" + MetaPath
+	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath + "/" + ValidatorsMetaPath
 	code, response, err := common.SubmitRequest[VaultsMetaData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
 	if err != nil {
 		return VaultsMetaData{}, fmt.Errorf("error submitting vaults request: %w", err)

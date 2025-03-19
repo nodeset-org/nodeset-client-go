@@ -15,6 +15,8 @@ import (
 const (
 	// Route for interacting with the list of validators
 	ValidatorsPath string = "validators"
+
+	ValidatorsMetaPath string = ValidatorsPath + "/meta"
 )
 
 type StakeWiseStatus string

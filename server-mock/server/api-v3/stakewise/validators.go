@@ -10,7 +10,7 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
-// Handler for api/v2/modules/stakewise/{deployment}/{vault}/validators
+// Handler for api/v3/modules/stakewise/{deployment}/{vault}/validators
 func (s *V3StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -22,7 +22,7 @@ func (s *V3StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// GET api/v2/modules/stakewise/{deployment}/{vault}/validators
+// GET api/v3/modules/stakewise/{deployment}/{vault}/validators
 func (s *V3StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	_, pathArgs := common.ProcessApiRequest(s, w, r, nil)
@@ -68,7 +68,7 @@ func (s *V3StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 	common.HandleSuccess(w, s.logger, data)
 }
 
-// PATCH api/v2/modules/stakewise/{deployment}/{vault}/validators
+// PATCH api/v3/modules/stakewise/{deployment}/{vault}/validators
 func (s *V3StakeWiseServer) patchValidators(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
 	var body v3stakewise.Validators_PatchBody
