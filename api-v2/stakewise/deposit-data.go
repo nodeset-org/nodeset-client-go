@@ -34,12 +34,6 @@ type ExtendedDepositData struct {
 	NetworkName           string           `json:"networkName"`
 }
 
-// Response to a deposit data request
-type DepositDataData struct {
-	Version     int                   `json:"version"`
-	DepositData []ExtendedDepositData `json:"depositData"`
-}
-
 // Request body for uploading deposit data
 type DepositData_PostBody struct {
 	Validators []ExtendedDepositData `json:"validators"`
@@ -49,7 +43,7 @@ type DepositData_PostBody struct {
 func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.DepositDataData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Get[DepositDataData](c.commonClient, ctx, logger, nil, path)
+	code, response, err := stakewise.DepositData_Get[stakewise.DepositDataData](c.commonClient, ctx, logger, nil, path)
 	if err != nil {
 		return stakewise.DepositDataData{}, err
 	}

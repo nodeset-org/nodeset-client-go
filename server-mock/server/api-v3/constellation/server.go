@@ -16,7 +16,7 @@ type V3ConstellationServer struct {
 }
 
 // Creates a new API v3 constellation server mock
-func NewV2ConstellationServer(logger *slog.Logger, manager *manager.NodeSetMockManager) *V3ConstellationServer {
+func NewV3ConstellationServer(logger *slog.Logger, manager *manager.NodeSetMockManager) *V3ConstellationServer {
 	return &V3ConstellationServer{
 		logger:  logger,
 		manager: manager,

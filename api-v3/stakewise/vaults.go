@@ -109,11 +109,11 @@ func (c *V3StakeWiseClient) VaultsValidator_Post(
 ) (PostVaultsValidatorData, error) {
 	// Create the request body
 	request := VaultsValidatorPostRequest{
-		ValidatorsRegistryRoot: validatorRegistryRoot,
-		Deadline:               deadline,
-		Validators:             validators,
-		Signature:              signature,
-		ExitSignatureIpsfHash:  exitSignatureIpsfHash,
+		// ValidatorsRegistryRoot: validatorRegistryRoot,
+		// Deadline:               deadline,
+		// Validators:             validators,
+		// Signature:              signature,
+		// ExitSignatureIpsfHash:  exitSignatureIpsfHash,
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
