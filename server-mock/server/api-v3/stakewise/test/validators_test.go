@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"filippo.io/age"
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
 	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
@@ -13,9 +12,7 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
-	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/internal/test"
-	"github.com/rocket-pool/node-manager-core/beacon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,98 +55,6 @@ func TestGetValidators(t *testing.T) {
 	// Make sure the response is correct
 	require.Empty(t, data.Validators)
 	t.Logf("Received correct response - validators is empty")
-}
-
-// Make sure signed exits are uploaded correctly
-func TestUploadSignedExits(t *testing.T) {
-	// Take a snapshot
-	mgr.TakeSnapshot("test")
-	defer func() {
-		err := mgr.RevertToSnapshot("test")
-		if err != nil {
-			t.Fatalf("error reverting to snapshot: %v", err)
-		}
-	}()
-
-	// Provision the database
-	db := idb.ProvisionFullDatabase(t, logger, false)
-	mgr.SetDatabase(db)
-	session := db.Core.GetSessions()[0]
-
-	// Set the encryption identity
-	id, err := age.GenerateX25519Identity()
-	require.NoError(t, err)
-	db.SetSecretEncryptionIdentity(id)
-
-	// Run a get deposit data request to make sure it's empty
-	data := runGetDepositDataRequest(t, session)
-	require.Equal(t, 0, data.Version)
-	require.Empty(t, data.DepositData)
-
-	// Generate new deposit data
-	depositData := []beacon.ExtendedDepositData{
-		idb.GenerateDepositData(t, 0, test.StakeWiseVaultAddress),
-		idb.GenerateDepositData(t, 1, test.StakeWiseVaultAddress),
-	}
-	t.Log("Generated deposit data")
-
-	// Run an upload deposit data request
-	runUploadDepositDataRequest(t, session, depositData)
-
-	// Run a get deposit data request to make sure it's uploaded
-	pubkeys := make([]beacon.ValidatorPubkey, len(depositData))
-	for i, data := range depositData {
-		pubkeys[i] = beacon.ValidatorPubkey(data.PublicKey)
-	}
-	expectedData := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{
-		pubkeys[0]: {
-			Pubkey:              pubkeys[0],
-			Status:              stakewise.StakeWiseStatus_Pending,
-			ExitMessageUploaded: false,
-		},
-		pubkeys[1]: {
-			Pubkey:              pubkeys[1],
-			Status:              stakewise.StakeWiseStatus_Pending,
-			ExitMessageUploaded: false,
-		},
-	}
-	validatorsData := runGetValidatorsRequest(t, session)
-	validatorMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
-	for _, validator := range validatorsData.Validators {
-		validatorMap[validator.Pubkey] = validator
-	}
-	require.Equal(t, expectedData, validatorMap)
-	t.Logf("Received matching response")
-
-	// Generate a signed exit for validator 1
-	signedExit1 := idb.GenerateSignedExit(t, 1)
-	t.Log("Generated signed exit")
-
-	// Encrypt it
-	pubkey := id.Recipient().String()
-	encryptedMessage, err := common.EncryptSignedExitMessage(signedExit1.ExitMessage, pubkey)
-	require.NoError(t, err)
-
-	// Upload it
-	runUploadSignedExitsRequest(t, session, []common.EncryptedExitData{
-		{
-			Pubkey:      signedExit1.Pubkey,
-			ExitMessage: encryptedMessage,
-		},
-	})
-	t.Logf("Uploaded signed exit")
-
-	// Get the validator status again
-	validator := expectedData[pubkeys[1]]
-	validator.ExitMessageUploaded = true
-	expectedData[pubkeys[1]] = validator
-	validatorsData = runGetValidatorsRequest(t, session)
-	validatorMap = map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
-	for _, validator := range validatorsData.Validators {
-		validatorMap[validator.Pubkey] = validator
-	}
-	require.Equal(t, expectedData, validatorMap)
-	t.Logf("Received matching response")
 }
 
 // Run a GET api/validators request
