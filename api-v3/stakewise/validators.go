@@ -42,33 +42,27 @@ type Validators_PatchBody struct {
 	ExitData []EncryptedExitData `json:"exitData"`
 }
 
-func (c *V3StakeWiseClient) VaultsValidator_Post(
+func (c *V3StakeWiseClient) Validator_Post(
 	ctx context.Context,
 	logger *slog.Logger,
 	deployment string,
 	vault ethcommon.Address,
-	validatorRegistryRoot string,
-	deadline uint64,
-	validators string,
-	signature string,
-	exitSignatureIpsfHash string,
-) (PostVaultsValidatorData, error) {
+	validators []ValidatorRegistrationDetails,
+	beaconDepositRoot ethcommon.Hash,
+) (PostValidatorData, error) {
 	// Create the request body
-	request := VaultsValidatorPostRequest{
-		// ValidatorsRegistryRoot: validatorRegistryRoot,
-		// Deadline:               deadline,
-		// Validators:             validators,
-		// Signature:              signature,
-		// ExitSignatureIpsfHash:  exitSignatureIpsfHash,
+	request := ValidatorPostRequest{
+		Validators:        validators,
+		BeaconDepositRoot: beaconDepositRoot,
 	}
 	jsonData, err := json.Marshal(request)
 	if err != nil {
-		return PostVaultsValidatorData{}, fmt.Errorf("error marshalling vaults validator post request: %w", err)
+		return PostValidatorData{}, fmt.Errorf("error marshalling validator post request: %w", err)
 	}
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath
-	code, response, err := common.SubmitRequest[PostVaultsValidatorData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
+	code, response, err := common.SubmitRequest[PostValidatorData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
 	if err != nil {
-		return PostVaultsValidatorData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
+		return PostValidatorData{}, fmt.Errorf("error requesting validator manager signature: %w", err)
 	}
 	// Handle response based on return code
 	switch code {
@@ -80,32 +74,32 @@ func (c *V3StakeWiseClient) VaultsValidator_Post(
 		switch response.Error {
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
-			return PostVaultsValidatorData{}, common.ErrInvalidDeployment
+			return PostValidatorData{}, common.ErrInvalidDeployment
 		case common.InvalidVaultKey:
 			// Invalid vault
-			return PostVaultsValidatorData{}, common.ErrInvalidVault
+			return PostValidatorData{}, common.ErrInvalidVault
 		}
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
 			// Invalid session
-			return PostVaultsValidatorData{}, common.ErrInvalidSession
+			return PostValidatorData{}, common.ErrInvalidSession
 		}
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:
 			// The user doesn't have permission to do this
-			return PostVaultsValidatorData{}, common.ErrInvalidPermissions
+			return PostValidatorData{}, common.ErrInvalidPermissions
 		}
 	case http.StatusUnprocessableEntity:
 		switch response.Error {
 		case common.InsufficientVaultBalanceKey:
 			// The vault doesn't have enough ETH deposits in it to support the number of validators being registered.
-			return PostVaultsValidatorData{}, common.ErrInsufficientVaultBalance
+			return PostValidatorData{}, common.ErrInsufficientVaultBalance
 		}
 	}
 
-	return PostVaultsValidatorData{}, fmt.Errorf("nodeset server responded to vaults validator request with code %d: [%s]", code, response.Message)
+	return PostValidatorData{}, fmt.Errorf("nodeset server responded to vaults validator request with code %d: [%s]", code, response.Message)
 
 }
 
