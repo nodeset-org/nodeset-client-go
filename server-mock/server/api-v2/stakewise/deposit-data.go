@@ -5,6 +5,8 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
+	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
+
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
@@ -50,12 +52,12 @@ func (s *V2StakeWiseServer) getDepositData(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Write the data
-	data := v2stakewise.DepositDataData{
+	data := stakewise.DepositDataData{
 		Version:     vault.LatestDepositDataSetIndex,
-		DepositData: make([]v2stakewise.ExtendedDepositData, len(vault.LatestDepositDataSet)),
+		DepositData: make([]beacon.ExtendedDepositData, len(vault.LatestDepositDataSet)),
 	}
 	for i, deposit := range vault.LatestDepositDataSet {
-		data.DepositData[i] = v2stakewise.ExtendedDepositData(deposit)
+		data.DepositData[i] = beacon.ExtendedDepositData(deposit)
 	}
 
 	common.HandleSuccess(w, s.logger, data)

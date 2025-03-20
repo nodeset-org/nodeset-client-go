@@ -15,11 +15,18 @@ func (s *V3StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Requ
 	switch r.Method {
 	case http.MethodGet:
 		s.getValidators(w, r)
+	case http.MethodPost:
+		s.postValidators(w, r)
 	case http.MethodPatch:
 		s.patchValidators(w, r)
 	default:
 		common.HandleInvalidMethod(w, s.logger)
 	}
+}
+
+// POST api/v3/modules/stakewise/{deployment}/{vault}/validators
+func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Request) {
+	// TODO: HN
 }
 
 // GET api/v3/modules/stakewise/{deployment}/{vault}/validators

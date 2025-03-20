@@ -17,15 +17,23 @@ type StakeWiseDeployment struct {
 	// List of StakeWise vaults
 	vaults map[ethcommon.Address]*StakeWiseVault
 	db     *Database
+
+	// Validator counts
+	ActiveValidators    uint
+	MaxValidators       uint
+	AvailableValidators uint
 }
 
 // Create a new StakeWise deployment
 func newStakeWiseDeployment(db *Database, id string, chainID *big.Int) *StakeWiseDeployment {
 	return &StakeWiseDeployment{
-		ID:      id,
-		ChainID: chainID,
-		vaults:  make(map[ethcommon.Address]*StakeWiseVault),
-		db:      db,
+		ID:                  id,
+		ChainID:             chainID,
+		vaults:              make(map[ethcommon.Address]*StakeWiseVault),
+		db:                  db,
+		ActiveValidators:    0,
+		MaxValidators:       0,
+		AvailableValidators: 0,
 	}
 }
 
