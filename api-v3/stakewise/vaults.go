@@ -85,7 +85,7 @@ func (c *V3StakeWiseClient) Vaults(ctx context.Context, logger *slog.Logger, dep
 }
 
 // Returns information about the requesting user's node account with respect to the number of validators the user has deployed and can deploy on this vault.
-func (c *V3StakeWiseClient) VaultsValidatorMeta_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.VaultsMetaData, error) {
+func (c *V3StakeWiseClient) ValidatorMeta_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.VaultsMetaData, error) {
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath + "/" + MetaPath
 	code, response, err := common.SubmitRequest[stakewise.VaultsMetaData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
 	if err != nil {

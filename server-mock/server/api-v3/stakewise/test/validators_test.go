@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
 	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
-	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
@@ -17,7 +16,7 @@ import (
 )
 
 // Make sure the correct response is returned for a successful request
-func TestGetValidators(t *testing.T) {
+func TestGetValidatorsMeta(t *testing.T) {
 	// Take a snapshot
 	mgr.TakeSnapshot("test")
 	defer func() {
@@ -50,34 +49,36 @@ func TestGetValidators(t *testing.T) {
 	require.NoError(t, err)
 
 	// Run a get validators request
-	data := runGetValidatorsRequest(t, session)
+	data := runGetValidatorsMetaRequest(t, session)
 
 	// Make sure the response is correct
-	require.Empty(t, data.Validators)
-	t.Logf("Received correct response - validators is empty")
+	require.Equal(t, data.Active, 0)
+	require.Equal(t, data.Max, deployment.MaxValidators)
+	require.Equal(t, data.Available, deployment.MaxValidators-data.Active)
+	t.Logf("Received correct response -  active: %d, max: %d, available: %d", data.Active, data.Max, data.Available)
 }
 
-// Run a GET api/validators request
-func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.ValidatorsData {
+// Run a GET api/validators/meta request
+func runGetValidatorsMetaRequest(t *testing.T, session *db.Session) stakewise.VaultsMetaData {
 	// Create the client
 	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	data, err := client.StakeWise.Validators_Get(context.Background(), logger, test.Network, test.StakeWiseVaultAddress)
+	data, err := client.StakeWise.ValidatorMeta_Get(context.Background(), logger, test.Network, test.StakeWiseVaultAddress)
 	require.NoError(t, err)
 	t.Logf("Ran request")
 	return data
 }
 
 // Run a PATCH api/validators request
-func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.EncryptedExitData) {
-	// Create the client
-	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
-	client.SetSessionToken(session.Token)
+// func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.EncryptedExitData) {
+// 	// Create the client
+// 	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+// 	client.SetSessionToken(session.Token)
 
-	// Run the request
-	err := client.StakeWise.Validators_Patch(context.Background(), logger, test.Network, test.StakeWiseVaultAddress, signedExits)
-	require.NoError(t, err)
-	t.Logf("Ran request")
-}
+// 	// Run the request
+// 	err := client.StakeWise.Validators_Patch(context.Background(), logger, test.Network, test.StakeWiseVaultAddress, signedExits)
+// 	require.NoError(t, err)
+// 	t.Logf("Ran request")
+// }
