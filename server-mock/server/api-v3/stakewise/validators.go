@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	stakewiseapi "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
@@ -61,8 +62,10 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	}
 	deployment.ActiveValidators += uint(numToRegister)
 
+	// TODO: Confirm with JC
+	hash := crypto.Keccak256Hash([]byte(fmt.Sprintf("%s:%d", deployment.ID, deployment.ActiveValidators)))
 	resp := stakewiseapi.PostValidatorData{
-		Signature: "TODO",
+		Signature: hash.Hex(),
 	}
 	common.HandleSuccess(w, s.logger, resp)
 
