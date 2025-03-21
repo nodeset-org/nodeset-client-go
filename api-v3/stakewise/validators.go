@@ -57,6 +57,17 @@ type ValidatorRegistrationDetails struct {
 	ExitMessage string                     `json:"exitMessage"`
 }
 
+// Validator status info
+type ValidatorStatus struct {
+	Pubkey              beacon.ValidatorPubkey `json:"pubkey"`
+	ExitMessageUploaded bool                   `json:"exitMessage"`
+}
+
+// Response to a validators request
+type ValidatorsData struct {
+	Validators []ValidatorStatus `json:"validators"`
+}
+
 func (c *V3StakeWiseClient) Validators_Post(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -119,12 +130,12 @@ func (c *V3StakeWiseClient) Validators_Post(
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
-func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.ValidatorsData, error) {
+func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (ValidatorsData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Get(c.commonClient, ctx, logger, nil, path)
+	code, response, err := V3SubmitValidators_Get(c.commonClient, ctx, logger, nil, path)
 	if err != nil {
-		return stakewise.ValidatorsData{}, err
+		return ValidatorsData{}, err
 	}
 
 	// Handle response based on return code
@@ -136,26 +147,46 @@ func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 		switch response.Error {
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
-			return stakewise.ValidatorsData{}, common.ErrInvalidDeployment
+			return ValidatorsData{}, common.ErrInvalidDeployment
 
 		case stakewise.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.ValidatorsData{}, stakewise.ErrInvalidVault
+			return ValidatorsData{}, stakewise.ErrInvalidVault
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
 			// Invalid or expired session
-			return stakewise.ValidatorsData{}, common.ErrInvalidSession
+			return ValidatorsData{}, common.ErrInvalidSession
 		}
 
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:
 			// The user doesn't have permission to do this
-			return stakewise.ValidatorsData{}, common.ErrInvalidPermissions
+			return ValidatorsData{}, common.ErrInvalidPermissions
 		}
 	}
-	return stakewise.ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
+	return ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
+}
+
+// Get a list of all of the pubkeys that have already been registered with NodeSet for this node
+func V3SubmitValidators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
+	// Send the request
+	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
+	if err != nil {
+		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
+	}
+
+	// Handle common errors
+	switch code {
+	case http.StatusUnauthorized:
+		switch response.Error {
+		case common.InvalidSessionKey:
+			// Invalid or expired session
+			return code, nil, common.ErrInvalidSession
+		}
+	}
+	return code, &response, nil
 }

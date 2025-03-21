@@ -74,7 +74,7 @@ func TestUploadDepositData(t *testing.T) {
 
 	// Run a get deposit data request to make sure it's uploaded
 	validatorsData := runGetValidatorsRequest(t, db.Core.GetSessions()[0])
-	validatorMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
+	validatorMap := map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{}
 	for _, validator := range validatorsData.Validators {
 		validatorMap[validator.Pubkey] = validator
 	}
@@ -82,7 +82,7 @@ func TestUploadDepositData(t *testing.T) {
 	pubkey0 := beacon.ValidatorPubkey(depositData[0].PublicKey)
 	pubkey1 := beacon.ValidatorPubkey(depositData[1].PublicKey)
 	pubkey2 := beacon.ValidatorPubkey(depositData[2].PublicKey)
-	expectedMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{
+	expectedMap := map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{
 		pubkey0: {
 			Pubkey:              pubkey0,
 			Status:              stakewise.StakeWiseStatus_Pending,

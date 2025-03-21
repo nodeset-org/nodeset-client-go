@@ -79,6 +79,9 @@ func TestPostValidators(t *testing.T) {
 	require.Equal(t, metaAfter.Max, 10) // Should stay the same
 	require.Equal(t, metaAfter.Available, 10-numValidatorsToRegister)
 
+	// Verify
+	// GET v3/modules/stakewise/{deployment}/{vault}/validators
+
 	t.Logf("Successfully registered %d validators. New active count: %d, available count: %d",
 		numValidatorsToRegister, metaAfter.Active, metaAfter.Available)
 }

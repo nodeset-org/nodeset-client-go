@@ -25,6 +25,18 @@ var (
 	ErrVaultNotFound error = errors.New("deposit data has withdrawal creds that don't match a StakeWise vault")
 )
 
+// Validator status info
+type ValidatorStatus struct {
+	Pubkey              beacon.ValidatorPubkey    `json:"pubkey"`
+	Status              stakewise.StakeWiseStatus `json:"status"`
+	ExitMessageUploaded bool                      `json:"exitMessage"`
+}
+
+// Response to a validators request
+type ValidatorsData struct {
+	Validators []ValidatorStatus `json:"validators"`
+}
+
 // Get the current version of the aggregated deposit data on the server
 func (c *NodeSetClient) DepositDataMeta(ctx context.Context, logger *slog.Logger, vault ethcommon.Address, network string) (stakewise.DepositDataMetaData, error) {
 	// Create the request params
@@ -112,16 +124,16 @@ func (c *NodeSetClient) DepositData_Post(ctx context.Context, logger *slog.Logge
 }
 
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func (c *NodeSetClient) Validators_Get(ctx context.Context, logger *slog.Logger, network string) (stakewise.ValidatorsData, error) {
+func (c *NodeSetClient) Validators_Get(ctx context.Context, logger *slog.Logger, network string) (ValidatorsData, error) {
 	// Create the request params
 	queryParams := map[string]string{
 		"network": network,
 	}
 
 	// Send the request
-	code, response, err := stakewise.Validators_Get(c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
+	code, response, err := V0SubmitValidators_Get(c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
 	if err != nil {
-		return stakewise.ValidatorsData{}, err
+		return ValidatorsData{}, err
 	}
 
 	// Handle response based on return code
@@ -133,10 +145,10 @@ func (c *NodeSetClient) Validators_Get(ctx context.Context, logger *slog.Logger,
 		switch response.Error {
 		case InvalidNetworkKey:
 			// Network not known
-			return stakewise.ValidatorsData{}, ErrInvalidNetwork
+			return ValidatorsData{}, ErrInvalidNetwork
 		}
 	}
-	return stakewise.ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
+	return ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
 }
 
 // Submit signed exit data to NodeSet
@@ -168,4 +180,24 @@ func (c *NodeSetClient) Validators_Patch(ctx context.Context, logger *slog.Logge
 		}
 	}
 	return fmt.Errorf("nodeset server responded to validators-patch request with code %d: [%s]", code, response.Message)
+}
+
+// Get a list of all of the pubkeys that have already been registered with NodeSet for this node
+func V0SubmitValidators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
+	// Send the request
+	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
+	if err != nil {
+		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
+	}
+
+	// Handle common errors
+	switch code {
+	case http.StatusUnauthorized:
+		switch response.Error {
+		case common.InvalidSessionKey:
+			// Invalid or expired session
+			return code, nil, common.ErrInvalidSession
+		}
+	}
+	return code, &response, nil
 }

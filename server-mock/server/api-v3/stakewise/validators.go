@@ -6,8 +6,7 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	stakewiseapi "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
+	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -27,7 +26,7 @@ func (s *V3StakeWiseServer) handleValidators(w http.ResponseWriter, r *http.Requ
 // POST api/v3/modules/stakewise/{deployment}/{vault}/validators
 func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Request) {
 	// Get the requesting node
-	var body stakewiseapi.Validators_PostBody
+	var body v3stakewise.Validators_PostBody
 
 	_, pathArgs := common.ProcessApiRequest(s, w, r, &body)
 	session := common.ProcessAuthHeader(s, w, r)
@@ -62,10 +61,13 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	}
 	deployment.ActiveValidators += uint(numToRegister)
 
+	// Must add validator to struct + exit message
+
 	// TODO: Confirm with JC
+	// NICE TO HAVE: https://github.com/stakewise/v3-core/blob/main/contracts/validators/ValidatorsChecker.sol#L187
 	hash := crypto.Keccak256Hash([]byte(fmt.Sprintf("%s:%d", deployment.ID, deployment.ActiveValidators)))
-	resp := stakewiseapi.PostValidatorData{
-		Signature: hash.Hex(),
+	resp := v3stakewise.PostValidatorData{
+		Signature: hash.Hex(), //solidity code for stakewise
 	}
 	common.HandleSuccess(w, s.logger, resp)
 
@@ -100,18 +102,17 @@ func (s *V3StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 	}
 
 	// Find the validator
-	validatorStatuses := []stakewise.ValidatorStatus{}
+	validatorStatuses := []v3stakewise.ValidatorStatus{}
 	validators := vault.GetStakeWiseValidatorsForNode(node)
 	for _, validator := range validators {
-		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
+		validatorStatuses = append(validatorStatuses, v3stakewise.ValidatorStatus{
 			Pubkey:              validator.Pubkey,
-			Status:              validator.GetStatus(),
 			ExitMessageUploaded: validator.ExitMessageUploaded,
 		})
 	}
 
 	// Write the response
-	data := stakewise.ValidatorsData{
+	data := v3stakewise.ValidatorsData{
 		Validators: validatorStatuses,
 	}
 	common.HandleSuccess(w, s.logger, data)

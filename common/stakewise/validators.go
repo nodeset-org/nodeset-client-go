@@ -9,7 +9,6 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
 const (
@@ -37,38 +36,6 @@ const (
 	// DepositData uploaded to NodeSet, uploaded to StakeWise, and the validator is exited on Beacon
 	StakeWiseStatus_Removed StakeWiseStatus = "REMOVED"
 )
-
-// Validator status info
-type ValidatorStatus struct {
-	Pubkey              beacon.ValidatorPubkey `json:"pubkey"`
-	Status              StakeWiseStatus        `json:"status"`
-	ExitMessageUploaded bool                   `json:"exitMessage"`
-}
-
-// Response to a validators request
-type ValidatorsData struct {
-	Validators []ValidatorStatus `json:"validators"`
-}
-
-// Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func Validators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
-	// Send the request
-	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
-	if err != nil {
-		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
-	}
-
-	// Handle common errors
-	switch code {
-	case http.StatusUnauthorized:
-		switch response.Error {
-		case common.InvalidSessionKey:
-			// Invalid or expired session
-			return code, nil, common.ErrInvalidSession
-		}
-	}
-	return code, &response, nil
-}
 
 // Submit signed exit data to Nodeset
 func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, exitData any, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
