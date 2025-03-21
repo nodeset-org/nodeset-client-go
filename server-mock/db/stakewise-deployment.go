@@ -70,7 +70,7 @@ func (d *StakeWiseDeployment) GetAllStakeWiseValidators(node *Node) map[ethcommo
 	vaultInfos := map[ethcommon.Address][]*StakeWiseValidatorInfo{}
 	for vaultAddress, vault := range d.vaults {
 		vaultInfo := []*StakeWiseValidatorInfo{}
-		nodeValidators := vault.validators[node.Address]
+		nodeValidators := vault.Validators[node.Address]
 		for _, validator := range nodeValidators {
 			vaultInfo = append(vaultInfo, validator)
 		}
