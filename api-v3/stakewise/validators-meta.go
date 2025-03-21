@@ -9,7 +9,6 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	stakewise "github.com/nodeset-org/nodeset-client-go/common/stakewise"
-	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
 const (
@@ -20,20 +19,6 @@ const (
 
 type VaultsData struct {
 	Vaults []ethcommon.Address `json:"vaults"`
-}
-
-type PostValidatorData struct {
-	Signature string `json:"signature"`
-}
-
-type ValidatorRegistrationDetails struct {
-	DepositData beacon.ExtendedDepositData `json:"depositData"`
-	ExitMessage string                     `json:"exitMessage"`
-}
-
-type ValidatorPostRequest struct {
-	Validators        []ValidatorRegistrationDetails `json:"validators"`
-	BeaconDepositRoot ethcommon.Hash                 `json:"beaconDepositRoot"`
 }
 
 // Gets the list of vaults available on the server for the provided deployment

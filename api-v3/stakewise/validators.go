@@ -11,6 +11,7 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
+	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
 // Details of an exit message
@@ -42,7 +43,21 @@ type Validators_PatchBody struct {
 	ExitData []EncryptedExitData `json:"exitData"`
 }
 
-func (c *V3StakeWiseClient) Validator_Post(
+type Validators_PostBody struct {
+	Validators        []ValidatorRegistrationDetails `json:"validators"`
+	BeaconDepositRoot ethcommon.Hash                 `json:"beaconDepositRoot"`
+}
+
+type PostValidatorData struct {
+	Signature string `json:"signature"`
+}
+
+type ValidatorRegistrationDetails struct {
+	DepositData beacon.ExtendedDepositData `json:"depositData"`
+	ExitMessage string                     `json:"exitMessage"`
+}
+
+func (c *V3StakeWiseClient) Validators_Post(
 	ctx context.Context,
 	logger *slog.Logger,
 	deployment string,
@@ -51,7 +66,7 @@ func (c *V3StakeWiseClient) Validator_Post(
 	beaconDepositRoot ethcommon.Hash,
 ) (PostValidatorData, error) {
 	// Create the request body
-	request := ValidatorPostRequest{
+	request := Validators_PostBody{
 		Validators:        validators,
 		BeaconDepositRoot: beaconDepositRoot,
 	}

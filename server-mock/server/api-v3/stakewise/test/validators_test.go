@@ -1,12 +1,15 @@
 package v3server_stakewise_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
 	stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 	"github.com/rocket-pool/node-manager-core/beacon"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
@@ -66,7 +69,7 @@ func TestPostValidators(t *testing.T) {
 	}
 
 	// Submit the request (TODO)
-	beaconDepositRoot := ""
+	beaconDepositRoot := common.Hash{}
 	signature, err := runPostValidatorsRequest(t, session, validatorDetails, beaconDepositRoot)
 	require.NoError(t, err)
 	require.NotEmpty(t, signature, "Expected a valid signature from the backend")
@@ -81,5 +84,15 @@ func TestPostValidators(t *testing.T) {
 		numValidatorsToRegister, metaAfter.Active, metaAfter.Available)
 }
 
-func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetails []stakewise.ValidatorRegistrationDetails, beaconDepositRoot string) (string, error) {
+func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetails []stakewise.ValidatorRegistrationDetails, beaconDepositRoot common.Hash) (string, error) {
+	// Create the client
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client.SetSessionToken(session.Token)
+
+	// Run the request
+	response, err := client.StakeWise.Validators_Post(context.Background(), logger, test.Network, test.StakeWiseVaultAddress, validatorDetails, beaconDepositRoot)
+	require.NoError(t, err)
+	t.Logf("Ran POST /validators request with %d validators", len(validatorDetails))
+
+	return response.Signature, err
 }
