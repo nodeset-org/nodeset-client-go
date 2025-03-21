@@ -28,7 +28,6 @@ func (s *V3StakeWiseServer) handleValidatorsMeta(w http.ResponseWriter, r *http.
 
 // GET api/v3/modules/stakewise/{deployment}/{vault}/validators/meta
 func (s *V3StakeWiseServer) getValidatorsMeta(w http.ResponseWriter, r *http.Request) {
-	// TODO: HN
 	if r.Method != http.MethodGet {
 		common.HandleInvalidMethod(w, s.logger)
 		return
