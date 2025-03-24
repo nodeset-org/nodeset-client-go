@@ -119,7 +119,7 @@ func TestConstellationWhitelist(t *testing.T) {
 // Run a GET api/v2/modules/constellation/{deployment}/whitelist request
 func runGetWhitelistRequest(t *testing.T, session *db.Session) v3constellation.Whitelist_GetData {
 	// Create the client
-	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:3d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run3the request
@@ -132,7 +132,7 @@ func runGetWhitelistRequest(t *testing.T, session *db.Session) v3constellation.W
 // Run a POST api/v2/modules/constellation/{deployment}/whitelist request
 func runPostWhitelistRequest(t *testing.T, session *db.Session) v3constellation.Whitelist_PostData {
 	// Create the client
-	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:3d/api", port), timeout)
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)
 
 	// Run3the request
