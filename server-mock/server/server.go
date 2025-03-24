@@ -14,6 +14,8 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/admin"
 	v0server "github.com/nodeset-org/nodeset-client-go/server-mock/server/api-v0"
 	v2server "github.com/nodeset-org/nodeset-client-go/server-mock/server/api-v2"
+	v3server "github.com/nodeset-org/nodeset-client-go/server-mock/server/api-v3"
+
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
@@ -30,6 +32,7 @@ type NodeSetMockServer struct {
 	adminServer *admin.AdminServer
 	apiv0Server *v0server.V0Server
 	apiv2Server *v2server.V2Server
+	apiv3Server *v3server.V3Server
 }
 
 func NewNodeSetMockServer(logger *slog.Logger, ip string, port uint16) (*NodeSetMockServer, error) {
@@ -59,6 +62,7 @@ func NewNodeSetMockServer(logger *slog.Logger, ip string, port uint16) (*NodeSet
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	server.apiv0Server.RegisterRoutes(apiRouter)
 	server.apiv2Server.RegisterRoutes(apiRouter)
+	server.apiv3Server.RegisterRoutes(apiRouter)
 
 	return server, nil
 }
