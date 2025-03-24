@@ -30,5 +30,3 @@ go.work
 # Build artifacts
 build/
 server-mock/server-mock
-
-.DS_Store
