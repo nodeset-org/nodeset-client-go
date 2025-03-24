@@ -1,10 +1,11 @@
 package v3server_constellation
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	v3constellation "github.com/nodeset-org/nodeset-client-go/api-v3/constellation"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"

@@ -2,7 +2,6 @@ package v0server_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -11,6 +10,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nodeset-org/nodeset-client-go/common"

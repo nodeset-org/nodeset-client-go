@@ -1,13 +1,14 @@
 package common
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gorilla/mux"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"

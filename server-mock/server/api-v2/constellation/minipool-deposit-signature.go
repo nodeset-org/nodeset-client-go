@@ -1,10 +1,11 @@
 package v2server_constellation
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"

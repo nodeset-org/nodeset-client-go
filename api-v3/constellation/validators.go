@@ -3,11 +3,12 @@ package v3constellation
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
