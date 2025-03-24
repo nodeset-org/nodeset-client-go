@@ -1,8 +1,8 @@
 package v3server_stakewise
 
 import (
+	"encoding/json"
 	"fmt"
-	"math/big"
 	"net/http"
 
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -65,7 +65,6 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("not enough available slots: requested %d, available %d", numToRegister, available))
 		return
 	}
-	startIndex := deployment.ActiveValidators
 	deployment.ActiveValidators += uint(numToRegister)
 
 	// Must add validator to struct + exit message
@@ -87,33 +86,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	}
 
 	// https://github.com/stakewise/v3-core/blob/main/contracts/validators/ValidatorsChecker.sol#L187
-	typeHash := crypto.Keccak256Hash([]byte("StakeWiseValidatorRegistration(uint256 chainId,address vault,uint256 index,uint256 count,bytes32 depositRoot)"))
-	chainIDBig := deployment.ChainID
-	indexBig := big.NewInt(int64(startIndex))
-	countBig := big.NewInt(int64(numToRegister))
-
-	encodedStruct, err := abi.Arguments{
-		{Type: mustType(abi.NewType("bytes32", "", nil))},
-		{Type: mustType(abi.NewType("uint256", "", nil))},
-		{Type: mustType(abi.NewType("address", "", nil))},
-		{Type: mustType(abi.NewType("uint256", "", nil))},
-		{Type: mustType(abi.NewType("uint256", "", nil))},
-		{Type: mustType(abi.NewType("bytes32", "", nil))},
-	}.Pack(
-		typeHash,
-		chainIDBig,
-		vaultAddress,
-		indexBig,
-		countBig,
-		body.BeaconDepositRoot,
-	)
-	if err != nil {
-		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("failed to encode args: %w", err))
-		return
-	}
-
-	hashStruct := crypto.Keccak256Hash(encodedStruct)
-
+	// 1. Compute the domain separator
 	domainTypeHash := crypto.Keccak256Hash([]byte("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"))
 	nameHash := crypto.Keccak256Hash([]byte("VaultValidators"))
 	versionHash := crypto.Keccak256Hash([]byte("1"))
@@ -128,7 +101,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		domainTypeHash,
 		nameHash,
 		versionHash,
-		chainIDBig,
+		deployment.ChainID,
 		vaultAddress,
 	)
 	if err != nil {
@@ -137,7 +110,32 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	}
 	domainSeparator := crypto.Keccak256Hash(domainEncoded)
 
-	// EIP-712 digest
+	// 2. Compute keccak256(validators)
+	validatorsBytes, err := json.Marshal(body.Validators)
+	if err != nil {
+		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("failed to marshal validators: %w", err))
+		return
+	}
+	validatorsHash := crypto.Keccak256Hash(validatorsBytes)
+
+	// 3. Encode and hash the struct
+	_registerValidatorsTypeHash := crypto.Keccak256Hash([]byte("VaultValidators(bytes32 validatorsRegistryRoot,bytes validators)"))
+
+	structEncoded, err := abi.Arguments{
+		{Type: mustType(abi.NewType("bytes32", "", nil))},
+		{Type: mustType(abi.NewType("bytes32", "", nil))},
+	}.Pack(
+		_registerValidatorsTypeHash,
+		body.BeaconDepositRoot, // assumes this is the validators registry root?
+		validatorsHash,
+	)
+	if err != nil {
+		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("failed to encode struct: %w", err))
+		return
+	}
+	hashStruct := crypto.Keccak256Hash(structEncoded)
+
+	// 4. EIP-712 final digest
 	finalDigestBytes := append([]byte("\x19\x01"), domainSeparator.Bytes()...)
 	finalDigestBytes = append(finalDigestBytes, hashStruct.Bytes()...)
 	finalDigest := crypto.Keccak256Hash(finalDigestBytes)
