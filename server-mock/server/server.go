@@ -53,6 +53,7 @@ func NewNodeSetMockServer(logger *slog.Logger, ip string, port uint16) (*NodeSet
 	server.adminServer = admin.NewAdminServer(logger, server.manager)
 	server.apiv0Server = v0server.NewV0Server(logger, server.manager)
 	server.apiv2Server = v2server.NewV2Server(logger, server.manager)
+	server.apiv3Server = v3server.NewV3Server(logger, server.manager)
 
 	// Register admin routes
 	adminRouter := router.PathPrefix("/admin").Subrouter()

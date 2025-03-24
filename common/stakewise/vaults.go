@@ -6,7 +6,4 @@ type VaultsMetaData struct {
 
 	// validators that the current user is allowed to have for this vault
 	Max uint `json:"max"`
-
-	// validators the user is still permitted to create and upload to this vault.
-	Available uint `json:"available"`
 }

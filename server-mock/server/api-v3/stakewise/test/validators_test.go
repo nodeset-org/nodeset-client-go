@@ -31,6 +31,7 @@ func TestPostValidators(t *testing.T) {
 	// Provision the database
 	db := mgr.GetDatabase()
 	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
+	deployment.AddVault(test.StakeWiseVaultAddress)
 	deployment.MaxValidators = 10 // Set max validators
 
 	node0Key, err := test.GetEthPrivateKey(0)
@@ -53,9 +54,8 @@ func TestPostValidators(t *testing.T) {
 
 	// Get the initial validator limits
 	metaBefore := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, 0, metaBefore.Active) // No validators yet
-	require.Equal(t, metaBefore.Max, 10)   // Max set to 10
-	require.Equal(t, metaBefore.Available, 10)
+	require.Equal(t, uint(0), metaBefore.Active)     // No validators yet
+	require.Equal(t, uint(metaBefore.Max), uint(10)) // Max set to 10
 
 	// Generate validator details
 	numValidatorsToRegister := 3
@@ -75,15 +75,14 @@ func TestPostValidators(t *testing.T) {
 
 	// Verify the new validator count
 	metaAfter := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaAfter.Active, numValidatorsToRegister)
-	require.Equal(t, metaAfter.Max, 10) // Should stay the same
-	require.Equal(t, metaAfter.Available, 10-numValidatorsToRegister)
+	require.Equal(t, metaAfter.Active, uint(numValidatorsToRegister))
+	require.Equal(t, metaAfter.Max, uint(10)) // Should stay the same
 
 	// Verify
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators
 
-	t.Logf("Successfully registered %d validators. New active count: %d, available count: %d",
-		numValidatorsToRegister, metaAfter.Active, metaAfter.Available)
+	t.Logf("Successfully registered %d validators. New active count: %d",
+		numValidatorsToRegister, metaAfter.Active)
 }
 
 func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetails []stakewise.ValidatorRegistrationDetails, beaconDepositRoot common.Hash) (string, error) {
