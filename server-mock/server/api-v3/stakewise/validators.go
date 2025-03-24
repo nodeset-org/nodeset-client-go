@@ -86,30 +86,64 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	// TODO: Confirm with JC
-	// NICE TO HAVE: https://github.com/stakewise/v3-core/blob/main/contracts/validators/ValidatorsChecker.sol#L187
+	// https://github.com/stakewise/v3-core/blob/main/contracts/validators/ValidatorsChecker.sol#L187
 	typeHash := crypto.Keccak256Hash([]byte("StakeWiseValidatorRegistration(uint256 chainId,address vault,uint256 index,uint256 count,bytes32 depositRoot)"))
-
 	chainIDBig := deployment.ChainID
 	indexBig := big.NewInt(int64(startIndex))
 	countBig := big.NewInt(int64(numToRegister))
 
-	encoded, err := abi.Arguments{
+	encodedStruct, err := abi.Arguments{
+		{Type: mustType(abi.NewType("bytes32", "", nil))},
 		{Type: mustType(abi.NewType("uint256", "", nil))},
 		{Type: mustType(abi.NewType("address", "", nil))},
 		{Type: mustType(abi.NewType("uint256", "", nil))},
 		{Type: mustType(abi.NewType("uint256", "", nil))},
 		{Type: mustType(abi.NewType("bytes32", "", nil))},
-	}.Pack(chainIDBig, vaultAddress, indexBig, countBig, body.BeaconDepositRoot)
+	}.Pack(
+		typeHash,
+		chainIDBig,
+		vaultAddress,
+		indexBig,
+		countBig,
+		body.BeaconDepositRoot,
+	)
 	if err != nil {
 		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("failed to encode args: %w", err))
 		return
 	}
 
-	hash := crypto.Keccak256Hash(append(typeHash.Bytes(), encoded...))
+	hashStruct := crypto.Keccak256Hash(encodedStruct)
+
+	domainTypeHash := crypto.Keccak256Hash([]byte("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"))
+	nameHash := crypto.Keccak256Hash([]byte("VaultValidators"))
+	versionHash := crypto.Keccak256Hash([]byte("1"))
+
+	domainEncoded, err := abi.Arguments{
+		{Type: mustType(abi.NewType("bytes32", "", nil))},
+		{Type: mustType(abi.NewType("bytes32", "", nil))},
+		{Type: mustType(abi.NewType("bytes32", "", nil))},
+		{Type: mustType(abi.NewType("uint256", "", nil))},
+		{Type: mustType(abi.NewType("address", "", nil))},
+	}.Pack(
+		domainTypeHash,
+		nameHash,
+		versionHash,
+		chainIDBig,
+		vaultAddress,
+	)
+	if err != nil {
+		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("failed to encode domain: %w", err))
+		return
+	}
+	domainSeparator := crypto.Keccak256Hash(domainEncoded)
+
+	// EIP-712 digest
+	finalDigestBytes := append([]byte("\x19\x01"), domainSeparator.Bytes()...)
+	finalDigestBytes = append(finalDigestBytes, hashStruct.Bytes()...)
+	finalDigest := crypto.Keccak256Hash(finalDigestBytes)
 
 	resp := v3stakewise.PostValidatorData{
-		Signature: hash.Hex(), //solidity code for stakewise
+		Signature: finalDigest.Hex(), //solidity code for stakewise
 	}
 	servermockcommon.HandleSuccess(w, s.logger, resp)
 
