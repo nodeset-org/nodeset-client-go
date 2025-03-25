@@ -91,8 +91,8 @@ func TestPostValidators(t *testing.T) {
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators
 	fetchedValidators := runGetValidatorsRequest(t, session)
 	require.Len(t, fetchedValidators.Validators, numValidatorsToRegister)
-	for _, validator := range fetchedValidators.Validators {
-		require.NotEmpty(t, validator.Pubkey)
+	for i, validator := range fetchedValidators.Validators {
+		require.Equal(t, validator.Pubkey, beacon.ValidatorPubkey([48]byte(validatorDetails[i].DepositData.PublicKey)))
 		require.Equal(t, validator.ExitMessageUploaded, true)
 	}
 
