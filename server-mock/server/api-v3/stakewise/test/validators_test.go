@@ -61,16 +61,22 @@ func TestPostValidators(t *testing.T) {
 	numValidatorsToRegister := 3
 	validatorDetails := make([]stakewise.ValidatorRegistrationDetails, numValidatorsToRegister)
 	for i := 0; i < numValidatorsToRegister; i++ {
+		pubkey := make([]byte, 48)
+		pubkey[0] = byte(i + 1) // Ensure uniqueness
+
+		signature := make([]byte, 96)
+		signature[0] = byte(i + 1) // Optional uniqueness
+
 		validatorDetails[i] = stakewise.ValidatorRegistrationDetails{
 			DepositData: beacon.ExtendedDepositData{
-				PublicKey: make([]byte, 48),
-				Signature: make([]byte, 96),
+				PublicKey: pubkey,
+				Signature: signature,
 			},
 			ExitMessage: fmt.Sprintf("exit_%d", i),
 		}
 	}
 
-	// Submit the request (TODO)
+	// Submit the request
 	beaconDepositRoot := common.Hash{}
 	signature, err := runPostValidatorsRequest(t, session, validatorDetails, beaconDepositRoot)
 	require.NoError(t, err)
@@ -83,6 +89,12 @@ func TestPostValidators(t *testing.T) {
 
 	// Verify
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators
+	fetchedValidators := runGetValidatorsRequest(t, session)
+	require.Len(t, fetchedValidators.Validators, numValidatorsToRegister)
+	for i, validator := range fetchedValidators.Validators {
+		require.Equal(t, validator.Pubkey, beacon.ValidatorPubkey(validatorDetails[i].DepositData.PublicKey))
+		require.Equal(t, validator.ExitMessageUploaded, true)
+	}
 
 	t.Logf("Successfully registered %d validators. New active count: %d",
 		numValidatorsToRegister, metaAfter.Active)
@@ -106,4 +118,16 @@ func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetail
 	t.Logf("Ran POST /validators request with %d validators", len(validatorDetails))
 
 	return response.Signature, err
+}
+
+func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.ValidatorsData {
+	// Create the client
+	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
+	client.SetSessionToken(session.Token)
+
+	// Run the request
+	data, err := client.StakeWise.Validators_Get(context.Background(), logger, test.Network, test.StakeWiseVaultAddress)
+	require.NoError(t, err)
+	t.Logf("Ran GET /validators request")
+	return data
 }

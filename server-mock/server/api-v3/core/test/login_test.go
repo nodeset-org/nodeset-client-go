@@ -1,4 +1,4 @@
-package v2server_core_test
+package v3server_core_test
 
 import (
 	"context"

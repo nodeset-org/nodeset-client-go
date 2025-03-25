@@ -69,15 +69,3 @@ func runGetValidatorsMetaRequest(t *testing.T, session *db.Session) stakewise.Va
 	t.Logf("Ran request")
 	return data
 }
-
-// Run a PATCH api/validators request
-// func runUploadSignedExitsRequest(t *testing.T, session *db.Session, signedExits []common.EncryptedExitData) {
-// 	// Create the client
-// 	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
-// 	client.SetSessionToken(session.Token)
-
-// 	// Run the request
-// 	err := client.StakeWise.Validators_Patch(context.Background(), logger, test.Network, test.StakeWiseVaultAddress, signedExits)
-// 	require.NoError(t, err)
-// 	t.Logf("Ran request")
-// }
