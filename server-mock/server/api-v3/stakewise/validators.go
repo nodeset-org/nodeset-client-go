@@ -59,16 +59,26 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	numToRegister := len(body.Validators)
+	// Filter out validators with empty public keys
+	validValidators := make([]v3stakewise.ValidatorRegistrationDetails, 0, len(body.Validators))
+	for _, v := range body.Validators {
+		if len(v.DepositData.PublicKey) == 48 {
+			validValidators = append(validValidators, v)
+		}
+	}
+
+	numToRegister := len(validValidators)
 	available := int(deployment.MaxValidators) - int(deployment.ActiveValidators)
 	if numToRegister > available {
-		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("not enough available slots: requested %d, available %d", numToRegister, available))
+		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf(
+			"not enough available slots: requested %d, available %d",
+			numToRegister, available))
 		return
 	}
 	deployment.ActiveValidators += uint(numToRegister)
 
 	// Must add validator to struct + exit message
-	for _, validator := range body.Validators {
+	for _, validator := range validValidators {
 		pubkey := beacon.ValidatorPubkey(validator.DepositData.PublicKey)
 
 		// Add the validator if not already present
@@ -125,7 +135,6 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		{Type: mustType(abi.NewType("bytes32", "", nil))},
 		{Type: mustType(abi.NewType("bytes32", "", nil))},
 	}.Pack(
-		_registerValidatorsTypeHash,
 		body.BeaconDepositRoot, // assumes this is the validators registry root?
 		validatorsHash,
 	)
@@ -133,7 +142,8 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("failed to encode struct: %w", err))
 		return
 	}
-	hashStruct := crypto.Keccak256Hash(structEncoded)
+	dataToHash := append(_registerValidatorsTypeHash.Bytes(), structEncoded...)
+	hashStruct := crypto.Keccak256Hash(dataToHash)
 
 	// 4. EIP-712 final digest
 	finalDigestBytes := append([]byte("\x19\x01"), domainSeparator.Bytes()...)

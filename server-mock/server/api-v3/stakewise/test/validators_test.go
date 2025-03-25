@@ -62,7 +62,10 @@ func TestPostValidators(t *testing.T) {
 	validatorDetails := make([]stakewise.ValidatorRegistrationDetails, numValidatorsToRegister)
 	for i := 0; i < numValidatorsToRegister; i++ {
 		validatorDetails[i] = stakewise.ValidatorRegistrationDetails{
-			DepositData: beacon.ExtendedDepositData{},
+			DepositData: beacon.ExtendedDepositData{
+				PublicKey: make([]byte, 48),
+				Signature: make([]byte, 96),
+			},
 			ExitMessage: fmt.Sprintf("exit_%d", i),
 		}
 	}
@@ -91,7 +94,14 @@ func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetail
 	client.SetSessionToken(session.Token)
 
 	// Run the request
-	response, err := client.StakeWise.Validators_Post(context.Background(), logger, test.Network, test.StakeWiseVaultAddress, validatorDetails, beaconDepositRoot)
+	response, err := client.StakeWise.Validators_Post(
+		context.Background(),
+		logger,
+		test.Network,
+		test.StakeWiseVaultAddress,
+		validatorDetails,
+		beaconDepositRoot,
+	)
 	require.NoError(t, err)
 	t.Logf("Ran POST /validators request with %d validators", len(validatorDetails))
 
