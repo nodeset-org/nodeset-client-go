@@ -73,9 +73,9 @@ func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 			// Invalid deployment
 			return ValidatorsData{}, common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return ValidatorsData{}, stakewise.ErrInvalidVault
+			return ValidatorsData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusForbidden:
@@ -122,9 +122,9 @@ func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.L
 			// Invalid deployment
 			return common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.ErrInvalidVault
+			return common.ErrInvalidVault
 		}
 
 	case http.StatusForbidden:

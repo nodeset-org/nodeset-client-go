@@ -10,7 +10,6 @@ import (
 	v2constellation "github.com/nodeset-org/nodeset-client-go/api-v2/constellation"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/core"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/rocket-pool/node-manager-core/log"
 )
 
@@ -78,7 +77,7 @@ func HandleInvalidDeployment(w http.ResponseWriter, logger *slog.Logger, deploym
 // Handles an invalid StakeWise vault
 func HandleInvalidVault(w http.ResponseWriter, logger *slog.Logger, deployment string, vault ethcommon.Address) {
 	msg := fmt.Sprintf("vault with address [%s] on deployment [%s] not found", vault.Hex(), deployment)
-	bytes := formatError(msg, stakewise.InvalidVaultKey)
+	bytes := formatError(msg, common.InvalidVaultKey)
 	writeResponse(w, logger, http.StatusBadRequest, bytes)
 }
 

@@ -150,9 +150,9 @@ func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 			// Invalid deployment
 			return ValidatorsData{}, common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return ValidatorsData{}, stakewise.ErrInvalidVault
+			return ValidatorsData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusUnauthorized:

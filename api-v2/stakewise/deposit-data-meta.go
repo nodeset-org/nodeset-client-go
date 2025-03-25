@@ -31,9 +31,9 @@ func (c *V2StakeWiseClient) DepositDataMeta(ctx context.Context, logger *slog.Lo
 			// Invalid deployment
 			return stakewise.DepositDataMetaData{}, common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.DepositDataMetaData{}, stakewise.ErrInvalidVault
+			return stakewise.DepositDataMetaData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusForbidden:

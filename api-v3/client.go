@@ -32,7 +32,7 @@ type NodeSetClient struct {
 // Creates a new NodeSet client
 // baseUrl: The base URL to use for the client, for example [https://nodeset.io/api]
 func NewNodeSetClient(baseUrl string, timeout time.Duration) *NodeSetClient {
-	expandedUrl, _ := url.JoinPath(baseUrl, ApiVersion) // becomes [https://nodeset.io/api/v2]
+	expandedUrl, _ := url.JoinPath(baseUrl, ApiVersion) // becomes [https://nodeset.io/api/v3]
 	commonClient := common.NewCommonNodeSetClient(expandedUrl, timeout)
 	return &NodeSetClient{
 		CommonNodeSetClient: commonClient,

@@ -67,9 +67,9 @@ func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, logger *slog.Lo
 			// Invalid deployment
 			return stakewise.DepositDataData{}, common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.DepositDataData{}, stakewise.ErrInvalidVault
+			return stakewise.DepositDataData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusForbidden:
@@ -112,9 +112,9 @@ func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, logger *slog.L
 			// Invalid deployment
 			return common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.ErrInvalidVault
+			return common.ErrInvalidVault
 
 		case common.MalformedInputKey:
 			// Malformed input
