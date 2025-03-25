@@ -77,3 +77,28 @@ func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger
 	}
 	return code, &response, nil
 }
+
+func SubmitValidators_Get[T any](
+	c *common.CommonNodeSetClient,
+	ctx context.Context,
+	logger *slog.Logger,
+	params map[string]string,
+	validatorsPath string,
+) (int, *common.NodeSetResponse[T], error) {
+	// Send the request
+	code, response, err := common.SubmitRequest[T](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
+	if err != nil {
+		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
+	}
+
+	// Handle common errors
+	switch code {
+	case http.StatusUnauthorized:
+		switch response.Error {
+		case common.InvalidSessionKey:
+			return code, nil, common.ErrInvalidSession
+		}
+	}
+
+	return code, &response, nil
+}

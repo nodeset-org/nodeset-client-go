@@ -131,7 +131,7 @@ func (c *NodeSetClient) Validators_Get(ctx context.Context, logger *slog.Logger,
 	}
 
 	// Send the request
-	code, response, err := V0SubmitValidators_Get(c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
+	code, response, err := stakewise.SubmitValidators_Get[ValidatorsData](c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
 	if err != nil {
 		return ValidatorsData{}, err
 	}
@@ -180,24 +180,4 @@ func (c *NodeSetClient) Validators_Patch(ctx context.Context, logger *slog.Logge
 		}
 	}
 	return fmt.Errorf("nodeset server responded to validators-patch request with code %d: [%s]", code, response.Message)
-}
-
-// Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func V0SubmitValidators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
-	// Send the request
-	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
-	if err != nil {
-		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
-	}
-
-	// Handle common errors
-	switch code {
-	case http.StatusUnauthorized:
-		switch response.Error {
-		case common.InvalidSessionKey:
-			// Invalid or expired session
-			return code, nil, common.ErrInvalidSession
-		}
-	}
-	return code, &response, nil
 }

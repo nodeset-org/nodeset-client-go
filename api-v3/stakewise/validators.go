@@ -134,7 +134,7 @@ func (c *V3StakeWiseClient) Validators_Post(
 func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (ValidatorsData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := V3SubmitValidators_Get(c.commonClient, ctx, logger, nil, path)
+	code, response, err := stakewise.SubmitValidators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, path)
 	if err != nil {
 		return ValidatorsData{}, err
 	}
@@ -170,24 +170,4 @@ func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Log
 		}
 	}
 	return ValidatorsData{}, fmt.Errorf("nodeset server responded to validators-get request with code %d: [%s]", code, response.Message)
-}
-
-// Get a list of all of the pubkeys that have already been registered with NodeSet for this node
-func V3SubmitValidators_Get(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[ValidatorsData], error) {
-	// Send the request
-	code, response, err := common.SubmitRequest[ValidatorsData](c, ctx, logger, true, http.MethodGet, nil, params, validatorsPath)
-	if err != nil {
-		return code, nil, fmt.Errorf("error getting registered validators: %w", err)
-	}
-
-	// Handle common errors
-	switch code {
-	case http.StatusUnauthorized:
-		switch response.Error {
-		case common.InvalidSessionKey:
-			// Invalid or expired session
-			return code, nil, common.ErrInvalidSession
-		}
-	}
-	return code, &response, nil
 }
