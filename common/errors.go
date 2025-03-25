@@ -1,4 +1,4 @@
-package v3constellation
+package common
 
 import "errors"
 

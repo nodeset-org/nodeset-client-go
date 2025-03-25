@@ -98,9 +98,9 @@ func (c *V3ConstellationClient) Whitelist_Post(ctx context.Context, logger *slog
 			// Invalid deployment
 			return Whitelist_PostData{}, common.ErrInvalidDeployment
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return Whitelist_PostData{}, ErrIncorrectNodeAddress
+			return Whitelist_PostData{}, common.ErrIncorrectNodeAddress
 		}
 
 	case http.StatusUnauthorized:

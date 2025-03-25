@@ -86,13 +86,13 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, logger *slog
 			// Invalid deployment
 			return ValidatorsData{}, common.ErrInvalidDeployment
 
-		case MissingWhitelistedNodeAddressKey:
+		case common.MissingWhitelistedNodeAddressKey:
 			// Node address not whitelisted for deployment
-			return ValidatorsData{}, ErrMissingWhitelistedNodeAddress
+			return ValidatorsData{}, common.ErrMissingWhitelistedNodeAddress
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return ValidatorsData{}, ErrIncorrectNodeAddress
+			return ValidatorsData{}, common.ErrIncorrectNodeAddress
 		}
 
 	case http.StatusUnauthorized:
@@ -162,13 +162,13 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, logger *sl
 			// Invalid exit message
 			return common.ErrInvalidExitMessage
 
-		case MissingWhitelistedNodeAddressKey:
+		case common.MissingWhitelistedNodeAddressKey:
 			// Node address not whitelisted for deployment
-			return ErrMissingWhitelistedNodeAddress
+			return common.ErrMissingWhitelistedNodeAddress
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return ErrIncorrectNodeAddress
+			return common.ErrIncorrectNodeAddress
 
 		case ExitMessageExistsKey:
 			// Exit message already exists for the pubkey being submitted
