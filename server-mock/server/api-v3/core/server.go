@@ -1,4 +1,4 @@
-package v2server_core
+package v3server_core
 
 import (
 	"log/slog"

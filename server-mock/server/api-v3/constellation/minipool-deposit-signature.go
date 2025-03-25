@@ -12,7 +12,7 @@ import (
 	"github.com/rocket-pool/node-manager-core/utils"
 )
 
-// POST api/v2/modules/constellation/{deployment}/minipool/deposit-signature
+// POST api/v3/modules/constellation/{deployment}/minipool/deposit-signature
 func (s *V3ConstellationServer) minipoolDepositSignature(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		common.HandleInvalidMethod(w, s.logger)

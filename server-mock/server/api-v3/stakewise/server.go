@@ -4,19 +4,19 @@ import (
 	"log/slog"
 
 	"github.com/gorilla/mux"
-	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
+	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 
 	"github.com/nodeset-org/nodeset-client-go/server-mock/manager"
 )
 
-// API v2 server mock for stakewise module routes
+// API v3 server mock for stakewise module routes
 type V3StakeWiseServer struct {
 	logger  *slog.Logger
 	manager *manager.NodeSetMockManager
 }
 
-// Creates a new API v2 stakewise server mock
+// Creates a new API v3 stakewise server mock
 func NewV3StakeWiseServer(logger *slog.Logger, manager *manager.NodeSetMockManager) *V3StakeWiseServer {
 	return &V3StakeWiseServer{
 		logger:  logger,
