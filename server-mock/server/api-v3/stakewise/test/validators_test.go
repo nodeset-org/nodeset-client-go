@@ -2,9 +2,10 @@ package v3server_stakewise_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
+
+	"filippo.io/age"
 
 	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
 	stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
@@ -68,6 +69,10 @@ func TestPostValidators(t *testing.T) {
 
 	// Generate validator details
 	validatorDetails := make([]stakewise.ValidatorRegistrationDetails, numValidatorsToRegister)
+	id, err := age.GenerateX25519Identity()
+	require.NoError(t, err)
+	db.SetSecretEncryptionIdentity(id)
+
 	for i := 0; i < numValidatorsToRegister; i++ {
 		pubkey := make([]byte, 48)
 		pubkey[0] = byte(i + 1) // Ensure uniqueness
@@ -80,8 +85,10 @@ func TestPostValidators(t *testing.T) {
 				Epoch:          fmt.Sprintf("epoch_%d", i),
 				ValidatorIndex: fmt.Sprintf("validator_index_%d", i),
 			},
+			Signature: fmt.Sprintf("signature_%d", i),
 		}
-		exitMessageBytes, err := json.Marshal(exitMessage)
+		recipientPubkey := id.Recipient().String()
+		encryptedMsg, err := common.EncryptSignedExitMessage(exitMessage, recipientPubkey)
 		require.NoError(t, err)
 
 		validatorDetails[i] = stakewise.ValidatorRegistrationDetails{
@@ -89,7 +96,7 @@ func TestPostValidators(t *testing.T) {
 				PublicKey: pubkey,
 				Signature: signature,
 			},
-			ExitMessage: string(exitMessageBytes),
+			ExitMessage: encryptedMsg,
 		}
 	}
 

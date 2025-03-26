@@ -20,6 +20,7 @@ func (s *V3StakeWiseServer) handleDeployments(w http.ResponseWriter, r *http.Req
 func (s *V3StakeWiseServer) getDeployments(w http.ResponseWriter, r *http.Request) {
 	// Get the database
 	db := s.manager.GetDatabase()
+	servermockcommon.ProcessAuthHeader(s, w, r)
 
 	// Collect deployments
 	deployments := []common.Deployment{}

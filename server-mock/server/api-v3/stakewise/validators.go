@@ -1,13 +1,17 @@
 package v3server_stakewise
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 
+	"filippo.io/age"
 	"github.com/goccy/go-json"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/rocket-pool/node-manager-core/beacon"
+	nsutils "github.com/rocket-pool/node-manager-core/utils"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -84,8 +88,27 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 
 		// Add the validator if not already present
 		vault.AddStakeWiseDepositData(node, validator.DepositData)
+
+		decodedHex, err := nsutils.DecodeHex(validator.ExitMessage)
+		if err != nil {
+			servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("error decoding exit message hex: %w", err))
+			return
+		}
+		encReader := bytes.NewReader(decodedHex)
+		decReader, err := age.Decrypt(encReader, vault.Db.SecretEncryptionIdentity)
+		if err != nil {
+			servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("error decrypting exit message: %w", err))
+			return
+		}
+		buffer := &bytes.Buffer{}
+		_, err = io.Copy(buffer, decReader)
+		if err != nil {
+			servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("error reading decrypted exit message: %w", err))
+			return
+		}
+
 		var exitMessage common.ExitMessage
-		err := json.Unmarshal([]byte(validator.ExitMessage), &exitMessage)
+		err = json.Unmarshal(buffer.Bytes(), &exitMessage)
 		if err != nil {
 			servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("error parsing decrypted exit message: %w", err))
 			return
