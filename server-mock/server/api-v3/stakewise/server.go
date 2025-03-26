@@ -36,6 +36,9 @@ func (s *V3StakeWiseServer) GetManager() *manager.NodeSetMockManager {
 }
 
 func (s *V3StakeWiseServer) RegisterRoutes(versionRouter *mux.Router) {
+	// Deployment list endpoint
+	versionRouter.HandleFunc("/"+v3stakewise.StakeWisePrefix+"deployments", s.handleDeployments).Methods(http.MethodGet)
+
 	basePath := "/" + v3stakewise.StakeWisePrefix + "{deployment}/"
 	vaultPath := basePath + "{vault}/"
 
