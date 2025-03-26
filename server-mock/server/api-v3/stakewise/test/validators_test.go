@@ -2,14 +2,16 @@ package v3server_stakewise_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
 	apiv3 "github.com/nodeset-org/nodeset-client-go/api-v3"
 	stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/rocket-pool/node-manager-core/beacon"
 
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	v3core "github.com/nodeset-org/nodeset-client-go/api-v3/core"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
@@ -73,17 +75,26 @@ func TestPostValidators(t *testing.T) {
 		signature := make([]byte, 96)
 		signature[0] = byte(i + 1) // Optional uniqueness
 
+		exitMessage := common.ExitMessage{
+			Message: common.ExitMessageDetails{
+				Epoch:          fmt.Sprintf("epoch_%d", i),
+				ValidatorIndex: fmt.Sprintf("validator_index_%d", i),
+			},
+		}
+		exitMessageBytes, err := json.Marshal(exitMessage)
+		require.NoError(t, err)
+
 		validatorDetails[i] = stakewise.ValidatorRegistrationDetails{
 			DepositData: beacon.ExtendedDepositData{
 				PublicKey: pubkey,
 				Signature: signature,
 			},
-			ExitMessage: fmt.Sprintf("exit_%d", i),
+			ExitMessage: string(exitMessageBytes),
 		}
 	}
 
 	// Submit the request
-	beaconDepositRoot := common.Hash{}
+	beaconDepositRoot := ethcommon.Hash{}
 	signature, err := runPostValidatorsRequest(t, session, validatorDetails, beaconDepositRoot)
 	require.NoError(t, err)
 	require.NotEmpty(t, signature, "Expected a valid signature from the backend")
@@ -109,7 +120,7 @@ func TestPostValidators(t *testing.T) {
 		numValidatorsToRegister, metaAfter.Active)
 }
 
-func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetails []stakewise.ValidatorRegistrationDetails, beaconDepositRoot common.Hash) (string, error) {
+func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetails []stakewise.ValidatorRegistrationDetails, beaconDepositRoot ethcommon.Hash) (string, error) {
 	// Create the client
 	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)

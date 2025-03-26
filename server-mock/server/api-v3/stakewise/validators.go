@@ -6,14 +6,13 @@ import (
 
 	"github.com/goccy/go-json"
 
-	"github.com/nodeset-org/nodeset-client-go/common"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/rocket-pool/node-manager-core/beacon"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
+	"github.com/nodeset-org/nodeset-client-go/common"
 	servermockcommon "github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -85,14 +84,16 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 
 		// Add the validator if not already present
 		vault.AddStakeWiseDepositData(node, validator.DepositData)
-
+		var exitMessage common.ExitMessage
+		err := json.Unmarshal([]byte(validator.ExitMessage), &exitMessage)
+		if err != nil {
+			servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("error parsing decrypted exit message: %w", err))
+			return
+		}
 		// Get validator reference
 		nodeValidators := vault.GetStakeWiseValidatorsForNode(node)
 		if vInfo, exists := nodeValidators[pubkey]; exists {
-			vInfo.SetExitMessage(common.ExitMessage{
-				Message:   common.ExitMessageDetails{},
-				Signature: string(validator.DepositData.Signature),
-			})
+			vInfo.SetExitMessage(exitMessage)
 			vInfo.MarkActive()
 		}
 	}
