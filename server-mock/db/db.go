@@ -13,7 +13,7 @@ type Database struct {
 	StakeWise     *Database_StakeWise
 
 	// Age identity for the secret key used to encrypt the exit data
-	SecretEncryptionIdentity *age.X25519Identity
+	secretEncryptionIdentity *age.X25519Identity
 
 	// Logger
 	logger *slog.Logger
@@ -38,16 +38,16 @@ func (d *Database) Clone() *Database {
 	dbClone.Core = d.Core.clone(dbClone)
 	dbClone.Constellation = d.Constellation.clone(dbClone)
 	dbClone.StakeWise = d.StakeWise.clone(dbClone)
-	dbClone.SecretEncryptionIdentity = d.SecretEncryptionIdentity
+	dbClone.secretEncryptionIdentity = d.secretEncryptionIdentity
 	return dbClone
 }
 
 // Get the secret encryption identity
 func (d *Database) GetSecretEncryptionIdentity() *age.X25519Identity {
-	return d.SecretEncryptionIdentity
+	return d.secretEncryptionIdentity
 }
 
 // Set the secret encryption identity
 func (d *Database) SetSecretEncryptionIdentity(identity *age.X25519Identity) {
-	d.SecretEncryptionIdentity = identity
+	d.secretEncryptionIdentity = identity
 }

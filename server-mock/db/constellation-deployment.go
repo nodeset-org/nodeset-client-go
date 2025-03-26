@@ -313,7 +313,7 @@ func (d *ConstellationDeployment) HandleEncryptedSignedExitUpload(node *Node, da
 		}
 
 		// Decrypt the exit data
-		if d.db.SecretEncryptionIdentity == nil {
+		if d.db.secretEncryptionIdentity == nil {
 			return fmt.Errorf("secret encryption identity not set yet")
 		}
 		decodedHex, err := nsutils.DecodeHex(signedExit.ExitMessage)
@@ -321,7 +321,7 @@ func (d *ConstellationDeployment) HandleEncryptedSignedExitUpload(node *Node, da
 			return fmt.Errorf("error decoding exit message hex: %w", err)
 		}
 		encReader := bytes.NewReader(decodedHex)
-		decReader, err := age.Decrypt(encReader, d.db.SecretEncryptionIdentity)
+		decReader, err := age.Decrypt(encReader, d.db.secretEncryptionIdentity)
 		if err != nil {
 			return fmt.Errorf("error decrypting exit message: %w", err)
 		}
