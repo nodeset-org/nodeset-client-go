@@ -45,12 +45,18 @@ func TestPostValidators(t *testing.T) {
 	err = node.Register(regSig, v3core.NodeAddressMessageFormat)
 	require.NoError(t, err)
 
+	numValidatorsToRegister := 3
+
 	// Create a session
 	session := db.Core.CreateSession()
 	loginSig, err := auth.GetSignatureForLogin(session.Nonce, node0Pubkey, node0Key)
 	require.NoError(t, err)
 	err = db.Core.Login(node0Pubkey, session.Nonce, loginSig)
 	require.NoError(t, err)
+
+	// Get the initial validator list and check that it's empty
+	fetchedValidatorsBefore := runGetValidatorsRequest(t, session)
+	require.Len(t, fetchedValidatorsBefore.Validators, 0)
 
 	// Get the initial validator limits
 	metaBefore := runGetValidatorsMetaRequest(t, session)
@@ -59,7 +65,6 @@ func TestPostValidators(t *testing.T) {
 	require.Equal(t, metaBefore.Available, uint(10))
 
 	// Generate validator details
-	numValidatorsToRegister := 3
 	validatorDetails := make([]stakewise.ValidatorRegistrationDetails, numValidatorsToRegister)
 	for i := 0; i < numValidatorsToRegister; i++ {
 		pubkey := make([]byte, 48)
@@ -91,9 +96,11 @@ func TestPostValidators(t *testing.T) {
 
 	// Verify
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators
-	fetchedValidators := runGetValidatorsRequest(t, session)
-	require.Len(t, fetchedValidators.Validators, numValidatorsToRegister)
-	for i, validator := range fetchedValidators.Validators {
+	fetchedValidatorsAfter := runGetValidatorsRequest(t, session)
+
+	// length check to ensure all validators were registered
+	require.Len(t, fetchedValidatorsAfter.Validators, numValidatorsToRegister)
+	for i, validator := range fetchedValidatorsAfter.Validators {
 		require.Equal(t, validator.Pubkey, beacon.ValidatorPubkey([48]byte(validatorDetails[i].DepositData.PublicKey)))
 		require.Equal(t, validator.ExitMessageUploaded, true)
 	}

@@ -137,7 +137,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		{Type: mustType(abi.NewType("bytes32", "", nil))},
 		{Type: mustType(abi.NewType("bytes32", "", nil))},
 	}.Pack(
-		body.BeaconDepositRoot, // assumes this is the validators registry root?
+		body.BeaconDepositRoot,
 		validatorsHash,
 	)
 	if err != nil {
