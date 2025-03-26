@@ -2,6 +2,7 @@ package v3server_stakewise
 
 import (
 	"log/slog"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
@@ -34,13 +35,14 @@ func (s *V3StakeWiseServer) GetManager() *manager.NodeSetMockManager {
 	return s.manager
 }
 
-// Registers the routes for the server
 func (s *V3StakeWiseServer) RegisterRoutes(versionRouter *mux.Router) {
-	stakeWisePrefix := "/" + v3stakewise.StakeWisePrefix + "{deployment}/{vault}/"
+	basePath := "/" + v3stakewise.StakeWisePrefix + "{deployment}/"
+	vaultPath := basePath + "{vault}/"
 
 	// Validators Endpoints
-	versionRouter.HandleFunc(stakeWisePrefix+stakewise.ValidatorsMetaPath, s.handleValidatorsMeta)
-	versionRouter.HandleFunc(stakeWisePrefix+stakewise.ValidatorsPath, s.handleValidators)
-	// versionRouter.HandleFunc(stakeWisePrefix+stakewise.ValidatorsPath, s.handlePostValidators)
+	versionRouter.HandleFunc(vaultPath+stakewise.ValidatorsMetaPath, s.handleValidatorsMeta)
+	versionRouter.HandleFunc(vaultPath+stakewise.ValidatorsPath, s.handleValidators)
 
+	// Vaults Endpoint
+	versionRouter.HandleFunc(basePath+v3stakewise.VaultsPath, s.handleVaults).Methods(http.MethodGet)
 }
