@@ -131,7 +131,7 @@ func (c *NodeSetClient) Validators_Get(ctx context.Context, logger *slog.Logger,
 	}
 
 	// Send the request
-	code, response, err := stakewise.SubmitValidators_Get[ValidatorsData](c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
+	code, response, err := stakewise.Validators_Get[ValidatorsData](c.CommonNodeSetClient, ctx, logger, queryParams, stakewise.ValidatorsPath)
 	if err != nil {
 		return ValidatorsData{}, err
 	}

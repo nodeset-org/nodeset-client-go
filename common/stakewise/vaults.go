@@ -1,6 +1,6 @@
 package stakewise
 
-type VaultsMetaData struct {
+type ValidatorsMetaData struct {
 	// validators that the user has for this vault that are active on the Beacon Chain (e.g., pending and active, *not* exited or slashed).
 	Active uint `json:"active"`
 

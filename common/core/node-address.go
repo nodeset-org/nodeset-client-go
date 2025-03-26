@@ -3,11 +3,12 @@ package core
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"

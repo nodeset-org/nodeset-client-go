@@ -3,11 +3,12 @@ package v2constellation
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/big"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"

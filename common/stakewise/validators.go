@@ -78,7 +78,7 @@ func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger
 	return code, &response, nil
 }
 
-func SubmitValidators_Get[T any](
+func Validators_Get[T any](
 	c *common.CommonNodeSetClient,
 	ctx context.Context,
 	logger *slog.Logger,

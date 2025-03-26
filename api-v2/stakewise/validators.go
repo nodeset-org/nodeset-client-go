@@ -57,7 +57,7 @@ type ValidatorsData struct {
 func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (ValidatorsData, error) {
 	// Send the request
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.SubmitValidators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, path)
+	code, response, err := stakewise.Validators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, path)
 	if err != nil {
 		return ValidatorsData{}, err
 	}

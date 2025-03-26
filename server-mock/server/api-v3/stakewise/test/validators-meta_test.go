@@ -58,7 +58,7 @@ func TestGetValidatorsMeta(t *testing.T) {
 }
 
 // Run a GET api/validators/meta request
-func runGetValidatorsMetaRequest(t *testing.T, session *db.Session) stakewise.VaultsMetaData {
+func runGetValidatorsMetaRequest(t *testing.T, session *db.Session) stakewise.ValidatorsMetaData {
 	// Create the client
 	client := apiv3.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)

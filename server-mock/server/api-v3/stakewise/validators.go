@@ -1,9 +1,10 @@
 package v3server_stakewise
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	"github.com/nodeset-org/nodeset-client-go/common"
 

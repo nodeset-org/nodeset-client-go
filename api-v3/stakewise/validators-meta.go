@@ -61,11 +61,11 @@ func (c *V3StakeWiseClient) Vaults(ctx context.Context, logger *slog.Logger, dep
 }
 
 // Returns information about the requesting user's node account with respect to the number of validators the user has deployed and can deploy on this vault.
-func (c *V3StakeWiseClient) ValidatorMeta_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.VaultsMetaData, error) {
+func (c *V3StakeWiseClient) ValidatorMeta_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.ValidatorsMetaData, error) {
 	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath + "/" + MetaPath
-	code, response, err := common.SubmitRequest[stakewise.VaultsMetaData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
+	code, response, err := common.SubmitRequest[stakewise.ValidatorsMetaData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
 	if err != nil {
-		return stakewise.VaultsMetaData{}, fmt.Errorf("error submitting vaults request: %w", err)
+		return stakewise.ValidatorsMetaData{}, fmt.Errorf("error submitting vaults request: %w", err)
 	}
 
 	// Handle response based on return code
@@ -78,26 +78,26 @@ func (c *V3StakeWiseClient) ValidatorMeta_Get(ctx context.Context, logger *slog.
 		switch response.Error {
 		case common.InvalidDeploymentKey:
 			// Invalid deployment
-			return stakewise.VaultsMetaData{}, common.ErrInvalidDeployment
+			return stakewise.ValidatorsMetaData{}, common.ErrInvalidDeployment
 		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.VaultsMetaData{}, common.ErrInvalidVault
+			return stakewise.ValidatorsMetaData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusUnauthorized:
 		switch response.Error {
 		case common.InvalidSessionKey:
 			// Invalid or expired session
-			return stakewise.VaultsMetaData{}, common.ErrInvalidSession
+			return stakewise.ValidatorsMetaData{}, common.ErrInvalidSession
 		}
 
 	case http.StatusForbidden:
 		switch response.Error {
 		case common.InvalidPermissionsKey:
 			// The user doesn't have permission to do this
-			return stakewise.VaultsMetaData{}, common.ErrInvalidPermissions
+			return stakewise.ValidatorsMetaData{}, common.ErrInvalidPermissions
 		}
 	}
 
-	return stakewise.VaultsMetaData{}, fmt.Errorf("nodeset server responded to vaults validator meta request with code %d: [%s]", code, response.Message)
+	return stakewise.ValidatorsMetaData{}, fmt.Errorf("nodeset server responded to vaults validator meta request with code %d: [%s]", code, response.Message)
 }
