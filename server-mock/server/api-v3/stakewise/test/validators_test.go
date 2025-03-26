@@ -109,11 +109,16 @@ func TestPostValidators(t *testing.T) {
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators
 	fetchedValidatorsAfter := runGetValidatorsRequest(t, session)
 
+	expectedPubkeys := make(map[string]bool)
+	for _, detail := range validatorDetails {
+		expectedPubkeys[beacon.ValidatorPubkey([48]byte(detail.DepositData.PublicKey)).Hex()] = true
+	}
+
 	// length check to ensure all validators were registered
 	require.Len(t, fetchedValidatorsAfter.Validators, numValidatorsToRegister)
-	for i, validator := range fetchedValidatorsAfter.Validators {
-		require.Equal(t, validator.Pubkey, beacon.ValidatorPubkey([48]byte(validatorDetails[i].DepositData.PublicKey)))
-		require.Equal(t, validator.ExitMessageUploaded, true)
+	for _, validator := range fetchedValidatorsAfter.Validators {
+		require.True(t, expectedPubkeys[validator.Pubkey.Hex()])
+		require.True(t, validator.ExitMessageUploaded)
 	}
 
 	t.Logf("Successfully registered %d validators. New active count: %d",
