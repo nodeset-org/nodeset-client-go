@@ -54,8 +54,9 @@ func TestPostValidators(t *testing.T) {
 
 	// Get the initial validator limits
 	metaBefore := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, uint(0), metaBefore.Active)     // No validators yet
-	require.Equal(t, uint(metaBefore.Max), uint(10)) // Max set to 10
+	require.Equal(t, metaBefore.Active, uint(0)) // No validators yet
+	require.Equal(t, metaBefore.Max, uint(10))   // Max set to 10
+	require.Equal(t, metaBefore.Available, uint(10))
 
 	// Generate validator details
 	numValidatorsToRegister := 3
@@ -85,7 +86,8 @@ func TestPostValidators(t *testing.T) {
 	// Verify the new validator count
 	metaAfter := runGetValidatorsMetaRequest(t, session)
 	require.Equal(t, metaAfter.Active, uint(numValidatorsToRegister))
-	require.Equal(t, metaAfter.Max, uint(10)) // Should stay the same
+	require.Equal(t, metaAfter.Max, uint(10))      // Should stay the same
+	require.Equal(t, metaAfter.Available, uint(7)) // 10 - 3
 
 	// Verify
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators

@@ -68,7 +68,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	}
 
 	numToRegister := len(validValidators)
-	available := int(deployment.MaxValidators) - int(deployment.ActiveValidators)
+	available := int(deployment.AvailableValidators)
 	if numToRegister > available {
 		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf(
 			"not enough available slots: requested %d, available %d",
@@ -76,6 +76,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	deployment.ActiveValidators += uint(numToRegister)
+	deployment.AvailableValidators -= uint(numToRegister)
 
 	// Must add validator to struct + exit message
 	for _, validator := range validValidators {

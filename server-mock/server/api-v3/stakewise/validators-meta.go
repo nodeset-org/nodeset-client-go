@@ -55,8 +55,9 @@ func (s *V3StakeWiseServer) getValidatorsMeta(w http.ResponseWriter, r *http.Req
 	}
 
 	data := stakewise.VaultsMetaData{
-		Active: deployment.ActiveValidators,
-		Max:    deployment.MaxValidators,
+		Active:    deployment.ActiveValidators,
+		Max:       deployment.MaxValidators,
+		Available: deployment.AvailableValidators,
 	}
 	common.HandleSuccess(w, s.logger, data)
 }
