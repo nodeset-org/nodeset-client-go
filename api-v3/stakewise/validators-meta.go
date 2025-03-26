@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -24,8 +25,8 @@ type VaultsData struct {
 // Gets the list of vaults available on the server for the provided deployment
 func (c *V3StakeWiseClient) Vaults(ctx context.Context, logger *slog.Logger, deployment string) (VaultsData, error) {
 	// Submit the request
-	path := StakeWisePrefix + deployment + "/" + VaultsPath
-	code, response, err := common.SubmitRequest[VaultsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, VaultsPath)
+	code, response, err := common.SubmitRequest[VaultsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, pathString)
 	if err != nil {
 		return VaultsData{}, fmt.Errorf("error submitting vaults request: %w", err)
 	}
@@ -62,8 +63,8 @@ func (c *V3StakeWiseClient) Vaults(ctx context.Context, logger *slog.Logger, dep
 
 // Returns information about the requesting user's node account with respect to the number of validators the user has deployed and can deploy on this vault.
 func (c *V3StakeWiseClient) ValidatorMeta_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.ValidatorsMetaData, error) {
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath + "/" + MetaPath
-	code, response, err := common.SubmitRequest[stakewise.ValidatorsMetaData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), ValidatorsPath, MetaPath)
+	code, response, err := common.SubmitRequest[stakewise.ValidatorsMetaData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, pathString)
 	if err != nil {
 		return stakewise.ValidatorsMetaData{}, fmt.Errorf("error submitting vaults request: %w", err)
 	}

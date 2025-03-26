@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -21,8 +22,8 @@ type VaultsData struct {
 // Gets the list of vaults available on the server for the provided deployment
 func (c *V2StakeWiseClient) Vaults(ctx context.Context, logger *slog.Logger, deployment string) (VaultsData, error) {
 	// Submit the request
-	path := StakeWisePrefix + deployment + "/" + VaultsPath
-	code, response, err := common.SubmitRequest[VaultsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, VaultsPath)
+	code, response, err := common.SubmitRequest[VaultsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, pathString)
 	if err != nil {
 		return VaultsData{}, fmt.Errorf("error submitting vaults request: %w", err)
 	}

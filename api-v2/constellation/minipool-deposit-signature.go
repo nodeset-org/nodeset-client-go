@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"math/big"
 	"net/http"
+	"path"
 
 	"github.com/goccy/go-json"
 
@@ -52,8 +53,8 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 	)
 
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + MinipoolDepositSignaturePath
-	code, response, err := common.SubmitRequest[MinipoolDepositSignatureData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
+	pathString := path.Join(ConstellationPrefix, deployment, MinipoolDepositSignaturePath)
+	code, response, err := common.SubmitRequest[MinipoolDepositSignatureData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, pathString)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
 	}

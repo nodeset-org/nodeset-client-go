@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	"github.com/goccy/go-json"
 
@@ -86,8 +87,8 @@ func (c *V3StakeWiseClient) Validators_Post(
 	if err != nil {
 		return PostValidatorData{}, fmt.Errorf("error marshalling validator post request: %w", err)
 	}
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + ValidatorsPath
-	code, response, err := common.SubmitRequest[PostValidatorData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), ValidatorsPath)
+	code, response, err := common.SubmitRequest[PostValidatorData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, pathString)
 	if err != nil {
 		return PostValidatorData{}, fmt.Errorf("error requesting validator manager signature: %w", err)
 	}
@@ -133,8 +134,8 @@ func (c *V3StakeWiseClient) Validators_Post(
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
 func (c *V3StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (ValidatorsData, error) {
 	// Send the request
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), ValidatorsPath)
+	code, response, err := stakewise.Validators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, pathString)
 	if err != nil {
 		return ValidatorsData{}, err
 	}

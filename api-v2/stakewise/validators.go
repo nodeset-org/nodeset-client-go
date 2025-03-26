@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -56,8 +57,8 @@ type ValidatorsData struct {
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
 func (c *V2StakeWiseClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (ValidatorsData, error) {
 	// Send the request
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), stakewise.ValidatorsPath)
+	code, response, err := stakewise.Validators_Get[ValidatorsData](c.commonClient, ctx, logger, nil, pathString)
 	if err != nil {
 		return ValidatorsData{}, err
 	}
@@ -105,8 +106,8 @@ func (c *V2StakeWiseClient) Validators_Patch(ctx context.Context, logger *slog.L
 	common.SafeDebugLog(logger, "Prepared validators PATCH body",
 		"body", body,
 	)
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.ValidatorsPath
-	code, response, err := stakewise.Validators_Patch(c.commonClient, ctx, logger, body, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), stakewise.ValidatorsPath)
+	code, response, err := stakewise.Validators_Patch(c.commonClient, ctx, logger, body, nil, pathString)
 	if err != nil {
 		return err
 	}
