@@ -25,11 +25,30 @@ var (
 	ErrVaultNotFound error = errors.New("deposit data has withdrawal creds that don't match a StakeWise vault")
 )
 
+type StakeWiseStatus string
+
+const (
+	// DepositData hasn't been uploaded to NodeSet yet
+	StakeWiseStatus_Unknown StakeWiseStatus = "UNKNOWN"
+
+	// DepositData uploaded to NodeSet, but hasn't been made part of a deposit data set yet
+	StakeWiseStatus_Pending StakeWiseStatus = "PENDING"
+
+	// DepositData uploaded to NodeSet, uploaded to StakeWise, but hasn't been activated on Beacon yet
+	StakeWiseStatus_Uploaded StakeWiseStatus = "UPLOADED"
+
+	// DepositData uploaded to NodeSet, uploaded to StakeWise, and the validator is active on Beacon
+	StakeWiseStatus_Registered StakeWiseStatus = "REGISTERED"
+
+	// DepositData uploaded to NodeSet, uploaded to StakeWise, and the validator is exited on Beacon
+	StakeWiseStatus_Removed StakeWiseStatus = "REMOVED"
+)
+
 // Validator status info
 type ValidatorStatus struct {
-	Pubkey              beacon.ValidatorPubkey    `json:"pubkey"`
-	Status              stakewise.StakeWiseStatus `json:"status"`
-	ExitMessageUploaded bool                      `json:"exitMessage"`
+	Pubkey              beacon.ValidatorPubkey `json:"pubkey"`
+	Status              StakeWiseStatus        `json:"status"`
+	ExitMessageUploaded bool                   `json:"exitMessage"`
 }
 
 // Response to a validators request

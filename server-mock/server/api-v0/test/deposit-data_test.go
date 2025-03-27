@@ -85,17 +85,17 @@ func TestUploadDepositData(t *testing.T) {
 	expectedMap := map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{
 		pubkey0: {
 			Pubkey:              pubkey0,
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		pubkey1: {
 			Pubkey:              pubkey1,
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		pubkey2: {
 			Pubkey:              pubkey2,
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}

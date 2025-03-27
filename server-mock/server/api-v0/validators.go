@@ -50,7 +50,7 @@ func (s *V0Server) getValidators(w http.ResponseWriter, r *http.Request) {
 		for _, validator := range validatorsForVault {
 			validatorStatuses = append(validatorStatuses, apiv0.ValidatorStatus{
 				Pubkey:              validator.Pubkey,
-				Status:              validator.GetStatus(),
+				Status:              validator.GetStatusV0(),
 				ExitMessageUploaded: validator.ExitMessageUploaded,
 			})
 		}

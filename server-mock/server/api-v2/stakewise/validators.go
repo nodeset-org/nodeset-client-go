@@ -55,7 +55,7 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 	for _, validator := range validators {
 		validatorStatuses = append(validatorStatuses, v2stakewise.ValidatorStatus{
 			Pubkey:              validator.Pubkey,
-			Status:              validator.GetStatus(),
+			Status:              validator.GetStatusV2(),
 			ExitMessageUploaded: validator.ExitMessageUploaded,
 		})
 	}

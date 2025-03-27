@@ -12,7 +12,6 @@ import (
 
 	v2core "github.com/nodeset-org/nodeset-client-go/api-v2/core"
 	"github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -106,12 +105,12 @@ func TestUploadSignedExits(t *testing.T) {
 	expectedData := map[beacon.ValidatorPubkey]v2stakewise.ValidatorStatus{
 		pubkeys[0]: {
 			Pubkey:              pubkeys[0],
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              v2stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		pubkeys[1]: {
 			Pubkey:              pubkeys[1],
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              v2stakewise.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}

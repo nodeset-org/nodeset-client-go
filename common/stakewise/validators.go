@@ -18,25 +18,6 @@ const (
 	ValidatorsMetaPath string = ValidatorsPath + "/meta"
 )
 
-type StakeWiseStatus string
-
-const (
-	// DepositData hasn't been uploaded to NodeSet yet
-	StakeWiseStatus_Unknown StakeWiseStatus = "UNKNOWN"
-
-	// DepositData uploaded to NodeSet, but hasn't been made part of a deposit data set yet
-	StakeWiseStatus_Pending StakeWiseStatus = "PENDING"
-
-	// DepositData uploaded to NodeSet, uploaded to StakeWise, but hasn't been activated on Beacon yet
-	StakeWiseStatus_Uploaded StakeWiseStatus = "UPLOADED"
-
-	// DepositData uploaded to NodeSet, uploaded to StakeWise, and the validator is active on Beacon
-	StakeWiseStatus_Registered StakeWiseStatus = "REGISTERED"
-
-	// DepositData uploaded to NodeSet, uploaded to StakeWise, and the validator is exited on Beacon
-	StakeWiseStatus_Removed StakeWiseStatus = "REMOVED"
-)
-
 // Submit signed exit data to Nodeset
 func Validators_Patch(c *common.CommonNodeSetClient, ctx context.Context, logger *slog.Logger, exitData any, params map[string]string, validatorsPath string) (int, *common.NodeSetResponse[struct{}], error) {
 	// Create the request body
