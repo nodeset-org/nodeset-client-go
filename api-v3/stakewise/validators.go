@@ -16,6 +16,18 @@ import (
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
+// Extended deposit data beyond what is required in an actual deposit message to Beacon, emulating what the deposit CLI produces
+type ExtendedDepositData struct {
+	PublicKey             beacon.ByteArray `json:"pubkey"`
+	WithdrawalCredentials beacon.ByteArray `json:"withdrawalCredentials"`
+	Amount                uint64           `json:"amount"`
+	Signature             beacon.ByteArray `json:"signature"`
+	DepositMessageRoot    beacon.ByteArray `json:"depositMessageRoot"`
+	DepositDataRoot       beacon.ByteArray `json:"depositDataRoot"`
+	ForkVersion           beacon.ByteArray `json:"forkVersion"`
+	NetworkName           string           `json:"networkName"`
+}
+
 // Details of an exit message
 type ExitMessageDetails struct {
 	Epoch          string `json:"epoch"`
@@ -46,8 +58,8 @@ type Validators_PatchBody struct {
 }
 
 type Validators_PostBody struct {
-	Validators        []ValidatorRegistrationDetails `json:"validators"`
-	BeaconDepositRoot ethcommon.Hash                 `json:"beaconDepositRoot"`
+	Validators        []validatorRegistrationDetailsImpl `json:"validators"`
+	BeaconDepositRoot ethcommon.Hash                     `json:"beaconDepositRoot"`
 }
 
 type PostValidatorData struct {
@@ -57,6 +69,11 @@ type PostValidatorData struct {
 type ValidatorRegistrationDetails struct {
 	DepositData beacon.ExtendedDepositData `json:"depositData"`
 	ExitMessage string                     `json:"exitMessage"`
+}
+
+type validatorRegistrationDetailsImpl struct {
+	DepositData ExtendedDepositData `json:"depositData"`
+	ExitMessage string              `json:"exitMessage"`
 }
 
 // Validator status info
@@ -78,9 +95,18 @@ func (c *V3StakeWiseClient) Validators_Post(
 	validators []ValidatorRegistrationDetails,
 	beaconDepositRoot ethcommon.Hash,
 ) (PostValidatorData, error) {
+	// Convert the deposit data to the NS form
+	validatorsImpl := make([]validatorRegistrationDetailsImpl, len(validators))
+	for i, validator := range validators {
+		validatorsImpl[i] = validatorRegistrationDetailsImpl{
+			DepositData: ExtendedDepositData(validator.DepositData),
+			ExitMessage: validator.ExitMessage,
+		}
+	}
+
 	// Create the request body
 	request := Validators_PostBody{
-		Validators:        validators,
+		Validators:        validatorsImpl,
 		BeaconDepositRoot: beaconDepositRoot,
 	}
 	jsonData, err := json.Marshal(request)
