@@ -31,7 +31,7 @@ type StakeWiseVault struct {
 	Validators map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo
 
 	deployment *StakeWiseDeployment
-	Db         *Database
+	db         *Database
 }
 
 // Create a new StakeWise vault
@@ -43,7 +43,7 @@ func newStakeWiseVault(deployment *StakeWiseDeployment, address ethcommon.Addres
 		LatestDepositDataSetIndex: 0,
 		Validators:                map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo{},
 		deployment:                deployment,
-		Db:                        deployment.db,
+		db:                        deployment.db,
 	}
 }
 
@@ -143,7 +143,7 @@ func (v *StakeWiseVault) HandleEncryptedSignedExitUpload(node *Node, data []comm
 		}
 
 		// Decrypt the exit data
-		if v.Db.SecretEncryptionIdentity == nil {
+		if v.db.secretEncryptionIdentity == nil {
 			return fmt.Errorf("secret encryption identity not set")
 		}
 		decodedHex, err := nsutils.DecodeHex(signedExit.ExitMessage)
@@ -151,7 +151,7 @@ func (v *StakeWiseVault) HandleEncryptedSignedExitUpload(node *Node, data []comm
 			return fmt.Errorf("error decoding exit message hex: %w", err)
 		}
 		encReader := bytes.NewReader(decodedHex)
-		decReader, err := age.Decrypt(encReader, v.Db.SecretEncryptionIdentity)
+		decReader, err := age.Decrypt(encReader, v.db.secretEncryptionIdentity)
 		if err != nil {
 			return fmt.Errorf("error decrypting exit message: %w", err)
 		}
@@ -193,7 +193,7 @@ func (v *StakeWiseVault) HandleEncryptedSignedExitUpload(node *Node, data []comm
 func (v *StakeWiseVault) CreateNewDepositDataSet(validatorsPerUser int) []beacon.ExtendedDepositData {
 	// Iterate the users
 	depositData := []beacon.ExtendedDepositData{}
-	for _, user := range v.Db.Core.users {
+	for _, user := range v.db.Core.users {
 		userCount := 0
 		for _, node := range user.nodes {
 			if !node.isRegistered {
@@ -239,7 +239,7 @@ func (v *StakeWiseVault) UploadDepositDataToStakeWise(data []beacon.ExtendedDepo
 func (v *StakeWiseVault) MarkDepositDataSetUploaded(data []beacon.ExtendedDepositData) {
 	// Flag each deposit data as uploaded
 	for _, depositData := range data {
-		for _, user := range v.Db.Core.users {
+		for _, user := range v.db.Core.users {
 			for _, node := range user.nodes {
 				if !node.isRegistered {
 					continue
@@ -267,7 +267,7 @@ func (v *StakeWiseVault) MarkDepositDataSetUploaded(data []beacon.ExtendedDeposi
 func (v *StakeWiseVault) MarkValidatorsRegistered(data []beacon.ExtendedDepositData) {
 	// Flag each validator as registered
 	for _, depositData := range data {
-		for _, user := range v.Db.Core.users {
+		for _, user := range v.db.Core.users {
 			for _, node := range user.nodes {
 				if !node.isRegistered {
 					continue

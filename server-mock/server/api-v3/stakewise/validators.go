@@ -83,6 +83,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	deployment.AvailableValidators -= uint(numToRegister)
 
 	// Must add validator to struct + exit message
+	secret := db.GetSecretEncryptionIdentity()
 	for _, validator := range validValidators {
 		pubkey := beacon.ValidatorPubkey(validator.DepositData.PublicKey)
 
@@ -95,7 +96,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		encReader := bytes.NewReader(decodedHex)
-		decReader, err := age.Decrypt(encReader, vault.Db.SecretEncryptionIdentity)
+		decReader, err := age.Decrypt(encReader, secret)
 		if err != nil {
 			servermockcommon.HandleServerError(w, s.logger, fmt.Errorf("error decrypting exit message: %w", err))
 			return
