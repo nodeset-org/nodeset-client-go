@@ -67,7 +67,11 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	validValidators := make([]v3stakewise.ValidatorRegistrationDetails, 0, len(body.Validators))
 	for _, v := range body.Validators {
 		if len(v.DepositData.PublicKey) == 48 {
-			validValidators = append(validValidators, v)
+			requestValidator := v3stakewise.ValidatorRegistrationDetails{
+				DepositData: beacon.ExtendedDepositData(v.DepositData),
+				ExitMessage: v.ExitMessage,
+			}
+			validValidators = append(validValidators, requestValidator)
 		}
 	}
 
