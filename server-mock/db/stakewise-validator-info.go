@@ -1,8 +1,9 @@
 package db
 
 import (
+	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
+	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
@@ -53,12 +54,22 @@ func (v *StakeWiseValidatorInfo) SetExitMessage(exitMessage common.ExitMessage) 
 	v.ExitMessageUploaded = true
 }
 
-func (v *StakeWiseValidatorInfo) GetStatus() stakewise.StakeWiseStatus {
+func (v *StakeWiseValidatorInfo) GetStatusV0() apiv0.StakeWiseStatus {
 	if v.MarkedActive {
-		return stakewise.StakeWiseStatus_Registered
+		return apiv0.StakeWiseStatus_Registered
 	}
 	if v.DepositDataUsed {
-		return stakewise.StakeWiseStatus_Uploaded
+		return apiv0.StakeWiseStatus_Uploaded
 	}
-	return stakewise.StakeWiseStatus_Pending
+	return apiv0.StakeWiseStatus_Pending
+}
+
+func (v *StakeWiseValidatorInfo) GetStatusV2() v2stakewise.StakeWiseStatus {
+	if v.MarkedActive {
+		return v2stakewise.StakeWiseStatus_Registered
+	}
+	if v.DepositDataUsed {
+		return v2stakewise.StakeWiseStatus_Uploaded
+	}
+	return v2stakewise.StakeWiseStatus_Pending
 }

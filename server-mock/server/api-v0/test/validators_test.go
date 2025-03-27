@@ -9,7 +9,6 @@ import (
 	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -98,12 +97,12 @@ func TestUploadSignedExits(t *testing.T) {
 	expectedData := map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{
 		pubkeys[0]: {
 			Pubkey:              pubkeys[0],
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		pubkeys[1]: {
 			Pubkey:              pubkeys[1],
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}
