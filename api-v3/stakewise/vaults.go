@@ -11,8 +11,18 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/common"
 )
 
+// Info about a StakeWise vault
+type VaultInfo struct {
+	// Human-readable name of the vault
+	Name string `json:"name"`
+
+	// Address of the vault
+	Address ethcommon.Address `json:"address"`
+}
+
+// Response from a vaults request
 type VaultsData struct {
-	Vaults []ethcommon.Address `json:"vaults"`
+	Vaults []VaultInfo `json:"vaults"`
 }
 
 // Gets the list of vaults available on the server for the provided deployment

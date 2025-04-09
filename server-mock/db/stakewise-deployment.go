@@ -49,12 +49,12 @@ func (d *StakeWiseDeployment) clone(dbClone *Database) *StakeWiseDeployment {
 }
 
 // Add a new StakeWise vault to the deployment. If one already exists with that address, it is just returned.
-func (d *StakeWiseDeployment) AddVault(address ethcommon.Address) *StakeWiseVault {
+func (d *StakeWiseDeployment) AddVault(name string, address ethcommon.Address) *StakeWiseVault {
 	vault, exists := d.Vaults[address]
 	if exists {
 		return vault
 	}
-	vault = newStakeWiseVault(d, address)
+	vault = newStakeWiseVault(d, name, address)
 	d.Vaults[address] = vault
 	return vault
 }

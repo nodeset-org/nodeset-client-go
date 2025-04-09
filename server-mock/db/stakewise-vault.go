@@ -15,6 +15,9 @@ import (
 
 // Info for StakeWise vaults
 type StakeWiseVault struct {
+	// The vault's human-readable name
+	Name string
+
 	// The vault address
 	Address ethcommon.Address
 
@@ -35,8 +38,9 @@ type StakeWiseVault struct {
 }
 
 // Create a new StakeWise vault
-func newStakeWiseVault(deployment *StakeWiseDeployment, address ethcommon.Address) *StakeWiseVault {
+func newStakeWiseVault(deployment *StakeWiseDeployment, name string, address ethcommon.Address) *StakeWiseVault {
 	return &StakeWiseVault{
+		Name:                      name,
 		Address:                   address,
 		UploadedData:              map[beacon.ValidatorPubkey]bool{},
 		LatestDepositDataSet:      []beacon.ExtendedDepositData{},
@@ -49,7 +53,7 @@ func newStakeWiseVault(deployment *StakeWiseDeployment, address ethcommon.Addres
 
 // Clone the StakeWise vault
 func (v *StakeWiseVault) clone(deploymentClone *StakeWiseDeployment) *StakeWiseVault {
-	clone := newStakeWiseVault(deploymentClone, v.Address)
+	clone := newStakeWiseVault(deploymentClone, v.Name, v.Address)
 	clone.LatestDepositDataSetIndex = v.LatestDepositDataSetIndex
 	clone.LatestDepositDataSet = make([]beacon.ExtendedDepositData, len(v.LatestDepositDataSet))
 	copy(clone.LatestDepositDataSet, v.LatestDepositDataSet)

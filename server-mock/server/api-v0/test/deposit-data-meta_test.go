@@ -40,7 +40,7 @@ func TestDepositDataMeta(t *testing.T) {
 	require.NoError(t, err)
 	err = node.Register(regSig, apiv0.NodeAddressMessageFormat)
 	require.NoError(t, err)
-	vault := deployment.AddVault(test.StakeWiseVaultAddress)
+	vault := deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
 	vault.LatestDepositDataSetIndex = depositDataSet
 
 	// Create a session

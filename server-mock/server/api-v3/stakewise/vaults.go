@@ -3,8 +3,6 @@ package v3server_stakewise
 import (
 	"net/http"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
-
 	v3stakewise "github.com/nodeset-org/nodeset-client-go/api-v3/stakewise"
 
 	servermockcommon "github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
@@ -33,9 +31,12 @@ func (s *V3StakeWiseServer) getVaults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vaults := []ethcommon.Address{}
-	for addr := range deployment.Vaults {
-		vaults = append(vaults, addr)
+	vaults := []v3stakewise.VaultInfo{}
+	for _, vault := range deployment.Vaults {
+		vaults = append(vaults, v3stakewise.VaultInfo{
+			Name:    vault.Name,
+			Address: vault.Address,
+		})
 	}
 
 	// Return as JSON

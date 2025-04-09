@@ -34,7 +34,7 @@ func TestGetValidators(t *testing.T) {
 	// Provision the database
 	db := mgr.GetDatabase()
 	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
-	_ = deployment.AddVault(test.StakeWiseVaultAddress)
+	_ = deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
 	node0Key, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)

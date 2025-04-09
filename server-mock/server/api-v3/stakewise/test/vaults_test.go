@@ -23,7 +23,7 @@ func TestGetVaults(t *testing.T) {
 	// Provision the database
 	db := mgr.GetDatabase()
 	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
-	deployment.AddVault(test.StakeWiseVaultAddress)
+	deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
 
 	nodeKey, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
@@ -51,7 +51,8 @@ func TestGetVaults(t *testing.T) {
 	vaults, err := client.StakeWise.Vaults(context.Background(), logger, test.Network)
 	require.NoError(t, err)
 	require.Len(t, vaults.Vaults, 1)
-	require.Equal(t, vaults.Vaults[0], test.StakeWiseVaultAddress)
+	require.Equal(t, vaults.Vaults[0].Name, test.StakeWiseVaultName)
+	require.Equal(t, vaults.Vaults[0].Address, test.StakeWiseVaultAddress)
 
 	t.Logf("Successfully fetched %d vault(s)", len(vaults.Vaults))
 }

@@ -34,7 +34,7 @@ func TestPostValidators(t *testing.T) {
 	// Provision the database
 	db := mgr.GetDatabase()
 	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
-	deployment.AddVault(test.StakeWiseVaultAddress)
+	deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
 	deployment.MaxValidators = 10 // Set max validators
 
 	node0Key, err := test.GetEthPrivateKey(0)
