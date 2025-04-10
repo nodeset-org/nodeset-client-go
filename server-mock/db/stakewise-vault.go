@@ -13,6 +13,10 @@ import (
 	nsutils "github.com/rocket-pool/node-manager-core/utils"
 )
 
+const (
+	DefaultMaxValidatorsPerUser uint = 1
+)
+
 // Info for StakeWise vaults
 type StakeWiseVault struct {
 	// The vault's human-readable name
@@ -33,6 +37,9 @@ type StakeWiseVault struct {
 	// Map of nodes to Validators for StakeWise vaults
 	Validators map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo
 
+	// The max number of validators per user
+	MaxValidatorsPerUser uint
+
 	deployment *StakeWiseDeployment
 	db         *Database
 }
@@ -46,6 +53,7 @@ func newStakeWiseVault(deployment *StakeWiseDeployment, name string, address eth
 		LatestDepositDataSet:      []beacon.ExtendedDepositData{},
 		LatestDepositDataSetIndex: 0,
 		Validators:                map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo{},
+		MaxValidatorsPerUser:      DefaultMaxValidatorsPerUser,
 		deployment:                deployment,
 		db:                        deployment.db,
 	}
@@ -54,6 +62,7 @@ func newStakeWiseVault(deployment *StakeWiseDeployment, name string, address eth
 // Clone the StakeWise vault
 func (v *StakeWiseVault) clone(deploymentClone *StakeWiseDeployment) *StakeWiseVault {
 	clone := newStakeWiseVault(deploymentClone, v.Name, v.Address)
+	clone.MaxValidatorsPerUser = v.MaxValidatorsPerUser
 	clone.LatestDepositDataSetIndex = v.LatestDepositDataSetIndex
 	clone.LatestDepositDataSet = make([]beacon.ExtendedDepositData, len(v.LatestDepositDataSet))
 	copy(clone.LatestDepositDataSet, v.LatestDepositDataSet)
@@ -288,4 +297,17 @@ func (v *StakeWiseVault) MarkValidatorsRegistered(data []beacon.ExtendedDepositD
 			}
 		}
 	}
+}
+
+// Get the number of active validators for a user
+func (v *StakeWiseVault) GetActiveValidatorsPerUser(user *User) uint {
+	active := uint(0)
+	for _, node := range user.nodes {
+		if !node.isRegistered {
+			continue
+		}
+		validators := v.Validators[node.Address]
+		active += uint(len(validators))
+	}
+	return active
 }

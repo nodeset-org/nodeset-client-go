@@ -75,16 +75,16 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	numToRegister := len(validValidators)
-	available := int(deployment.AvailableValidators)
+	user := node.GetUser()
+	active := vault.GetActiveValidatorsPerUser(user)
+	available := vault.MaxValidatorsPerUser - active
+	numToRegister := uint(len(validValidators))
 	if numToRegister > available {
 		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf(
 			"not enough available slots: requested %d, available %d",
 			numToRegister, available))
 		return
 	}
-	deployment.ActiveValidators += uint(numToRegister)
-	deployment.AvailableValidators -= uint(numToRegister)
 
 	// Must add validator to struct + exit message
 	secret := db.GetSecretEncryptionIdentity()
@@ -185,7 +185,6 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		Signature: finalDigest.Hex(), //solidity code for stakewise
 	}
 	servermockcommon.HandleSuccess(w, s.logger, resp)
-
 }
 
 // GET api/v3/modules/stakewise/{deployment}/{vault}/validators

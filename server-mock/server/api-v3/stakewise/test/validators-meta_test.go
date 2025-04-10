@@ -29,7 +29,7 @@ func TestGetValidatorsMeta(t *testing.T) {
 	// Provision the database
 	db := mgr.GetDatabase()
 	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
-	_ = deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
+	vault := deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
 	node0Key, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)
@@ -53,8 +53,9 @@ func TestGetValidatorsMeta(t *testing.T) {
 
 	// Make sure the response is correct
 	require.Equal(t, data.Active, uint(0))
-	require.Equal(t, data.Max, deployment.MaxValidators)
-	t.Logf("Received correct response -  active: %d, max: %d", data.Active, data.Max)
+	require.Equal(t, data.Max, vault.MaxValidatorsPerUser)
+	require.Equal(t, data.Available, uint(vault.MaxValidatorsPerUser))
+	t.Logf("Received correct response -  active: %d, max: %d, available: %d", data.Active, data.Max, data.Available)
 }
 
 // Run a GET api/validators/meta request

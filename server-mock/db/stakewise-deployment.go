@@ -6,8 +6,6 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
-const DefaultAvailableValidators = 10
-
 // Deployment for StakeWise info
 type StakeWiseDeployment struct {
 	// The deployment's name / ID
@@ -19,23 +17,15 @@ type StakeWiseDeployment struct {
 	// List of StakeWise Vaults
 	Vaults map[ethcommon.Address]*StakeWiseVault
 	db     *Database
-
-	// Validator counts
-	ActiveValidators    uint
-	MaxValidators       uint
-	AvailableValidators uint
 }
 
 // Create a new StakeWise deployment
 func newStakeWiseDeployment(db *Database, id string, chainID *big.Int) *StakeWiseDeployment {
 	return &StakeWiseDeployment{
-		ID:                  id,
-		ChainID:             chainID,
-		Vaults:              make(map[ethcommon.Address]*StakeWiseVault),
-		db:                  db,
-		ActiveValidators:    0,
-		MaxValidators:       0,
-		AvailableValidators: DefaultAvailableValidators,
+		ID:      id,
+		ChainID: chainID,
+		Vaults:  make(map[ethcommon.Address]*StakeWiseVault),
+		db:      db,
 	}
 }
 
