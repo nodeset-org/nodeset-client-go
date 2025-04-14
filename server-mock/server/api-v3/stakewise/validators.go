@@ -76,7 +76,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	}
 
 	user := node.GetUser()
-	active := vault.GetActiveValidatorsPerUser(user)
+	active := vault.GetRegisteredValidatorsPerUser(user)
 	available := vault.MaxValidatorsPerUser - active
 	numToRegister := uint(len(validValidators))
 	if numToRegister > available {

@@ -299,15 +299,21 @@ func (v *StakeWiseVault) MarkValidatorsRegistered(data []beacon.ExtendedDepositD
 	}
 }
 
-// Get the number of active validators for a user
-func (v *StakeWiseVault) GetActiveValidatorsPerUser(user *User) uint {
-	active := uint(0)
+// Get the number of active / registered validators for a user
+func (v *StakeWiseVault) GetRegisteredValidatorsPerUser(user *User) uint {
+	registered := uint(0)
 	for _, node := range user.nodes {
 		if !node.isRegistered {
 			continue
 		}
 		validators := v.Validators[node.Address]
-		active += uint(len(validators))
+		for _, validator := range validators {
+			if validator.IsActiveOnBeacon ||
+				validator.HasDepositEvent ||
+				validator.BeaconDepositRoot == v.db.Eth.depositRoot {
+				registered++
+			}
+		}
 	}
-	return active
+	return registered
 }

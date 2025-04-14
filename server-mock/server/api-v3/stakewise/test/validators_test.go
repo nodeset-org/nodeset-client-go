@@ -63,8 +63,8 @@ func TestPostValidators(t *testing.T) {
 
 	// Get the initial validator limits
 	metaBefore := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaBefore.Active, uint(0)) // No validators yet
-	require.Equal(t, metaBefore.Max, uint(10))   // Max set to 10
+	require.Equal(t, metaBefore.Registered, uint(0)) // No validators yet
+	require.Equal(t, metaBefore.Max, uint(10))       // Max set to 10
 	require.Equal(t, metaBefore.Available, uint(10))
 
 	// Generate validator details
@@ -102,13 +102,14 @@ func TestPostValidators(t *testing.T) {
 
 	// Submit the request
 	beaconDepositRoot := ethcommon.Hash{}
+	db.Eth.SetDepositRoot(beaconDepositRoot)
 	signature, err := runPostValidatorsRequest(t, session, validatorDetails, beaconDepositRoot)
 	require.NoError(t, err)
 	require.NotEmpty(t, signature, "Expected a valid signature from the backend")
 
 	// Verify the new validator count
 	metaAfter := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaAfter.Active, uint(numValidatorsToRegister))
+	require.Equal(t, metaAfter.Registered, uint(numValidatorsToRegister))
 	require.Equal(t, metaAfter.Max, uint(10))      // Should stay the same
 	require.Equal(t, metaAfter.Available, uint(7)) // 10 - 3
 
@@ -128,8 +129,28 @@ func TestPostValidators(t *testing.T) {
 		require.True(t, validator.ExitMessageUploaded)
 	}
 
-	t.Logf("Successfully registered %d validators. New active count: %d",
-		numValidatorsToRegister, metaAfter.Active)
+	t.Logf("Successfully registered %d validators. New count: %d",
+		numValidatorsToRegister, metaAfter.Registered)
+
+	// Change the current deposit root and verify the validator has increased
+	beaconDepositRoot[0] = 0x01
+	db.Eth.SetDepositRoot(beaconDepositRoot)
+	metaAfter = runGetValidatorsMetaRequest(t, session)
+	require.Equal(t, metaAfter.Registered, uint(0)) // Registered validators should be reset
+	require.Equal(t, metaAfter.Max, uint(10))       // Should stay the same
+	require.Equal(t, metaAfter.Available, uint(10))
+	t.Log("Deposit root changed, registered validator count is now 0 as expected")
+
+	// Mark the first 2 as used
+	vault.Validators[node0Pubkey][beacon.ValidatorPubkey(validatorDetails[0].DepositData.PublicKey)].IsActiveOnBeacon = true
+	vault.Validators[node0Pubkey][beacon.ValidatorPubkey(validatorDetails[1].DepositData.PublicKey)].HasDepositEvent = true
+
+	// Verify the new count
+	metaAfter = runGetValidatorsMetaRequest(t, session)
+	require.Equal(t, metaAfter.Registered, uint(2)) // Registered validators should be reset
+	require.Equal(t, metaAfter.Max, uint(10))       // Should stay the same
+	require.Equal(t, metaAfter.Available, uint(8))  // 10 - 2
+	t.Logf("Marked 2 validators as active on Beacon / have deposit events, new registered count: %d", metaAfter.Registered)
 }
 
 func runPostValidatorsRequest(t *testing.T, session *db.Session, validatorDetails []stakewise.ValidatorRegistrationDetails, beaconDepositRoot ethcommon.Hash) (string, error) {

@@ -60,11 +60,11 @@ func (s *V3StakeWiseServer) getValidatorsMeta(w http.ResponseWriter, r *http.Req
 		return
 	}
 	user := node.GetUser()
-	active := vault.GetActiveValidatorsPerUser(user)
+	registered := vault.GetRegisteredValidatorsPerUser(user)
 	data := stakewise.ValidatorsMetaData{
-		Active:    active,
-		Max:       vault.MaxValidatorsPerUser,
-		Available: vault.MaxValidatorsPerUser - active,
+		Registered: registered,
+		Max:        vault.MaxValidatorsPerUser,
+		Available:  vault.MaxValidatorsPerUser - registered,
 	}
 	common.HandleSuccess(w, s.logger, data)
 }

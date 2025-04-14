@@ -9,6 +9,7 @@ import (
 // Mock database for storing nodeset.io info
 type Database struct {
 	Core          *Database_Core
+	Eth           *Database_Ethereum
 	Constellation *Database_Constellation
 	StakeWise     *Database_StakeWise
 
@@ -25,6 +26,7 @@ func NewDatabase(logger *slog.Logger) *Database {
 		logger: logger,
 	}
 	db.Core = newDatabase_Core(db, logger)
+	db.Eth = newDatabase_Ethereum(db, logger)
 	db.Constellation = newDatabase_Constellation(db, logger)
 	db.StakeWise = newDatabase_StakeWise(db, logger)
 	return db
@@ -36,6 +38,7 @@ func (d *Database) Clone() *Database {
 		logger: d.logger,
 	}
 	dbClone.Core = d.Core.clone(dbClone)
+	dbClone.Eth = d.Eth.clone(dbClone)
 	dbClone.Constellation = d.Constellation.clone(dbClone)
 	dbClone.StakeWise = d.StakeWise.clone(dbClone)
 	dbClone.secretEncryptionIdentity = d.secretEncryptionIdentity

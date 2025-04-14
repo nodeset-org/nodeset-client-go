@@ -52,10 +52,10 @@ func TestGetValidatorsMeta(t *testing.T) {
 	data := runGetValidatorsMetaRequest(t, session)
 
 	// Make sure the response is correct
-	require.Equal(t, data.Active, uint(0))
+	require.Equal(t, data.Registered, uint(0))
 	require.Equal(t, data.Max, vault.MaxValidatorsPerUser)
 	require.Equal(t, data.Available, uint(vault.MaxValidatorsPerUser))
-	t.Logf("Received correct response -  active: %d, max: %d, available: %d", data.Active, data.Max, data.Available)
+	t.Logf("Received correct response -  active: %d, max: %d, available: %d", data.Registered, data.Max, data.Available)
 }
 
 // Run a GET api/validators/meta request

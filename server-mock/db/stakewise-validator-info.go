@@ -1,6 +1,7 @@
 package db
 
 import (
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -15,6 +16,17 @@ type StakeWiseValidatorInfo struct {
 	ExitMessageUploaded bool
 	DepositDataUsed     bool
 	MarkedActive        bool
+
+	// The deposit root used for signing this validator's deposit info (used in v3)
+	BeaconDepositRoot ethcommon.Hash
+
+	// True if there was a deposit event for this validator on the Execution layer
+	// TEMP until Hardhat is added
+	HasDepositEvent bool
+
+	// True if this validator is active in the Beacon chain
+	// TEMP until OSHA is added
+	IsActiveOnBeacon bool
 }
 
 // Create a new StakeWise validator info
@@ -34,6 +46,7 @@ func (v *StakeWiseValidatorInfo) clone() *StakeWiseValidatorInfo {
 		ExitMessageUploaded: v.ExitMessageUploaded,
 		DepositDataUsed:     v.DepositDataUsed,
 		MarkedActive:        v.MarkedActive,
+		BeaconDepositRoot:   v.BeaconDepositRoot,
 	}
 }
 
