@@ -123,6 +123,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 		if vInfo, exists := nodeValidators[pubkey]; exists {
 			vInfo.SetExitMessage(exitMessage)
 			vInfo.MarkActive()
+			vInfo.BeaconDepositRoot = body.BeaconDepositRoot
 		}
 	}
 
