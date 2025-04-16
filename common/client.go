@@ -2,13 +2,14 @@ package common
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/goccy/go-json"
 )
 
 const (

@@ -6,7 +6,6 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
 
@@ -51,18 +50,18 @@ func (s *V2StakeWiseServer) getValidators(w http.ResponseWriter, r *http.Request
 	}
 
 	// Find the validator
-	validatorStatuses := []stakewise.ValidatorStatus{}
+	validatorStatuses := []v2stakewise.ValidatorStatus{}
 	validators := vault.GetStakeWiseValidatorsForNode(node)
 	for _, validator := range validators {
-		validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
+		validatorStatuses = append(validatorStatuses, v2stakewise.ValidatorStatus{
 			Pubkey:              validator.Pubkey,
-			Status:              validator.GetStatus(),
+			Status:              validator.GetStatusV2(),
 			ExitMessageUploaded: validator.ExitMessageUploaded,
 		})
 	}
 
 	// Write the response
-	data := stakewise.ValidatorsData{
+	data := v2stakewise.ValidatorsData{
 		Validators: validatorStatuses,
 	}
 	common.HandleSuccess(w, s.logger, data)

@@ -3,8 +3,8 @@ package v0server
 import (
 	"net/http"
 
+	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/server/common"
 )
@@ -42,22 +42,22 @@ func (s *V0Server) getValidators(w http.ResponseWriter, r *http.Request) {
 		common.HandleInvalidDeployment(w, s.logger, network)
 		return
 	}
-	validatorStatuses := []stakewise.ValidatorStatus{}
+	validatorStatuses := []apiv0.ValidatorStatus{}
 	validatorsForDeployment := deployment.GetAllStakeWiseValidators(node)
 
 	// Iterate the validators
 	for _, validatorsForVault := range validatorsForDeployment {
 		for _, validator := range validatorsForVault {
-			validatorStatuses = append(validatorStatuses, stakewise.ValidatorStatus{
+			validatorStatuses = append(validatorStatuses, apiv0.ValidatorStatus{
 				Pubkey:              validator.Pubkey,
-				Status:              validator.GetStatus(),
+				Status:              validator.GetStatusV0(),
 				ExitMessageUploaded: validator.ExitMessageUploaded,
 			})
 		}
 	}
 
 	// Write the response
-	data := stakewise.ValidatorsData{
+	data := apiv0.ValidatorsData{
 		Validators: validatorStatuses,
 	}
 	common.HandleSuccess(w, s.logger, data)

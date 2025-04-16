@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -41,8 +42,8 @@ type Whitelist_PostData struct {
 
 func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, logger *slog.Logger, deployment string) (Whitelist_GetData, error) {
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + WhitelistPath
-	code, response, err := common.SubmitRequest[Whitelist_GetData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
+	pathString := path.Join(ConstellationPrefix, deployment, WhitelistPath)
+	code, response, err := common.SubmitRequest[Whitelist_GetData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, pathString)
 	if err != nil {
 		return Whitelist_GetData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}
@@ -80,8 +81,8 @@ func (c *V2ConstellationClient) Whitelist_Get(ctx context.Context, logger *slog.
 
 func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, logger *slog.Logger, deployment string) (Whitelist_PostData, error) {
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + WhitelistPath
-	code, response, err := common.SubmitRequest[Whitelist_PostData](c.commonClient, ctx, logger, true, http.MethodPost, nil, nil, path)
+	pathString := path.Join(ConstellationPrefix, deployment, WhitelistPath)
+	code, response, err := common.SubmitRequest[Whitelist_PostData](c.commonClient, ctx, logger, true, http.MethodPost, nil, nil, pathString)
 	if err != nil {
 		return Whitelist_PostData{}, fmt.Errorf("error requesting whitelist signature: %w", err)
 	}
@@ -98,9 +99,9 @@ func (c *V2ConstellationClient) Whitelist_Post(ctx context.Context, logger *slog
 			// Invalid deployment
 			return Whitelist_PostData{}, common.ErrInvalidDeployment
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return Whitelist_PostData{}, ErrIncorrectNodeAddress
+			return Whitelist_PostData{}, common.ErrIncorrectNodeAddress
 		}
 
 	case http.StatusUnauthorized:

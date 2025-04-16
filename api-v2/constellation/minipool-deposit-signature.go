@@ -3,11 +3,13 @@ package v2constellation
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/big"
 	"net/http"
+	"path"
+
+	"github.com/goccy/go-json"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -51,8 +53,8 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 	)
 
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + MinipoolDepositSignaturePath
-	code, response, err := common.SubmitRequest[MinipoolDepositSignatureData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, path)
+	pathString := path.Join(ConstellationPrefix, deployment, MinipoolDepositSignaturePath)
+	code, response, err := common.SubmitRequest[MinipoolDepositSignatureData](c.commonClient, ctx, logger, true, http.MethodPost, bytes.NewBuffer(jsonData), nil, pathString)
 	if err != nil {
 		return MinipoolDepositSignatureData{}, fmt.Errorf("error requesting minipool deposit signature: %w", err)
 	}
@@ -69,13 +71,13 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 			// Invalid deployment
 			return MinipoolDepositSignatureData{}, common.ErrInvalidDeployment
 
-		case MissingWhitelistedNodeAddressKey:
+		case common.MissingWhitelistedNodeAddressKey:
 			// Node address not whitelisted for deployment
-			return MinipoolDepositSignatureData{}, ErrMissingWhitelistedNodeAddress
+			return MinipoolDepositSignatureData{}, common.ErrMissingWhitelistedNodeAddress
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return MinipoolDepositSignatureData{}, ErrIncorrectNodeAddress
+			return MinipoolDepositSignatureData{}, common.ErrIncorrectNodeAddress
 		}
 
 	case http.StatusUnauthorized:
@@ -87,17 +89,17 @@ func (c *V2ConstellationClient) MinipoolDepositSignature(ctx context.Context, lo
 
 	case http.StatusForbidden:
 		switch response.Error {
-		case MinipoolLimitReachedKey:
+		case common.MinipoolLimitReachedKey:
 			// Address has been given access to Constellation, but cannot create any more minipools.
-			return MinipoolDepositSignatureData{}, ErrMinipoolLimitReached
+			return MinipoolDepositSignatureData{}, common.ErrMinipoolLimitReached
 
-		case MissingExitMessageKey:
+		case common.MissingExitMessageKey:
 			// Nodeset.io is missing a signed exit message for a previous minipool
-			return MinipoolDepositSignatureData{}, ErrMissingExitMessage
+			return MinipoolDepositSignatureData{}, common.ErrMissingExitMessage
 
-		case AddressAlreadyRegisteredKey:
+		case common.AddressAlreadyRegisteredKey:
 			// A minipool with this address already exists
-			return MinipoolDepositSignatureData{}, ErrAddressAlreadyRegistered
+			return MinipoolDepositSignatureData{}, common.ErrAddressAlreadyRegistered
 
 		case common.InvalidPermissionsKey:
 			// The user doesn't have permission to do this

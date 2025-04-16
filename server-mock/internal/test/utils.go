@@ -32,6 +32,7 @@ const (
 	ChainID                     uint64 = 31337
 	SuperNodeAddressString      string = "0xa4E00CB342B36eC9fDc4B50b3d527c3643D4C49e"
 	WhitelistAddressString      string = "0xA9e6Bfa2BF53dE88FEb19761D9b2eE2e821bF1Bf"
+	StakeWiseVaultName          string = "Test Vault"
 )
 
 var (

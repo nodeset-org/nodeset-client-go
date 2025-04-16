@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -34,12 +35,6 @@ type ExtendedDepositData struct {
 	NetworkName           string           `json:"networkName"`
 }
 
-// Response to a deposit data request
-type DepositDataData struct {
-	Version     int                   `json:"version"`
-	DepositData []ExtendedDepositData `json:"depositData"`
-}
-
 // Request body for uploading deposit data
 type DepositData_PostBody struct {
 	Validators []ExtendedDepositData `json:"validators"`
@@ -48,8 +43,8 @@ type DepositData_PostBody struct {
 // Get the aggregated deposit data from the server
 func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.DepositDataData, error) {
 	// Send the request
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Get[DepositDataData](c.commonClient, ctx, logger, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), stakewise.DepositDataPath)
+	code, response, err := stakewise.DepositData_Get[stakewise.DepositDataData](c.commonClient, ctx, logger, nil, pathString)
 	if err != nil {
 		return stakewise.DepositDataData{}, err
 	}
@@ -73,9 +68,9 @@ func (c *V2StakeWiseClient) DepositData_Get(ctx context.Context, logger *slog.Lo
 			// Invalid deployment
 			return stakewise.DepositDataData{}, common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.DepositDataData{}, stakewise.ErrInvalidVault
+			return stakewise.DepositDataData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusForbidden:
@@ -101,8 +96,8 @@ func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, logger *slog.L
 	common.SafeDebugLog(logger, "Prepared deposit data POST body",
 		"body", body,
 	)
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataPath
-	code, response, err := stakewise.DepositData_Post(c.commonClient, ctx, logger, body, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), stakewise.DepositDataPath)
+	code, response, err := stakewise.DepositData_Post(c.commonClient, ctx, logger, body, pathString)
 	if err != nil {
 		return err
 	}
@@ -118,9 +113,9 @@ func (c *V2StakeWiseClient) DepositData_Post(ctx context.Context, logger *slog.L
 			// Invalid deployment
 			return common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.ErrInvalidVault
+			return common.ErrInvalidVault
 
 		case common.MalformedInputKey:
 			// Malformed input

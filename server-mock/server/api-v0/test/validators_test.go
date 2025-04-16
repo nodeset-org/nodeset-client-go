@@ -9,7 +9,6 @@ import (
 	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
 	"github.com/nodeset-org/nodeset-client-go/common"
 	clientcommon "github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/auth"
 	"github.com/nodeset-org/nodeset-client-go/server-mock/db"
 	idb "github.com/nodeset-org/nodeset-client-go/server-mock/internal/db"
@@ -32,7 +31,7 @@ func TestGetValidators(t *testing.T) {
 	// Provision the database
 	db := mgr.GetDatabase()
 	deployment := db.StakeWise.AddDeployment(test.Network, test.ChainIDBig)
-	_ = deployment.AddVault(test.StakeWiseVaultAddress)
+	_ = deployment.AddVault(test.StakeWiseVaultName, test.StakeWiseVaultAddress)
 	node0Key, err := test.GetEthPrivateKey(0)
 	require.NoError(t, err)
 	node0Pubkey := crypto.PubkeyToAddress(node0Key.PublicKey)
@@ -95,20 +94,20 @@ func TestUploadSignedExits(t *testing.T) {
 	for i, data := range depositData {
 		pubkeys[i] = beacon.ValidatorPubkey(data.PublicKey)
 	}
-	expectedData := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{
+	expectedData := map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{
 		pubkeys[0]: {
 			Pubkey:              pubkeys[0],
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 		pubkeys[1]: {
 			Pubkey:              pubkeys[1],
-			Status:              stakewise.StakeWiseStatus_Pending,
+			Status:              apiv0.StakeWiseStatus_Pending,
 			ExitMessageUploaded: false,
 		},
 	}
 	validatorsData := runGetValidatorsRequest(t, session)
-	validatorMap := map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
+	validatorMap := map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{}
 	for _, validator := range validatorsData.Validators {
 		validatorMap[validator.Pubkey] = validator
 	}
@@ -128,7 +127,7 @@ func TestUploadSignedExits(t *testing.T) {
 	validator.ExitMessageUploaded = true
 	expectedData[pubkeys[1]] = validator
 	validatorsData = runGetValidatorsRequest(t, session)
-	validatorMap = map[beacon.ValidatorPubkey]stakewise.ValidatorStatus{}
+	validatorMap = map[beacon.ValidatorPubkey]apiv0.ValidatorStatus{}
 	for _, validator := range validatorsData.Validators {
 		validatorMap[validator.Pubkey] = validator
 	}
@@ -137,7 +136,7 @@ func TestUploadSignedExits(t *testing.T) {
 }
 
 // Run a GET api/validators request
-func runGetValidatorsRequest(t *testing.T, session *db.Session) stakewise.ValidatorsData {
+func runGetValidatorsRequest(t *testing.T, session *db.Session) apiv0.ValidatorsData {
 	// Create the client
 	client := apiv0.NewNodeSetClient(fmt.Sprintf("http://localhost:%d/api", port), timeout)
 	client.SetSessionToken(session.Token)

@@ -1,4 +1,4 @@
-package v2constellation
+package common
 
 import "errors"
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	"github.com/goccy/go-json"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -69,8 +70,8 @@ type Validators_PatchBody struct {
 // Get a list of all of the pubkeys that have already been registered with NodeSet for this node on the provided deployment and vault
 func (c *V2ConstellationClient) Validators_Get(ctx context.Context, logger *slog.Logger, deployment string) (ValidatorsData, error) {
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + ValidatorsPath
-	code, response, err := common.SubmitRequest[ValidatorsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, path)
+	pathString := path.Join(ConstellationPrefix, deployment, ValidatorsPath)
+	code, response, err := common.SubmitRequest[ValidatorsData](c.commonClient, ctx, logger, true, http.MethodGet, nil, nil, pathString)
 	if err != nil {
 		return ValidatorsData{}, fmt.Errorf("error getting registered validators: %w", err)
 	}
@@ -86,13 +87,13 @@ func (c *V2ConstellationClient) Validators_Get(ctx context.Context, logger *slog
 			// Invalid deployment
 			return ValidatorsData{}, common.ErrInvalidDeployment
 
-		case MissingWhitelistedNodeAddressKey:
+		case common.MissingWhitelistedNodeAddressKey:
 			// Node address not whitelisted for deployment
-			return ValidatorsData{}, ErrMissingWhitelistedNodeAddress
+			return ValidatorsData{}, common.ErrMissingWhitelistedNodeAddress
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return ValidatorsData{}, ErrIncorrectNodeAddress
+			return ValidatorsData{}, common.ErrIncorrectNodeAddress
 		}
 
 	case http.StatusUnauthorized:
@@ -133,8 +134,8 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, logger *sl
 	)
 
 	// Send the request
-	path := ConstellationPrefix + deployment + "/" + ValidatorsPath
-	code, response, err := common.SubmitRequest[struct{}](c.commonClient, ctx, logger, true, http.MethodPatch, bytes.NewBuffer(jsonData), nil, path)
+	pathString := path.Join(ConstellationPrefix, deployment, ValidatorsPath)
+	code, response, err := common.SubmitRequest[struct{}](c.commonClient, ctx, logger, true, http.MethodPatch, bytes.NewBuffer(jsonData), nil, pathString)
 	if err != nil {
 		return fmt.Errorf("error submitting exit data: %w", err)
 	}
@@ -158,17 +159,17 @@ func (c *V2ConstellationClient) Validators_Patch(ctx context.Context, logger *sl
 			// Invalid validator owner
 			return common.ErrInvalidValidatorOwner
 
-		case common.InvalidExitMessage:
+		case common.InvalidExitMessageKey:
 			// Invalid exit message
 			return common.ErrInvalidExitMessage
 
-		case MissingWhitelistedNodeAddressKey:
+		case common.MissingWhitelistedNodeAddressKey:
 			// Node address not whitelisted for deployment
-			return ErrMissingWhitelistedNodeAddress
+			return common.ErrMissingWhitelistedNodeAddress
 
-		case IncorrectNodeAddressKey:
+		case common.IncorrectNodeAddressKey:
 			// Incorrect node address
-			return ErrIncorrectNodeAddress
+			return common.ErrIncorrectNodeAddress
 
 		case ExitMessageExistsKey:
 			// Exit message already exists for the pubkey being submitted

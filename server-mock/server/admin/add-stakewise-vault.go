@@ -22,6 +22,11 @@ func (s *AdminServer) addStakeWiseVault(w http.ResponseWriter, r *http.Request) 
 		common.HandleInputError(w, s.logger, fmt.Errorf("missing deployment query parameter"))
 		return
 	}
+	name := query.Get("name")
+	if name == "" {
+		common.HandleInputError(w, s.logger, fmt.Errorf("missing name query parameter"))
+		return
+	}
 	addressString := query.Get("address")
 	if addressString == "" {
 		common.HandleInputError(w, s.logger, fmt.Errorf("missing address query parameter"))
@@ -36,7 +41,7 @@ func (s *AdminServer) addStakeWiseVault(w http.ResponseWriter, r *http.Request) 
 		common.HandleInvalidDeployment(w, s.logger, deploymentID)
 		return
 	}
-	deployment.AddVault(address)
+	deployment.AddVault(name, address)
 	s.logger.Info("Added new stakewise vault",
 		"deployment", deploymentID,
 		"address", address.Hex(),

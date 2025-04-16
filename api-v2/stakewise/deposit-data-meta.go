@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/nodeset-org/nodeset-client-go/common"
@@ -14,8 +15,8 @@ import (
 // Get the current version of the aggregated deposit data on the server
 func (c *V2StakeWiseClient) DepositDataMeta(ctx context.Context, logger *slog.Logger, deployment string, vault ethcommon.Address) (stakewise.DepositDataMetaData, error) {
 	// Send the request
-	path := StakeWisePrefix + deployment + "/" + vault.Hex() + "/" + stakewise.DepositDataMetaPath
-	code, response, err := stakewise.DepositDataMeta(c.commonClient, ctx, logger, nil, path)
+	pathString := path.Join(StakeWisePrefix, deployment, vault.Hex(), stakewise.DepositDataMetaPath)
+	code, response, err := stakewise.DepositDataMeta(c.commonClient, ctx, logger, nil, pathString)
 	if err != nil {
 		return stakewise.DepositDataMetaData{}, err
 	}
@@ -31,9 +32,9 @@ func (c *V2StakeWiseClient) DepositDataMeta(ctx context.Context, logger *slog.Lo
 			// Invalid deployment
 			return stakewise.DepositDataMetaData{}, common.ErrInvalidDeployment
 
-		case stakewise.InvalidVaultKey:
+		case common.InvalidVaultKey:
 			// Invalid vault
-			return stakewise.DepositDataMetaData{}, stakewise.ErrInvalidVault
+			return stakewise.DepositDataMetaData{}, common.ErrInvalidVault
 		}
 
 	case http.StatusForbidden:

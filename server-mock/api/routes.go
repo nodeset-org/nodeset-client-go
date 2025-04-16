@@ -7,6 +7,7 @@ const (
 	// Admin routes
 	AdminAddConstellationDeploymentPath       string = "add-constellation-deployment"
 	AdminAddStakeWiseDeploymentPath           string = "add-stakewise-deployment"
+	AdminAddStakeWiseVaultPath                string = "add-stakewise-vault"
 	AdminSnapshotPath                         string = "snapshot"
 	AdminRevertPath                           string = "revert"
 	AdminCycleSetPath                         string = "cycle-set"

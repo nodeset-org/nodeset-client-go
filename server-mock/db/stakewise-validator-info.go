@@ -1,8 +1,10 @@
 package db
 
 import (
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	apiv0 "github.com/nodeset-org/nodeset-client-go/api-v0"
+	v2stakewise "github.com/nodeset-org/nodeset-client-go/api-v2/stakewise"
 	"github.com/nodeset-org/nodeset-client-go/common"
-	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/rocket-pool/node-manager-core/beacon"
 )
 
@@ -14,6 +16,17 @@ type StakeWiseValidatorInfo struct {
 	ExitMessageUploaded bool
 	DepositDataUsed     bool
 	MarkedActive        bool
+
+	// The deposit root used for signing this validator's deposit info (used in v3)
+	BeaconDepositRoot ethcommon.Hash
+
+	// True if there was a deposit event for this validator on the Execution layer
+	// TEMP until Hardhat is added
+	HasDepositEvent bool
+
+	// True if this validator is active in the Beacon chain
+	// TEMP until OSHA is added
+	IsActiveOnBeacon bool
 }
 
 // Create a new StakeWise validator info
@@ -33,6 +46,7 @@ func (v *StakeWiseValidatorInfo) clone() *StakeWiseValidatorInfo {
 		ExitMessageUploaded: v.ExitMessageUploaded,
 		DepositDataUsed:     v.DepositDataUsed,
 		MarkedActive:        v.MarkedActive,
+		BeaconDepositRoot:   v.BeaconDepositRoot,
 	}
 }
 
@@ -53,12 +67,22 @@ func (v *StakeWiseValidatorInfo) SetExitMessage(exitMessage common.ExitMessage) 
 	v.ExitMessageUploaded = true
 }
 
-func (v *StakeWiseValidatorInfo) GetStatus() stakewise.StakeWiseStatus {
+func (v *StakeWiseValidatorInfo) GetStatusV0() apiv0.StakeWiseStatus {
 	if v.MarkedActive {
-		return stakewise.StakeWiseStatus_Registered
+		return apiv0.StakeWiseStatus_Registered
 	}
 	if v.DepositDataUsed {
-		return stakewise.StakeWiseStatus_Uploaded
+		return apiv0.StakeWiseStatus_Uploaded
 	}
-	return stakewise.StakeWiseStatus_Pending
+	return apiv0.StakeWiseStatus_Pending
+}
+
+func (v *StakeWiseValidatorInfo) GetStatusV2() v2stakewise.StakeWiseStatus {
+	if v.MarkedActive {
+		return v2stakewise.StakeWiseStatus_Registered
+	}
+	if v.DepositDataUsed {
+		return v2stakewise.StakeWiseStatus_Uploaded
+	}
+	return v2stakewise.StakeWiseStatus_Pending
 }
