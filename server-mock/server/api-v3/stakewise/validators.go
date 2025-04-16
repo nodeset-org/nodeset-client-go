@@ -78,7 +78,7 @@ func (s *V3StakeWiseServer) postValidators(w http.ResponseWriter, r *http.Reques
 	user := node.GetUser()
 	active := vault.GetRegisteredValidatorsPerUser(user)
 	available := vault.MaxValidatorsPerUser - active
-	numToRegister := uint(len(validValidators))
+	numToRegister := len(validValidators)
 	if numToRegister > available {
 		servermockcommon.HandleServerError(w, s.logger, fmt.Errorf(
 			"not enough available slots: requested %d, available %d",

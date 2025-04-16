@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DefaultMaxValidatorsPerUser uint = 1
+	DefaultMaxValidatorsPerUser int = 1
 )
 
 // Info for StakeWise vaults
@@ -38,7 +38,7 @@ type StakeWiseVault struct {
 	Validators map[ethcommon.Address]map[beacon.ValidatorPubkey]*StakeWiseValidatorInfo
 
 	// The max number of validators per user
-	MaxValidatorsPerUser uint
+	MaxValidatorsPerUser int
 
 	deployment *StakeWiseDeployment
 	db         *Database
@@ -300,8 +300,8 @@ func (v *StakeWiseVault) MarkValidatorsRegistered(data []beacon.ExtendedDepositD
 }
 
 // Get the number of active / registered validators for a user
-func (v *StakeWiseVault) GetRegisteredValidatorsPerUser(user *User) uint {
-	registered := uint(0)
+func (v *StakeWiseVault) GetRegisteredValidatorsPerUser(user *User) int {
+	registered := 0
 	for _, node := range user.nodes {
 		if !node.isRegistered {
 			continue

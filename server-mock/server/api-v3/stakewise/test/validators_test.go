@@ -63,9 +63,9 @@ func TestPostValidators(t *testing.T) {
 
 	// Get the initial validator limits
 	metaBefore := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaBefore.Registered, uint(0)) // No validators yet
-	require.Equal(t, metaBefore.Max, uint(10))       // Max set to 10
-	require.Equal(t, metaBefore.Available, uint(10))
+	require.Equal(t, metaBefore.Registered, 0) // No validators yet
+	require.Equal(t, metaBefore.Max, 10)       // Max set to 10
+	require.Equal(t, metaBefore.Available, 10)
 
 	// Generate validator details
 	validatorDetails := make([]stakewise.ValidatorRegistrationDetails, numValidatorsToRegister)
@@ -109,9 +109,9 @@ func TestPostValidators(t *testing.T) {
 
 	// Verify the new validator count
 	metaAfter := runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaAfter.Registered, uint(numValidatorsToRegister))
-	require.Equal(t, metaAfter.Max, uint(10))      // Should stay the same
-	require.Equal(t, metaAfter.Available, uint(7)) // 10 - 3
+	require.Equal(t, metaAfter.Registered, numValidatorsToRegister)
+	require.Equal(t, metaAfter.Max, 10)      // Should stay the same
+	require.Equal(t, metaAfter.Available, 7) // 10 - 3
 
 	// Verify
 	// GET v3/modules/stakewise/{deployment}/{vault}/validators
@@ -136,9 +136,9 @@ func TestPostValidators(t *testing.T) {
 	beaconDepositRoot[0] = 0x01
 	db.Eth.SetDepositRoot(beaconDepositRoot)
 	metaAfter = runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaAfter.Registered, uint(0)) // Registered validators should be reset
-	require.Equal(t, metaAfter.Max, uint(10))       // Should stay the same
-	require.Equal(t, metaAfter.Available, uint(10))
+	require.Equal(t, metaAfter.Registered, 0) // Registered validators should be reset
+	require.Equal(t, metaAfter.Max, 10)       // Should stay the same
+	require.Equal(t, metaAfter.Available, 10)
 	t.Log("Deposit root changed, registered validator count is now 0 as expected")
 
 	// Mark the first 2 as used
@@ -147,9 +147,9 @@ func TestPostValidators(t *testing.T) {
 
 	// Verify the new count
 	metaAfter = runGetValidatorsMetaRequest(t, session)
-	require.Equal(t, metaAfter.Registered, uint(2)) // Registered validators should be reset
-	require.Equal(t, metaAfter.Max, uint(10))       // Should stay the same
-	require.Equal(t, metaAfter.Available, uint(8))  // 10 - 2
+	require.Equal(t, metaAfter.Registered, 2) // Registered validators should be reset
+	require.Equal(t, metaAfter.Max, 10)       // Should stay the same
+	require.Equal(t, metaAfter.Available, 8)  // 10 - 2
 	t.Logf("Marked 2 validators as active on Beacon / have deposit events, new registered count: %d", metaAfter.Registered)
 }
 
