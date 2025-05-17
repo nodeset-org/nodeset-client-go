@@ -3,6 +3,7 @@ package v3stakewise
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -14,6 +15,16 @@ import (
 	"github.com/nodeset-org/nodeset-client-go/common"
 	"github.com/nodeset-org/nodeset-client-go/common/stakewise"
 	"github.com/rocket-pool/node-manager-core/beacon"
+)
+
+const (
+	// Error key for when the deposit root has already been assigned to a different node operator
+	DepositRootAlreadyAssignedKey string = "deposit_root_already_assigned"
+)
+
+var (
+	// The deposit root has already been used by a different node operator
+	ErrDepositRootAlreadyAssigned error = errors.New("the deposit root has already been used by another node operator")
 )
 
 // Extended deposit data beyond what is required in an actual deposit message to Beacon, emulating what the deposit CLI produces
@@ -150,6 +161,12 @@ func (c *V3StakeWiseClient) Validators_Post(
 		case common.InsufficientVaultBalanceKey:
 			// The vault doesn't have enough ETH deposits in it to support the number of validators being registered.
 			return PostValidatorData{}, common.ErrInsufficientVaultBalance
+		}
+	case http.StatusConflict:
+		switch response.Error {
+		case DepositRootAlreadyAssignedKey:
+			// The deposit root has already been used by a different node operator
+			return PostValidatorData{}, ErrDepositRootAlreadyAssigned
 		}
 	}
 
